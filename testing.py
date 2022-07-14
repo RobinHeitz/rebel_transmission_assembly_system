@@ -94,7 +94,7 @@ def cmd_disable_motor(pcan, channel):
 
 def cmd_velocity_mode(pcan, channel):
     msg = _get_cmd_msg([0x25, 0x0, 0x10])
-    _write_cmd(pcan, channel, msg, "enable_motors")
+    _write_cmd(pcan, channel, msg, "velocity_mode")
 
 
 
