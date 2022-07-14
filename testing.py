@@ -69,55 +69,32 @@ def _get_cmd_msg(data, id=messageID):
 
     return msg
 
-def cmd_reset_errors(pcan, channel):
 
-    msg = _get_cmd_msg([0x01, 0x06])
+def _write_cmd(pcan, channel, msg, cmd_description=""):
     status = pcan.Write(channel, msg)
     if status == PCAN_ERROR_OK:
-        print("OK: reset errors")
+        print(f"Status OK: {cmd_description}")
     else:
-        print("Reset errors: Different status msg", PCAN_DICT_STATUS.get(status))
+        raise Exception(f"Status is not OK: {PCAN_DICT_STATUS.get(status)} while {cmd_description}")
 
 
-
-def get_msg_reset_errors():
-    msg = TPCANMsg()
-    msg.DATA = (c_ubyte * 8)()
-    msg.DATA[0] = 0x01
-    msg.DATA[1] = 0x06
-    msg.LEN = c_ubyte(2)
-    msg.MSGTYPE = PCAN_MESSAGE_STANDARD
-    msg.ID = messageID
-
-    return msg
-    
+def cmd_reset_errors(pcan, channel):
+    msg = _get_cmd_msg([0x01, 0x06])
+    _write_cmd(pcan, channel, msg, "reset_errors")
 
 
-def get_msg_enable_motor():
-    msg = TPCANMsg()
-    msg.DATA = (c_ubyte * 8)()
-    msg.DATA[0] = 0x01
-    msg.DATA[1] = 0x09
-    msg.LEN = c_ubyte(2)
-    msg.MSGTYPE = PCAN_MESSAGE_STANDARD
-    msg.ID = messageID
+def cmd_enable_motor(pcan, channel):
+    msg = _get_cmd_msg([0x01, 0x09])
+    _write_cmd(pcan, channel, msg, "enable_motors")
 
-    return msg
+def cmd_disable_motor(pcan, channel):
+    msg = _get_cmd_msg([0x01, 0x0A])
+    _write_cmd(pcan, channel, msg, "disable_motors")
 
 
-def get_msg_velo_mode():
-    msg = TPCANMsg()
-    msg.DATA = (c_ubyte * 8)()
-    msg.DATA[0] = 0x25
-    msg.DATA[1] = 0x0
-    msg.DATA[2] = 0x64
-
-    
-    msg.LEN = c_ubyte(4)
-    msg.MSGTYPE = PCAN_MESSAGE_STANDARD
-    msg.ID = messageID
-
-    return msg
+def cmd_velocity_mode(pcan, channel):
+    msg = _get_cmd_msg([0x25, 0x0, 0x10])
+    _write_cmd(pcan, channel, msg, "enable_motors")
 
 
 
@@ -142,43 +119,25 @@ if __name__ == "__main__":
 
         print("Current status is: ", get_status_description(pcan, current_channel))
 
-
         status, message, timestamp = get_status(pcan, current_channel)
         print(f"MessageID: {message.ID}, message-type: {message.MSGTYPE}, message length: {message.LEN}")
         
-
-        
-
         cmd_reset_errors(pcan, current_channel)
         
         time.sleep(1)
-        # cmd_enable_motor(pcan, current_channel)
+        cmd_enable_motor(pcan, current_channel)
 
 
-        print("Reset Errors should be done.")
-    
-
-        # time.sleep(1)
-
-        print("Trying to enable motor")
-        msg = get_msg_enable_motor()
-        status = pcan.Write(current_channel, msg)
-        if status == PCAN_ERROR_OK:
-            print("OK: enable motors")
-        else:
-            print("Reset errors: Different status msg", status)
-
-
-        msg = get_msg_velo_mode()
-        # pcan.Write(current_channel, msg)
-
+        time.sleep(1)
 
         while True:
-            pcan.Write(current_channel, msg)
+
+            cmd_velocity_mode(pcan, current_channel)
             time.sleep(1/50)
 
     
     except KeyboardInterrupt:
+        cmd_disable_motor(pcan, current_channel)
         pcan.Uninitialize(current_channel)
 
     except Exception as e:
