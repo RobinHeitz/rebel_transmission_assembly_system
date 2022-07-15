@@ -14,7 +14,10 @@ import time
 
 from ctypes import *
 
-messageID = 0x10
+from calculations import bytes_to_int, int_to_bytes
+
+
+can_id = 0x20 #CAN ID???
 std_baudrate = PCAN_BAUD_500K
 
 # PCAN USB Adapter
@@ -42,18 +45,17 @@ def validate_all_channels():
 
 def get_status_description(pcan, channel):
     status, message, timestamp_ = pcan.Read(channel)
-    return PCAN_DICT_STATUS.get(status)
+    return _status_str(status)
 
 
 def get_status(pcan, channel):
     """Returns current Status.
     Returns status (str), message (TPCANMsg) and a timestamp (TPCANTimestamp)"""
     status, message, timestamp = pcan.Read(channel)
-    status = PCAN_DICT_STATUS.get(status)
-    return status, message, timestamp
+    return _status_str(status), message, timestamp
     
 
-def _get_cmd_msg(data, id=messageID):
+def _get_cmd_msg(data, id=can_id):
     """Basic construction of a can message with 8 bytes.
     
     Params:
@@ -73,9 +75,9 @@ def _get_cmd_msg(data, id=messageID):
 def _write_cmd(pcan, channel, msg, cmd_description=""):
     status = pcan.Write(channel, msg)
     if status == PCAN_ERROR_OK:
-        print(f"Status OK: {cmd_description}")
+        return
     else:
-        raise Exception(f"Status is not OK: {PCAN_DICT_STATUS.get(status)} while {cmd_description}")
+        raise Exception(f"Status is not OK! {_status_str(status)} while {cmd_description}")
 
 
 def cmd_reset_errors(pcan, channel):
@@ -92,11 +94,80 @@ def cmd_disable_motor(pcan, channel):
     _write_cmd(pcan, channel, msg, "disable_motors")
 
 
-def cmd_velocity_mode(pcan, channel):
-    msg = _get_cmd_msg([0x25, 0x0, 0x10])
+def cmd_velocity_mode(pcan, channel, velo=10):
+    """Command for Velocity mode.
+    Params:
+    pcan: PCANBasic instance
+    channel: Current PCANChannel
+    velo: Velocity transmission-sided in [°/sec]"""
+    if abs(velo) > 36:
+        raise TypeError("Parameter velo should not be greater than 36°/sec!")
+
+    rpm = velo * 50/6
+    velo_bytes = int_to_bytes(rpm, 2, True)
+
+    
+    msg = _get_cmd_msg([0x25, *velo_bytes])
     _write_cmd(pcan, channel, msg, "velocity_mode")
 
+def cmd_position_mode(pcan, channel, ticks):
+    """Position mode where ticks indicates the angle in degrees."""
+    d0 = 0x14
+    d1 = None # unused
+    # d2, d3, d4, d5 = position in ticks
+    d6 = None #timer
+    d7 = None # Dout
 
+    msg = _get_cmd_msg([0x14, 0x0, ])
+    pass
+
+def _timestamp_str(timestamp):
+    return f"Timestamps Milliseconds: {timestamp.millis} // Milliseconds (overflow): {timestamp.millis_overflow} // Microseconds: {timestamp.micros}"
+
+def _status_str(status):
+    return f"Current Status: {PCAN_DICT_STATUS.get(status)}"
+
+
+
+def read_messages(pcan, channel):
+    """
+    Reads a message. The answer from a movement command has the CAN-ID = BoardID + 1
+    
+    """
+    status, msg, timestamp = pcan.Read(channel)
+
+    if msg.ID == can_id + 1:
+        # received answer to movement cmds
+        
+        data = msg.DATA
+        
+        error_code = data[0] #Fehler byte
+        print("Error Byte = ", error_code)
+
+        
+        #32 bit position [Tics]
+        pos1, pos2, pos3, pos4 = data[1],data[2],data[3],data[4]
+
+        # tics from motor encoder
+        tics = bytes_to_int(data[1:5],signed=True)        
+        
+        # pos transission [°]
+        pos = tics / 1031.111
+        print(f"Current Position: {pos} // Tics: {tics}")
+
+        current = bytes_to_int(data[5:7], signed=True)
+        print(f"Current: {current}")
+
+
+        
+
+    else:
+        pass
+        print("Different Msg ID (int):", msg.ID, "and in hex: ", hex(msg.ID))
+    
+
+    
+    
 
 if __name__ == "__main__":
 
@@ -112,7 +183,7 @@ if __name__ == "__main__":
         status = pcan.Initialize(current_channel, std_baudrate)
         
         if status != PCAN_ERROR_OK:
-            raise Exception("Initializing failed!")
+            raise Exception(f"Initializing failed! Status = {_status_str(status)}")
         else:
             print("Connection was succesfull")
 
@@ -123,16 +194,19 @@ if __name__ == "__main__":
         print(f"MessageID: {message.ID}, message-type: {message.MSGTYPE}, message length: {message.LEN}")
         
         cmd_reset_errors(pcan, current_channel)
+        read_messages(pcan, current_channel)
         
         time.sleep(1)
         cmd_enable_motor(pcan, current_channel)
+        read_messages(pcan, current_channel)
 
 
         time.sleep(1)
 
         while True:
 
-            cmd_velocity_mode(pcan, current_channel)
+            cmd_velocity_mode(pcan, current_channel, velo=36)
+            read_messages(pcan, current_channel)
             time.sleep(1/50)
 
     
