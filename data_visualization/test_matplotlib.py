@@ -45,7 +45,6 @@ class DynamicUpdate():
 
 if __name__ == "__main__":
     d = DynamicUpdate()
-    # d()
 
     x_data = []
     y_data = []

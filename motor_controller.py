@@ -51,4 +51,6 @@ if __name__ == "__main__":
         
         print("status = ",  pcan.status_string())
 
+        pcan._recv_event()
+
         time.sleep(0.5)
