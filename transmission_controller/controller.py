@@ -1,8 +1,3 @@
-from calendar import c
-from can.bus import BusState
-
-from can.interfaces.pcan import PcanBus
-
 from can.interfaces.pcan.basic import (
     PCAN_USBBUS1, PCAN_USBBUS2, PCAN_USBBUS3, PCAN_USBBUS4, PCAN_USBBUS5, PCAN_USBBUS6, 
     PCAN_USBBUS7, PCAN_USBBUS8, PCAN_USBBUS9, PCAN_USBBUS10, PCAN_USBBUS11, PCAN_USBBUS12, 
@@ -61,53 +56,30 @@ class RebelAxisController:
         
         logger.debug("Initializing was succesfull.")
 
-        self.__start_up_motor()
+        self.__cmd_reset_position()
+        time.sleep(1/50)
+
+        self.__cmd_reset_position()
+        time.sleep(1)
+
 
 
     def shut_down(self):
         self.pcan.Uninitialize(self.channel)
 
-    
-    def __start_up_motor(self):
-        self.__cmd_reset_errors()
-        time.sleep(2)
-
-        self.__cmd_enable_motor()
-        time.sleep(1)
-
-        logger.debug("_start_up_motor finished.")    
 
     def movement_velocity_mode(self):
-
-        """
-        Reset errors
-
-        errors reset?
-
-        motor enable
-
-        motor enabled?
-
-        start movement cmd
-        
-        
-        """
-        self.__cmd_velocity_mode(10)
-
-        self.__cmd_reset_position()
-        self.__cmd_reset_position()
-
-        time.sleep(1)
-        self.__start_up_motor()
-
-        time.sleep(1)
-
         while True:
-
             self.__cmd_velocity_mode(10)
-            self.__read_messages()
+            has_no_err = self.__read_movement_response_message()
+
+            if not has_no_err:
+                self.__cmd_reset_errors()
+                time.sleep(1/50)
+                self.__cmd_enable_motor()
             time.sleep(1/50)
 
+           
     
     def __validate_all_channels(self):
         """Goes through all channels and prints out which channel, e.g. 'PCAN_USBBUS1' is possible to connect to."""
@@ -159,7 +131,7 @@ class RebelAxisController:
 
     def __cmd_reset_errors(self):
         logger.debug("cmd_reset_errors()")
-        msg = self.__get_cmd_msg([0x01, 0x06], data_len=2)
+        msg = self.__get_cmd_msg([0x01, 0x06])
         self.__write_cmd(msg, "reset_errors")
 
 
@@ -172,7 +144,7 @@ class RebelAxisController:
     def __cmd_reset_position(self):
         logger.debug("cmd_reset_position()")
         """Needs to be sent 2 times within 20ms at start."""
-        msg = self.__get_cmd_msg([0x01, 0x08], data_len=4)
+        msg = self.__get_cmd_msg([0x01, 0x08])
         self.__write_cmd(msg, "reset_position")
 
 
@@ -241,7 +213,40 @@ class RebelAxisController:
         return errors
 
 
+    def __read_movement_response_message(self):
+        """Read the response from a movement cmd."""
+        
+        logger.debug("#"*10)
+        logger.debug("__read_movement_response_message()")
 
+        def __read():
+            status, msg, timestamp = self.pcan.Read(self.channel)
+            return status, msg, timestamp
+        
+        
+        status, msg, timestamp = __read()
+
+        while msg.ID != self.can_id + 1:
+            status, msg, timestamp = __read()
+        
+        logger.debug("Movement cmd response detected.")
+        
+        data = msg.DATA
+        error_codes = self.__response_error_codes(data[0])
+
+
+        tics = bytes_to_int(data[1:5],signed=True)        
+        
+        # pos transission [°]
+        pos = tics / 1031.111
+        logger.info(f"Current Position: {pos} // Tics: {tics}")
+
+        current = bytes_to_int(data[5:7], signed=True)
+        logger.info(f"Current: {current}")
+
+        return len(error_codes) == 0
+   
+   
     def __read_messages(self):
         """
         Reads a message. The answer from a movement command has the CAN-ID = BoardID + 1
@@ -274,6 +279,23 @@ class RebelAxisController:
             # answer to reset error (0x06) cmd / reset position cmd (0x09) / Gear output encoder (Abtriebsencoder/ Absolutwertgeber)
             ...
             logger.debug("Received msg CAN-ID + 2")
+            data = msg.DATA
+
+            is_enable_motor_response = True
+
+            if data[0] != 0x06:
+                is_enable_motor_response = False
+            elif data[1] != 0x0:
+                is_enable_motor_response = False
+            elif bytes_to_int(data[2:4]) != 0x0109:
+                is_enable_motor_response = False
+            elif bytes_to_int(data[4:6]) != 0x0001:
+                is_enable_motor_response = False
+            elif bytes_to_int(data[6:8]) != 0x0000:
+                is_enable_motor_response = False
+            
+            logger.warning(f"SHOULD MOTOR BE ENABLED? {is_enable_motor_response}")
+            
         
         elif msg.ID == self.can_id + 3:
             # once a second the controller sends a message voltage, motor temperature and board temperature
