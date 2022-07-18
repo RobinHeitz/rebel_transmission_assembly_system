@@ -10,8 +10,10 @@ import time
 
 from ctypes import *
 
-from calculations import bytes_to_int, int_to_bytes
-from definitions import RESPONSE_ERROR_CODES, RESPONSE_ERROR_CODES_DICT
+from hw_helpers.calculations import bytes_to_int, int_to_bytes
+from hw_helpers.definitions import RESPONSE_ERROR_CODES, RESPONSE_ERROR_CODES_DICT
+
+from data_visualization.test_matplotlib import DynamicUpdate
 
 
 import logging
@@ -37,14 +39,15 @@ all_channels = [
 
 class RebelAxisController:
 
-
-    def __init__(self) -> None:
-        self.can_id = 0x20 # Soldered CAN-ID on motor controller
+    def __init__(self, can_id = 0x10) -> None:
+        self.can_id = can_id # Soldered CAN-ID on motor controller
         self.std_baudrate = PCAN_BAUD_500K
         self.channel = PCAN_USBBUS1
         self.pcan = PCANBasic()
 
-        self.__validate_all_channels()
+        self._current_pos = 0
+
+        # self.__validate_all_channels()
 
 
         status = self.pcan.Initialize(self.channel, self.std_baudrate)
@@ -56,28 +59,45 @@ class RebelAxisController:
         
         logger.debug("Initializing was succesfull.")
 
+        self.current_pos = self.__read_gear_output_encoder()
+
         self.__cmd_reset_position()
         time.sleep(1/50)
 
         self.__cmd_reset_position()
         time.sleep(1)
 
+    # current_pos property
+    @property 
+    def current_pos(self):
+        return self._current_pos
+    
+    @current_pos.setter
+    def current_pos(self, newPos):
+        self._current_pos = newPos
 
+        logging.info(f"New current_pos set: {newPos}")
 
     def shut_down(self):
         self.pcan.Uninitialize(self.channel)
 
-
+    
+    
     def movement_velocity_mode(self):
         while True:
             self.__cmd_velocity_mode(10)
-            has_no_err = self.__read_movement_response_message()
+            has_no_err, pos_degree, current_mA  = self.__read_movement_response_message()
 
             if not has_no_err:
                 self.__cmd_reset_errors()
                 time.sleep(1/50)
                 self.__cmd_enable_motor()
             time.sleep(1/50)
+
+    
+    def movement_position_mode(self):
+        while True:
+            self.__cmd_position_mode()
 
            
     
@@ -159,7 +179,7 @@ class RebelAxisController:
         msg = self.__get_cmd_msg([0x01, 0x0C])
         self.__write_cmd(msg, "align_rotor")
 
-
+    
     def __cmd_velocity_mode(self, velo=10):
         """Command for Velocity mode.
         Params:
@@ -212,9 +232,41 @@ class RebelAxisController:
                 errors.append(RESPONSE_ERROR_CODES_DICT.get(i)[0])
         return errors
 
+    
+    def __read_gear_output_encoder(self):
+        
+        logger.debug("#"*10)
+        logger.debug("__read_movement_response_message()")
+
+        def __read():
+            status, msg, timestamp = self.pcan.Read(self.channel)
+            return status, msg, timestamp
+
+
+        found_gear_output_msg = False
+        while not found_gear_output_msg:
+        # while msg.ID != (self.can_id + 2) and msg.DATA[0] != 0xef:
+            status, msg, timestamp = __read()
+            if msg.ID == (self.can_id + 2) and msg.DATA[0] == 0xef:
+                found_gear_output_msg = True            
+            
+
+        data = msg.DATA
+        logger.info(data[0])
+        encoder_pos = bytes_to_int(data[4:8], signed=True) / 100
+        logger.info(f"Encoder absolute position = {encoder_pos}")
+
+        return encoder_pos
+
+
 
     def __read_movement_response_message(self):
-        """Read the response from a movement cmd."""
+        """Read the response from a movement cmd.
+        
+        Returns tuple of:
+        - has_no_errors (Boolean)
+        - position (in degrees)
+        - current (in mA)"""
         
         logger.debug("#"*10)
         logger.debug("__read_movement_response_message()")
@@ -238,13 +290,13 @@ class RebelAxisController:
         tics = bytes_to_int(data[1:5],signed=True)        
         
         # pos transission [°]
-        pos = tics / 1031.111
+        pos = (tics / 1031.111) % 360
         logger.info(f"Current Position: {pos} // Tics: {tics}")
 
         current = bytes_to_int(data[5:7], signed=True)
         logger.info(f"Current: {current}")
 
-        return len(error_codes) == 0
+        return len(error_codes) == 0, pos, current
    
    
     def __read_messages(self):
@@ -314,6 +366,7 @@ if __name__ == "__main__":
     controller = RebelAxisController()
 
     try:
+        ...
         controller.movement_velocity_mode()
 
     except KeyboardInterrupt:
@@ -323,45 +376,3 @@ if __name__ == "__main__":
     except Exception as e:
         logging.error(e)
     
-
-
-    # try:
-
-    #     cmd_reset_position(pcan, current_channel)
-    #     time.sleep(1/100)
-    #     cmd_reset_position(pcan, current_channel)
-        
-    #     cmd_reset_errors(pcan, current_channel)
-    #     read_messages(pcan, current_channel)
-        
-    #     time.sleep(1)
-    #     cmd_enable_motor(pcan, current_channel)
-    #     read_messages(pcan, current_channel)
-
-
-    #     time.sleep(1)
-
-    #     time_ = time.time()
-    #     while time.time() - time_ < 3:
-
-    #         cmd_velocity_mode(pcan, current_channel, velo=10)
-    #         read_messages(pcan, current_channel)
-    #         time.sleep(1/50)
-
-    #     time.sleep(3)
-
-    #     time_ = time.time()
-    #     while time.time() - time_ < 3:
-
-    #         cmd_velocity_mode(pcan, current_channel, velo=-5)
-    #         read_messages(pcan, current_channel)
-    #         time.sleep(1/50)
-
-      
-    
-    # except KeyboardInterrupt:
-    #     cmd_disable_motor(pcan, current_channel)
-    #     pcan.Uninitialize(current_channel)
-
-    # except Exception as e:
-    #     print(e)
