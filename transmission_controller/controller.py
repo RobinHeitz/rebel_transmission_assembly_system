@@ -15,6 +15,7 @@ import time
 from ctypes import *
 
 from calculations import bytes_to_int, int_to_bytes
+from definitions import RESPONSE_ERROR_CODES, RESPONSE_ERROR_CODES_DICT
 
 
 can_id = 0x20 #CAN ID???
@@ -127,6 +128,16 @@ def _timestamp_str(timestamp):
 def _status_str(status):
     return f"Current Status: {PCAN_DICT_STATUS.get(status)}"
 
+def __response_error_codes(error_byte):
+    #check if the 1st bit is in set:
+    errors = []
+    for i in range(0,8):
+        if error_byte & (1 << i) != 0:
+            # if true, error-bit i is active
+            errors.append(RESPONSE_ERROR_CODES_DICT.get(i)[0])
+
+    return errors
+
 
 
 def read_messages(pcan, channel):
@@ -141,8 +152,12 @@ def read_messages(pcan, channel):
         
         data = msg.DATA
         
-        error_code = data[0] #Fehler byte
-        print("Error Byte = ", error_code)
+        error_byte = data[0] #Fehler byte
+
+        print("Error Byte = ", error_byte)
+        error_codes = __response_error_codes(error_byte)
+        print("#"*30)
+        print(error_codes)
 
         
         #32 bit position [Tics]
@@ -205,7 +220,7 @@ if __name__ == "__main__":
 
         while True:
 
-            cmd_velocity_mode(pcan, current_channel, velo=36)
+            cmd_velocity_mode(pcan, current_channel, velo=10)
             read_messages(pcan, current_channel)
             time.sleep(1/50)
 
