@@ -147,16 +147,22 @@ def cmd_velocity_mode(pcan, channel, velo=10):
     msg = _get_cmd_msg([0x25, *velo_bytes])
     _write_cmd(pcan, channel, msg, "velocity_mode")
 
-def cmd_position_mode(pcan, channel, ticks):
-    """Position mode where ticks indicates the angle in degrees."""
-    d0 = 0x14
-    d1 = None # unused
-    # d2, d3, d4, d5 = position in ticks
-    d6 = None #timer
-    d7 = None # Dout
 
-    msg = _get_cmd_msg([0x14, 0x0, ])
-    pass
+def cmd_position_mode(pcan, channel, position):
+    """Position mode where ticks indicates the angle in degrees.
+    Params:
+    - pcan: PCANBasic instance
+    - channel: Current PCANChannel
+    - position: Gear output position in degrees
+    """
+    logger.debug("#"*10)
+    logger.debug("cmd_position_mode")
+
+    tics = 100000
+    tics_32_bits = int_to_bytes(tics, num_bytes=4, signed=True)
+    msg = _get_cmd_msg([0x14,0x0,*tics_32_bits])    
+    _write_cmd(pcan, channel, msg, "position_mode")
+
 
 def _timestamp_str(timestamp):
     return f"Timestamps Milliseconds: {timestamp.millis} // Milliseconds (overflow): {timestamp.millis_overflow} // Microseconds: {timestamp.micros}"
@@ -254,11 +260,33 @@ if __name__ == "__main__":
 
         time.sleep(1)
 
-        while True:
+        time_ = time.time()
+        while time.time() - time_ < 3:
 
             cmd_velocity_mode(pcan, current_channel, velo=10)
             read_messages(pcan, current_channel)
             time.sleep(1/50)
+
+        time.sleep(3)
+
+        time_ = time.time()
+        while time.time() - time_ < 3:
+
+            cmd_velocity_mode(pcan, current_channel, velo=-5)
+            read_messages(pcan, current_channel)
+            time.sleep(1/50)
+
+        time.sleep(3)
+        cmd_position_mode(pcan, current_channel, None)
+
+        cmd_reset_errors(pcan, current_channel)
+        cmd_enable_motor(pcan, current_channel)
+
+        time.sleep(1)
+
+        while True:
+            cmd_position_mode(pcan, current_channel, None)
+            read_messages(pcan, current_channel)
 
     
     except KeyboardInterrupt:
