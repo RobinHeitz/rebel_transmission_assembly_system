@@ -38,17 +38,17 @@ all_channels = [
 
 
 class RebelAxisController:
+    refresh_rate  = 1/50
+    pos = 0
+    tics = 0
+    std_baudrate = PCAN_BAUD_500K
+    channel = PCAN_USBBUS1
 
     def __init__(self, can_id = 0x10) -> None:
         self.can_id = can_id # Soldered CAN-ID on motor controller
-        self.std_baudrate = PCAN_BAUD_500K
-        self.channel = PCAN_USBBUS1
         self.pcan = PCANBasic()
 
-        self._current_pos = 0
-
         # self.__validate_all_channels()
-
 
         status = self.pcan.Initialize(self.channel, self.std_baudrate)
         
@@ -59,10 +59,10 @@ class RebelAxisController:
         
         logger.debug("Initializing was succesfull.")
 
-        self.current_pos = self.__read_gear_output_encoder()
+        # self.pos = self.__read_gear_output_encoder()
 
         self.__cmd_reset_position()
-        time.sleep(1/50)
+        time.sleep(self.refresh_rate)
 
         self.__cmd_reset_position()
         time.sleep(1)
@@ -75,8 +75,9 @@ class RebelAxisController:
     @current_pos.setter
     def current_pos(self, newPos):
         self._current_pos = newPos
-
         logging.info(f"New current_pos set: {newPos}")
+
+
 
     def shut_down(self):
         self.pcan.Uninitialize(self.channel)
@@ -87,17 +88,41 @@ class RebelAxisController:
         while True:
             self.__cmd_velocity_mode(10)
             has_no_err, pos_degree, current_mA  = self.__read_movement_response_message()
+            self.current_pos = pos_degree
 
             if not has_no_err:
                 self.__cmd_reset_errors()
-                time.sleep(1/50)
+                time.sleep(self.refresh_rate)
                 self.__cmd_enable_motor()
-            time.sleep(1/50)
+            time.sleep(self.refresh_rate)
 
     
-    def movement_position_mode(self):
-        while True:
-            self.__cmd_position_mode()
+    def movement_position_mode(self, to_pos, clock_wise = True, velo=5):
+        """Moves axis, controlled my position mode.
+
+        Params:
+        - to_pos: Goal position in degrees [0; 360]
+        - clock_wise: Movement direction (default: True)
+        - velo: Velocity for movement [degree/ sec]
+        """
+        
+        increment_degree = velo * self.refresh_rate 
+        s_increment_degree = increment_degree if clock_wise else increment_degree * -1
+
+
+        while abs(self.pos - to_pos) > increment_degree:
+            self.__cmd_position_mode(pos_delta=s_increment_degree)
+            has_no_err, pos_degree, current_mA  = self.__read_movement_response_message()
+            
+            if not has_no_err:
+                self.__cmd_reset_errors()
+                time.sleep(self.refresh_rate)
+                self.__cmd_enable_motor()
+            
+
+            time.sleep(self.refresh_rate)
+        
+        logger.warning(f"Finished Position movement cmd! Current Position = {self.pos}")
 
            
     
@@ -201,18 +226,18 @@ class RebelAxisController:
         self.__write_cmd(msg, "velocity_mode")
 
 
-    def __cmd_position_mode(self, position):
+    def __cmd_position_mode(self, pos_delta):
         """Position mode where ticks indicates the angle in degrees.
         Params:
-        - pcan: PCANBasic instance
-        - channel: Current PCANChannel
-        - position: Gear output position in degrees
+        - position: Gear output position delta in degrees
         """
+        
+
         logger.debug("#"*10)
         logger.debug("cmd_position_mode")
 
-        tics = 100000
-        tics_32_bits = int_to_bytes(tics, num_bytes=4, signed=True)
+        newTics = int(round(self.tics + pos_delta * 1031.111,0))
+        tics_32_bits = int_to_bytes(newTics, num_bytes=4, signed=True)
         msg = self.__get_cmd_msg([0x14,0x0,*tics_32_bits])    
         self.__write_cmd(msg, "position_mode")
 
@@ -287,16 +312,16 @@ class RebelAxisController:
         error_codes = self.__response_error_codes(data[0])
 
 
-        tics = bytes_to_int(data[1:5],signed=True)        
+        self.tics = bytes_to_int(data[1:5],signed=True)        
         
         # pos transission [°]
-        pos = (tics / 1031.111) % 360
-        logger.info(f"Current Position: {pos} // Tics: {tics}")
+        self.pos = (self.tics / 1031.111) % 360
+        logger.warning(f"Current Position: {self.pos} // Tics: {self.tics}")
 
         current = bytes_to_int(data[5:7], signed=True)
         logger.info(f"Current: {current}")
 
-        return len(error_codes) == 0, pos, current
+        return len(error_codes) == 0, self.pos, current
    
    
     def __read_messages(self):
@@ -367,8 +392,8 @@ if __name__ == "__main__":
 
     try:
         ...
-        controller.movement_velocity_mode()
-
+        # controller.movement_velocity_mode()
+        controller.movement_position_mode(150, velo=45)
     except KeyboardInterrupt:
         controller.__cmd_disable_motor()
         controller.shut_down()
