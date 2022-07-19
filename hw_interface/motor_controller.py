@@ -12,6 +12,7 @@ from ctypes import *
 
 from .calculations import bytes_to_int, int_to_bytes
 from .definitions import RESPONSE_ERROR_CODES, RESPONSE_ERROR_CODES_DICT
+from .helper_functions import get_cmd_msg
 
 from data_visualization.test_matplotlib import DynamicUpdate
 
@@ -65,7 +66,9 @@ class RebelAxisController:
         self.__cmd_reset_position()
         time.sleep(1)
 
-    # current_pos property
+
+
+
     @property 
     def current_pos(self):
         return self._current_pos
@@ -137,33 +140,6 @@ class RebelAxisController:
             pcan.Uninitialize(c)
 
 
-
-    def __get_status(self):
-        """Returns current Status.
-        Returns status (str), message (TPCANMsg) and a timestamp (TPCANTimestamp)"""
-        status, message, timestamp = self.pcan.Read(self.channel)
-        return self._status_str(status), message, timestamp
-    
-
-
-    def __get_cmd_msg(self, data, data_len = 8):
-        """Basic construction of a can message with 8 bytes.
-        
-        Params:
-        data: List of bytes as hex.
-        data_len: Length of data in bytes"""
-        msg = TPCANMsg()
-        msg.DATA = (c_ubyte * 8)()
-
-        for index, data_item in enumerate(data):
-            msg.DATA[index] = data_item
-        msg.LEN = c_ubyte(len(data))
-        msg.MSGTYPE = PCAN_MESSAGE_STANDARD
-        msg.ID = self.can_id
-
-        return msg
-
-
     def __write_cmd(self, msg, cmd_description):
         status = self.pcan.Write(self.channel, msg)
         if status == PCAN_ERROR_OK:
@@ -174,32 +150,32 @@ class RebelAxisController:
 
     def __cmd_reset_errors(self):
         logger.debug("cmd_reset_errors()")
-        msg = self.__get_cmd_msg([0x01, 0x06])
+        msg = get_cmd_msg([0x01, 0x06], self.can_id)
         self.__write_cmd(msg, "reset_errors")
 
 
     def __cmd_enable_motor(self):
         logger.debug("cmd_enable_motor()")
-        msg = self.__get_cmd_msg([0x01, 0x09])
+        msg = get_cmd_msg([0x01, 0x09], self.can_id)
         self.__write_cmd(msg, "enable_motors")
 
 
     def __cmd_reset_position(self):
         logger.debug("cmd_reset_position()")
         """Needs to be sent 2 times within 20ms at start."""
-        msg = self.__get_cmd_msg([0x01, 0x08])
+        msg = get_cmd_msg([0x01, 0x08], self.can_id)
         self.__write_cmd(msg, "reset_position")
 
 
     def __cmd_disable_motor(self):
         logger.debug("cmd_disable_motor()")
-        msg = self.__get_cmd_msg([0x01, 0x0A])
+        msg = get_cmd_msg([0x01, 0x0A], self.can_id)
         self.__write_cmd(msg, "disable_motors")
 
 
     def __cmd_allign_rotor(self):
         logger.debug("cmd_allign_rotor()")
-        msg = self.__get_cmd_msg([0x01, 0x0C])
+        msg = get_cmd_msg([0x01, 0x0C], self.can_id)
         self.__write_cmd(msg, "align_rotor")
 
     
@@ -220,7 +196,7 @@ class RebelAxisController:
         velo_bytes = int_to_bytes(rpm, 2, True)
 
         
-        msg = self.__get_cmd_msg([0x25, *velo_bytes])
+        msg = get_cmd_msg([0x25, *velo_bytes], self.can_id)
         self.__write_cmd(msg, "velocity_mode")
 
 
@@ -236,7 +212,7 @@ class RebelAxisController:
 
         newTics = int(round(self.tics + pos_delta * 1031.111,0))
         tics_32_bits = int_to_bytes(newTics, num_bytes=4, signed=True)
-        msg = self.__get_cmd_msg([0x14,0x0,*tics_32_bits])    
+        msg = get_cmd_msg([0x14,0x0,*tics_32_bits], self.can_id)    
         self.__write_cmd(msg, "position_mode")
 
 

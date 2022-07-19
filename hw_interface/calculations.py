@@ -1,6 +1,3 @@
-GEAR_SCALE = 1031.11111
-GEAR_OFFSET = 0
-
 
 def int_to_bytes(number, num_bytes=4, signed=True):
     bytes_ = int(number).to_bytes(num_bytes, "big", signed=signed)
