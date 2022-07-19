@@ -10,8 +10,8 @@ import time
 
 from ctypes import *
 
-from hw_helpers.calculations import bytes_to_int, int_to_bytes
-from hw_helpers.definitions import RESPONSE_ERROR_CODES, RESPONSE_ERROR_CODES_DICT
+from .calculations import bytes_to_int, int_to_bytes
+from .definitions import RESPONSE_ERROR_CODES, RESPONSE_ERROR_CODES_DICT
 
 from data_visualization.test_matplotlib import DynamicUpdate
 
@@ -49,14 +49,12 @@ class RebelAxisController:
         self.pcan = PCANBasic()
 
         # self.__validate_all_channels()
-
         status = self.pcan.Initialize(self.channel, self.std_baudrate)
         
         if status != PCAN_ERROR_OK:
             raise Exception(f"Initializing failed! Status = {self.__status_str(status)}")
         else:
             logger.info("Connection was succesfull")
-        
         logger.debug("Initializing was succesfull.")
 
         # self.pos = self.__read_gear_output_encoder()

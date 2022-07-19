@@ -1,10 +1,16 @@
-from faulthandler import disable
 import PySimpleGUI as sg
-import numpy as np
+
+from hw_interface.transmission_controller import RebelAxisController
+
+
+L_PAGE_1 = "-LAYOUT_PAGE_1-"
+L_PAGE_2 = "-LAYOUT_PAGE_2-"
 
 F_RADIO_BUTTON_80_CLICKED = "-FUNCTION_RADIO_BUTTON_80_CLICKED-"
 F_RADIO_BUTTON_105_CLICKED = "-FUNCTION_RADIO_BUTTON_105_CLICKED-"
-F_BTN_CLICKED = "-FUNCTION_BUTTON_CLICKED-"
+F_BTN_CONNECT_CAN = "-KEY_BUTTON_CONNECT_CAN-"
+F_BTN_NEXT_PAGE = "-KEY_BUTTON_NEXT_PAGE-"
+
 
 
 def radio_80_clicked():
@@ -17,23 +23,26 @@ def radio_105_clicked():
     checkbox.update(disabled=False)
     # checkbox.unhide_row()
 
+def connect_can():
+    print("Connect can")
 
+def next_page():
+    print("next page")
+    prev_layout = window[L_PAGE_1]
+    prev_layout.update(visible=False)
+    prev_layout.hide_row()
 
+    next_layout = window[L_PAGE_2]
+    next_layout.update(visible=True)
 
 
 function_key_map = {
     F_RADIO_BUTTON_80_CLICKED:radio_80_clicked, 
     F_RADIO_BUTTON_105_CLICKED:radio_105_clicked,
+    F_BTN_CONNECT_CAN: connect_can,
+    F_BTN_NEXT_PAGE: next_page
+
 }
-
-
-
-
-
-
-
-
-
 
 # Define the window's contents/ layout
 
@@ -42,6 +51,7 @@ layout_page_1 = [
     
     # [sg.HorizontalSeparator(pad=(10,10,10,10)),],
 
+    [sg.Button("Verbindung herstellen", key=F_BTN_CONNECT_CAN, enable_events=True, size=(20,1))],
     [sg.Frame("", layout=[
         [
             sg.Text("Getriebegröße", font="Helvetiva 15"),
@@ -58,6 +68,7 @@ layout_page_1 = [
         ],
     ])],
      
+    [sg.Button("Nächste Seite", key=F_BTN_NEXT_PAGE, enable_events=True, size=(20,1))],
      
     ]
 
@@ -68,20 +79,22 @@ layout_page_2 = [
 
 
 layout = [
-    [sg.Column(layout_page_1, visible=True, key="p1", ),],
-    [sg.Column(layout_page_2, visible=False, key="p2"),],
+    [sg.Column(layout_page_1, visible=True, key=L_PAGE_1, ),],
+    [sg.Column(layout_page_2, visible=False, key=L_PAGE_2),],
 ]
 
-# Create window
-window = sg.Window("ReBeL Getriebe Montage & Kalibrierung", layout, size=(800,500))
+if __name__ == "__main__":
+    window = sg.Window("ReBeL Getriebe Montage & Kalibrierung", layout, size=(800,500))
 
-# Event loop
-while True:
-    event, values = window.read()
-    if event in (sg.WIN_CLOSED, 'Exit'):
-        break
-   
-    function_to_execute = function_key_map.get(event)
-    function_to_execute()
+    controller = RebelAxisController()
 
-window.close()
+    # Event loop
+    while True:
+        event, values = window.read()
+        if event in (sg.WIN_CLOSED, 'Exit'):
+            break
+    
+        function_to_execute = function_key_map.get(event)
+        function_to_execute()
+
+    window.close()
