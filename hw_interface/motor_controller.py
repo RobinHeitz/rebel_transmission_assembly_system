@@ -1,3 +1,4 @@
+from socket import MsgFlag
 from can.interfaces.pcan.basic import (
     PCAN_USBBUS1, PCAN_USBBUS2, PCAN_USBBUS3, PCAN_USBBUS4, PCAN_USBBUS5, PCAN_USBBUS6, 
     PCAN_USBBUS7, PCAN_USBBUS8, PCAN_USBBUS9, PCAN_USBBUS10, PCAN_USBBUS11, PCAN_USBBUS12, 
@@ -45,8 +46,7 @@ class RebelAxisController:
     std_baudrate = PCAN_BAUD_500K
     channel = PCAN_USBBUS1
 
-    def __init__(self, can_id = 0x10) -> None:
-        self.can_id = can_id # Soldered CAN-ID on motor controller
+    def __init__(self) -> None:
         self.pcan = PCANBasic()
 
         # self.__validate_all_channels()
@@ -58,6 +58,10 @@ class RebelAxisController:
             logger.info("Connection was succesfull")
         logger.debug("Initializing was succesfull.")
 
+
+
+    def connect(self):
+        self.can_id = self.find_can_id()
         # self.pos = self.__read_gear_output_encoder()
 
         self.__cmd_reset_position()
@@ -65,6 +69,25 @@ class RebelAxisController:
 
         self.__cmd_reset_position()
         time.sleep(1)
+
+
+    def find_can_id(self):
+        logger.info("find_can_id()")
+
+        # Umgebungsparameter 0x12 auf CAN-ID + 3
+        while True:
+            status, msg, _ = self.pcan.Read(self.channel)
+            if status == PCAN_ERROR_QRCVEMPTY:
+                # Receive queue empty
+                ...
+            else:
+                first_2_bytes = bytes_to_int(msg.DATA[0:2])
+                board_id = msg.ID - 3
+                if board_id in [0x10, 0x20, 0x30, 0x40, 0x50, 0x60] and first_2_bytes == 0x1200:
+                    logger.info(f"Found CAN ID: {board_id} // status = {status} // first 2 bytes = {first_2_bytes}")
+                    return board_id
+
+                time.sleep(.1)
 
 
 
@@ -307,7 +330,10 @@ class RebelAxisController:
         logger.debug("read_messages()")
         status, msg, timestamp = self.pcan.Read(self.channel)
 
-        if msg.ID == self.can_id + 1:
+        if msg.ID == 1:
+            logger.warning("Msg.ID == 1")
+
+        elif msg.ID == self.can_id + 1:
             # answer to movement cmds
             logger.debug("Received msg CAN-ID + 1")
             data = msg.DATA
@@ -354,7 +380,7 @@ class RebelAxisController:
             ...
     
         else:
-            logger.debug("Different Msg ID (int):", msg.ID, "and in hex: ", hex(msg.ID))
+            logger.debug(f"Different Msg ID (int) {msg.ID} and in hex: {hex(msg.ID)}")
         
 
     

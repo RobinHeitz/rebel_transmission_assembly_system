@@ -1,6 +1,6 @@
 import PySimpleGUI as sg
 
-from hw_interface.transmission_controller import RebelAxisController
+from hw_interface.motor_controller import RebelAxisController
 
 
 L_PAGE_1 = "-LAYOUT_PAGE_1-"
@@ -23,8 +23,9 @@ def radio_105_clicked():
     checkbox.update(disabled=False)
     # checkbox.unhide_row()
 
-def connect_can():
+def connect_can(controller):
     print("Connect can")
+    controller.connect()
 
 def next_page():
     print("next page")
@@ -36,13 +37,6 @@ def next_page():
     next_layout.update(visible=True)
 
 
-function_key_map = {
-    F_RADIO_BUTTON_80_CLICKED:radio_80_clicked, 
-    F_RADIO_BUTTON_105_CLICKED:radio_105_clicked,
-    F_BTN_CONNECT_CAN: connect_can,
-    F_BTN_NEXT_PAGE: next_page
-
-}
 
 # Define the window's contents/ layout
 
@@ -73,7 +67,7 @@ layout_page_1 = [
     ]
 
 layout_page_2 = [
-    [sg.Text("Seite2!")]
+    [sg.Text("Seite2!"), sg.Button("Move Motor", key="-TEST-", enable_events=True)]
 
 ]
 
@@ -93,8 +87,23 @@ if __name__ == "__main__":
         event, values = window.read()
         if event in (sg.WIN_CLOSED, 'Exit'):
             break
+        
+        elif event == F_RADIO_BUTTON_80_CLICKED:
+            radio_80_clicked()
+        
+        elif event == F_RADIO_BUTTON_105_CLICKED:
+            radio_105_clicked()
+        
+        elif event == F_BTN_CONNECT_CAN:
+            connect_can(controller)
+
+        elif event  == F_BTN_NEXT_PAGE:
+            next_page()
+
+        elif event == "-TEST-":
+            controller.movement_velocity_mode()
+        
     
-        function_to_execute = function_key_map.get(event)
-        function_to_execute()
+
 
     window.close()
