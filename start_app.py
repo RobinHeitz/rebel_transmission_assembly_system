@@ -4,81 +4,13 @@ from turtle import color
 import PySimpleGUI as sg
 
 from hw_interface.motor_controller import RebelAxisController
+from gui.definitions import *
+from gui.pages import layout_page_1, layout_page_2, layout_page_3
 
 import threading
 
 import time
 
-# Layout keys
-K_PAGE_1 = "-LAYOUT_PAGE_1-"
-K_PAGE_2 = "-LAYOUT_PAGE_2-"
-K_PAGE_3 = "-LAYOUT_PAGE_3-"
-
-# Button keys
-K_BTN_NAV_PREVIOUS_PAGE = "-K_BTN_NAV_PREVIOUS_PAGE-"
-K_BTN_NAV_NEXT_PAGE = "-K_BTN_NAV_NEXT_PAGE-"
-
-
-K_RADIO_BUTTON_80_CLICKED = "-FUNCTION_RADIO_BUTTON_80_CLICKED-"
-K_RADIO_BUTTON_105_CLICKED = "-FUNCTION_RADIO_BUTTON_105_CLICKED-"
-K_BTN_CONNECT_CAN = "-KEY_BUTTON_CONNECT_CAN-"
-K_BTN_SOFTWARE_UPDATE = "-KEY_BUTTON_SOFTWARE_UPDATE-"
-
-
-
-# Event key from threading (updates, finished etc.)
-K_SOFTWARE_UPDATE_FEEDBACK = "-SOFTWARE_UPDATE_FEEDBACK-"
-K_SOFTWARE_UPDATE_DONE = "-SOFTWARE_UPDATE_DONE-"
-
-
-# Element keys (text, etc.)
-K_TEXT_CAN_CONNECTED_STATUS = "-TEXT_CAN_CONNECTION_STATUS-"
-K_PROGRESSBAR_SOFTWARE_UPDATE = "-PROGRESSBAR_SOFTWARE_UPDATE-"
-K_TEXT_SOFTWARE_UPDATE_STATUS_TEXT = "-TEXT_SOFTWARE_UPDATE_STATUS_TEXT-"
-
-
-
-######################################
-# Define the window's contents/ layout
-######################################
-
-font_headline = "Helvetiva 25"
-font_normal = "Helvetica 15"
-font_small = "Helvetica 13"
-
-
-
-layout_page_1 = [
-
-    [sg.Button("Verbindung herstellen", key=K_BTN_CONNECT_CAN, enable_events=True, font=font_normal, size=(20,1)), sg.Text("Nicht verbunden", key=K_TEXT_CAN_CONNECTED_STATUS, font=font_normal)],
-    [sg.Frame("", layout=[
-        [
-            sg.Text("Getriebegröße", font=font_normal),
-            sg.Radio("80", default=True, group_id="-radio_transmission_size-", font=font_normal, enable_events=True, key=K_RADIO_BUTTON_80_CLICKED), 
-            sg.Radio("105", default=False, group_id="-radio_transmission_size-",font=font_normal, enable_events=True, key=K_RADIO_BUTTON_105_CLICKED)
-        ], 
-        [
-            sg.Checkbox("Encoder vorhanden:", default=True, auto_size_text=False, font=font_normal, key=("checkbox", "encoder_existing") ) 
-        ],
-        [
-            sg.Checkbox("Bremse vorhanden:", default=False, auto_size_text=False, font=font_normal, disabled=True, key=("checkbox", "break_existing")) 
-        ],
-    ])],
-    
-    [
-        sg.Button("Software updaten", key=K_BTN_SOFTWARE_UPDATE, enable_events=True, font=font_normal, size=(20,1)), 
-        sg.ProgressBar(max_value=10, size=(20,20), k=K_PROGRESSBAR_SOFTWARE_UPDATE),
-        sg.Text("", k=K_TEXT_SOFTWARE_UPDATE_STATUS_TEXT, font=font_normal),
-        ],
-    ]
-
-layout_page_2 = [
-    [sg.Text("Seite2!"), sg.Button("Move Motor",enable_events=True)]
-]
-
-layout_page_3 = [
-    [sg.Text("Seite333!"), sg.Button("Do SomethingS",enable_events=True)]
-]
 
 
 page_keys = [K_PAGE_1, K_PAGE_2, K_PAGE_3]
