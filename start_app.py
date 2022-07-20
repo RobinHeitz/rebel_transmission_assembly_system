@@ -17,10 +17,9 @@ K_RADIO_BUTTON_80_CLICKED = "-FUNCTION_RADIO_BUTTON_80_CLICKED-"
 K_RADIO_BUTTON_105_CLICKED = "-FUNCTION_RADIO_BUTTON_105_CLICKED-"
 K_BTN_CONNECT_CAN = "-KEY_BUTTON_CONNECT_CAN-"
 K_BTN_SOFTWARE_UPDATE = "-KEY_BUTTON_SOFTWARE_UPDATE-"
-
-
 K_BTN_NEXT_PAGE = "-KEY_BUTTON_NEXT_PAGE-"
-K_BTN_TEST = "-TEST-"
+
+
 
 # Event key from threading (updates, finished etc.)
 K_SOFTWARE_UPDATE_FEEDBACK = "-SOFTWARE_UPDATE_FEEDBACK-"
@@ -40,11 +39,14 @@ K_TEXT_SOFTWARE_UPDATE_STATUS_TEXT = "-TEXT_SOFTWARE_UPDATE_STATUS_TEXT-"
 
 font_headline = "Helvetiva 25"
 font_normal = "Helvetica 15"
+font_small = "Helvetica 13"
+
+
 
 
 layout_page_1 = [
     [sg.Text("Getriebe konfigurieren:", size=(25,1), key="-headline-", font=font_headline)],
-    [sg.Button("Verbindung herstellen", key=K_BTN_CONNECT_CAN, enable_events=True, size=(20,1)), sg.Text("Nicht verbunden", key=K_TEXT_CAN_CONNECTED_STATUS, font=font_normal)],
+    [sg.Button("Verbindung herstellen", key=K_BTN_CONNECT_CAN, enable_events=True, font=font_normal, size=(20,1)), sg.Text("Nicht verbunden", key=K_TEXT_CAN_CONNECTED_STATUS, font=font_normal)],
     [sg.Frame("", layout=[
         [
             sg.Text("Getriebegröße", font=font_normal),
@@ -60,20 +62,24 @@ layout_page_1 = [
     ])],
     
     [
-        sg.Button("Software updaten", key=K_BTN_SOFTWARE_UPDATE, enable_events=True, size=(20,1)), 
+        sg.Button("Software updaten", key=K_BTN_SOFTWARE_UPDATE, enable_events=True, font=font_normal, size=(20,1)), 
         sg.ProgressBar(max_value=10, size=(20,20), k=K_PROGRESSBAR_SOFTWARE_UPDATE),
         sg.Text("", k=K_TEXT_SOFTWARE_UPDATE_STATUS_TEXT, font=font_normal),
         ],
+        [sg.VPush()],
+        [
+            sg.Push(), sg.Button("Next", k=K_BTN_NEXT_PAGE,  font=font_normal)
+        ],    
     ]
 
 layout_page_2 = [
-    [sg.Text("Seite2!"), sg.Button("Move Motor", key=K_BTN_TEST, enable_events=True)]
+    [sg.Text("Seite2!"), sg.Button("Move Motor", key=K_BTN_NEXT_PAGE, enable_events=True)]
 
 ]
 
 
 layout = [
-    [sg.Column(layout_page_1, visible=True, key=K_PAGE_1, ),],
+    [sg.Column(layout_page_1, expand_x=True, expand_y=True, visible=True, key=K_PAGE_1, ),],
     [sg.Column(layout_page_2, visible=False, key=K_PAGE_2),],
 ]
 
@@ -171,10 +177,11 @@ if __name__ == "__main__":
         if event in (sg.WIN_CLOSED, 'Exit'):
             break
 
-        
-        func, args = key_function_map.get(event)
-        if func is not None and args is not None:
+        try:
+            func, args = key_function_map.get(event)
             func(event, values, **args)
-
+        except:
+            print(f"WARNING: Missing event in 'key_functin_map': Event = {event} // values = {values.get(event)}")
+        
 
     window.close()
