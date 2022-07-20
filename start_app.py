@@ -12,6 +12,7 @@ import time
 # Layout keys
 K_PAGE_1 = "-LAYOUT_PAGE_1-"
 K_PAGE_2 = "-LAYOUT_PAGE_2-"
+K_PAGE_3 = "-LAYOUT_PAGE_3-"
 
 # Button keys
 K_BTN_NAV_PREVIOUS_PAGE = "-K_BTN_NAV_PREVIOUS_PAGE-"
@@ -47,38 +48,8 @@ font_small = "Helvetica 13"
 
 
 
-
-# layout_page_1 = [
-#     [sg.Text("Getriebe konfigurieren:", size=(25,1), key="-headline-", font=font_headline)],
-#     [sg.Button("Verbindung herstellen", key=K_BTN_CONNECT_CAN, enable_events=True, font=font_normal, size=(20,1)), sg.Text("Nicht verbunden", key=K_TEXT_CAN_CONNECTED_STATUS, font=font_normal)],
-#     [sg.Frame("", layout=[
-#         [
-#             sg.Text("Getriebegröße", font=font_normal),
-#             sg.Radio("80", default=True, group_id="-radio_transmission_size-", font=font_normal, enable_events=True, key=K_RADIO_BUTTON_80_CLICKED), 
-#             sg.Radio("105", default=False, group_id="-radio_transmission_size-",font=font_normal, enable_events=True, key=K_RADIO_BUTTON_105_CLICKED)
-#         ], 
-#         [
-#             sg.Checkbox("Encoder vorhanden:", default=True, auto_size_text=False, font=font_normal, key=("checkbox", "encoder_existing") ) 
-#         ],
-#         [
-#             sg.Checkbox("Bremse vorhanden:", default=False, auto_size_text=False, font=font_normal, disabled=True, key=("checkbox", "break_existing")) 
-#         ],
-#     ])],
-    
-#     [
-#         sg.Button("Software updaten", key=K_BTN_SOFTWARE_UPDATE, enable_events=True, font=font_normal, size=(20,1)), 
-#         sg.ProgressBar(max_value=10, size=(20,20), k=K_PROGRESSBAR_SOFTWARE_UPDATE),
-#         sg.Text("", k=K_TEXT_SOFTWARE_UPDATE_STATUS_TEXT, font=font_normal),
-#         ],
-#         [sg.VPush()],
-#         [
-#             sg.Push(), sg.Button("Next", k=K_BTN_NEXT_PAGE,  font=font_normal)
-#         ],    
-#     ]
-
-
 layout_page_1 = [
-    # [sg.Text("Getriebe konfigurieren:", size=(25,1), key="-headline-", font=font_headline)],
+
     [sg.Button("Verbindung herstellen", key=K_BTN_CONNECT_CAN, enable_events=True, font=font_normal, size=(20,1)), sg.Text("Nicht verbunden", key=K_TEXT_CAN_CONNECTED_STATUS, font=font_normal)],
     [sg.Frame("", layout=[
         [
@@ -99,33 +70,43 @@ layout_page_1 = [
         sg.ProgressBar(max_value=10, size=(20,20), k=K_PROGRESSBAR_SOFTWARE_UPDATE),
         sg.Text("", k=K_TEXT_SOFTWARE_UPDATE_STATUS_TEXT, font=font_normal),
         ],
-        # [sg.VPush()],
-        # [
-        #     sg.Push(), sg.Button("Next", k=K_BTN_NEXT_PAGE,  font=font_normal)
-        # ],    
     ]
 
 layout_page_2 = [
     [sg.Text("Seite2!"), sg.Button("Move Motor",enable_events=True)]
+]
 
+layout_page_3 = [
+    [sg.Text("Seite333!"), sg.Button("Do SomethingS",enable_events=True)]
 ]
 
 
-page_keys = [K_PAGE_1, K_PAGE_2]
+page_keys = [K_PAGE_1, K_PAGE_2, K_PAGE_3]
 current_page_index = 0
 
 
 layout = [
 
-    [sg.Button("Zurück", k=K_BTN_NAV_PREVIOUS_PAGE,enable_events=True,font=font_normal, visible=True, disabled=True),sg.Text("Getriebe konfigurieren:", size=(25,1), key="-headline-", font=font_headline)],
-
-    [sg.Column(layout_page_1, expand_x=True, expand_y=True, visible=True, key=K_PAGE_1, ),],
-    [sg.Column(layout_page_2, expand_x=True, expand_y=True, visible=False, key=K_PAGE_2),],
-    
-    [sg.VPush()],
     [
-        sg.Push(), sg.Button("Weiter", key=K_BTN_NAV_NEXT_PAGE, enable_events=True,  font=font_normal)
-    ],    
+        sg.Column(expand_x=True, element_justification="center",layout=[
+        [
+            sg.Button("Zurück", k=K_BTN_NAV_PREVIOUS_PAGE,enable_events=True,font=font_normal, disabled=True),
+            sg.Push(),
+            sg.Text("Getriebe konfigurieren:", key="-headline-", font=font_headline),
+            sg.Push(),
+            sg.Button("Weiter", key=K_BTN_NAV_NEXT_PAGE, enable_events=True,  font=font_normal),
+            
+            ],
+        ]),
+
+    ],
+    [sg.HorizontalSeparator(pad=(5,5,5,5,))],
+
+
+    [sg.pin(sg.Column(layout_page_1, expand_x=True, expand_y=True, visible=True, key=K_PAGE_1))],
+    [sg.pin(sg.Column(layout_page_2, expand_x=True, expand_y=True, visible=False, key=K_PAGE_2))],
+    [sg.pin(sg.Column(layout_page_3, expand_x=True, expand_y=True, visible=False, key=K_PAGE_3))],
+    
 ]
 
 
@@ -178,28 +159,19 @@ def perform_software_update_thread(window, controller):
 
 
 
+######################################################
+# FUNCTIONS FOR ENABLING / DISABLING NAVIGATION BUTTONS
+######################################################
 
 def _nav_next_page(event, values):
-    global current_page_index
-    global page_keys
     _hide_current_page()
 
-    # make next page visible
+    global current_page_index
+    global page_keys
 
-
-    next_page_index = current_page_index + 1
-    next_page = window[page_keys[next_page_index]]
-    next_page.update(visible=True)
-    next_page.unhide_row()
-
-    # disable next page button if at end of pages
-    if next_page_index == len(page_keys)-1:
-        window[K_BTN_NAV_NEXT_PAGE].update(disabled=True)
-    
-    if next_page_index > 0:
-        window[K_BTN_NAV_PREVIOUS_PAGE].update(disabled=False)
-
-    current_page_index = next_page_index
+    current_page_index += 1
+    _show_next_page()
+    _disable_enable_nav_buttons()
 
 
 def _nav_previous_page(event, values):
@@ -207,22 +179,9 @@ def _nav_previous_page(event, values):
     global page_keys
     _hide_current_page()
 
-    # make previous page visible
-    next_page_index = current_page_index - 1
-
-    next_page = window[page_keys[next_page_index]]
-    next_page.update(visible=True)
-    next_page.unhide_row()
-
-    #disable previous button
-    if next_page_index == 0:
-        window[K_BTN_NAV_PREVIOUS_PAGE].update(disabled=True)
-    
-    if next_page_index < len(page_keys) -1:
-        window[K_BTN_NAV_NEXT_PAGE].update(disabled=False)
-    
-    current_page_index = next_page_index
-
+    current_page_index -= 1
+    _show_next_page()
+    _disable_enable_nav_buttons()
 
 
 def _hide_current_page():
@@ -230,8 +189,30 @@ def _hide_current_page():
     global page_keys
     current_page = window[page_keys[current_page_index]]
     current_page.update(visible=False)
-    current_page.hide_row()
+    # current_page.hide_row()
 
+def _show_next_page():
+    global current_page_index
+    global page_keys
+    
+    next_page = window[page_keys[current_page_index]]
+    next_page.update(visible=True)
+    # next_page.unhide_row()
+
+def _disable_enable_nav_buttons():
+    
+    btn_next = window[K_BTN_NAV_NEXT_PAGE]
+    btn_prev = window[K_BTN_NAV_PREVIOUS_PAGE]
+
+    btn_prev.update(disabled=False)
+    btn_next.update(disabled=False)
+
+    if current_page_index == 0:
+        btn_prev.update(disabled=True)
+    
+    elif current_page_index == len(page_keys) -1:
+        btn_next(disabled=True)
+ 
 
 
 
