@@ -57,6 +57,8 @@ def radio_105_clicked(event, values):
     checkbox.update(disabled=False)
     # checkbox.unhide_row()
 
+
+
 def connect_can(event, values,controller):
     btn = window[K_BTN_CONNECT_CAN]
     btn.update("... Verbinden")
@@ -64,7 +66,6 @@ def connect_can(event, values,controller):
 
 def connect_can_thread(window, controller):
     result = controller.connect(timeout=5)
-    
     
     status_text = window[K_TEXT_CAN_CONNECTED_STATUS]
     if result == True:
@@ -74,6 +75,8 @@ def connect_can_thread(window, controller):
     btn = window[K_BTN_CONNECT_CAN]
     btn.update("Verbindung herstellen", disabled=True)
     
+
+
 
 def perform_software_update(event, values):
     btn = window[K_BTN_SOFTWARE_UPDATE]
@@ -90,6 +93,16 @@ def perform_software_update_thread(window, controller):
     
 
 
+
+def start_velocity_mode(event, values, controller):
+    threading.Thread(target=start_velocity_mode_thread, args=(window, controller), daemon=True).start()
+    ...
+
+def start_velocity_mode_thread(window, controller):
+    controller.movement_velocity_mode()
+
+def stop_velocity_mode(event, values, controller):
+    controller.__cmd_disable_motor()
 
 ######################################################
 # FUNCTIONS FOR ENABLING / DISABLING NAVIGATION BUTTONS
@@ -168,6 +181,9 @@ if __name__ == "__main__":
 
         K_SOFTWARE_UPDATE_FEEDBACK: (lambda event, values: window[K_PROGRESSBAR_SOFTWARE_UPDATE].update_bar(values.get(event)), dict()),
         K_SOFTWARE_UPDATE_DONE : (lambda event, values: window[K_TEXT_SOFTWARE_UPDATE_STATUS_TEXT].update("Software upgedated") , dict()),
+
+        K_BTN_START_VELO_MODE: (start_velocity_mode, dict(controller=controller)),
+        K_BTN_STOP_VELO_MODE: (stop_velocity_mode, dict(controller=controller)),
 
 
 

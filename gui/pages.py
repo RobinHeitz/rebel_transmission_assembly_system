@@ -27,7 +27,10 @@ layout_page_1 = [
 
 
 layout_page_2 = [
-    [sg.Text("Seite2!"), sg.Button("Move Motor",enable_events=True)]
+    [
+        sg.Button("Starte Motor",enable_events=True, k=K_BTN_START_VELO_MODE),
+        sg.Button("Stoppe Motor",enable_events=True, k=K_BTN_STOP_VELO_MODE),
+        ]
 ]
 
 layout_page_3 = [
