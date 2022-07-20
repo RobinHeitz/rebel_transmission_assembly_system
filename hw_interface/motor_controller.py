@@ -60,9 +60,8 @@ class RebelAxisController:
 
 
 
-    def connect(self):
-        self.can_id = self.find_can_id()
-        # self.pos = self.__read_gear_output_encoder()
+    def connect(self, timeout=2):
+        self.can_id = self.find_can_id(timeout=timeout)
 
         if self.can_id == 0:
             return False
@@ -71,7 +70,7 @@ class RebelAxisController:
         time.sleep(self.refresh_rate)
 
         self.__cmd_reset_position()
-        time.sleep(1)
+        # time.sleep(1)
 
         return True
 
@@ -93,7 +92,6 @@ class RebelAxisController:
                     logger.info(f"Found CAN ID: {board_id} // status = {status} // first 2 bytes = {first_2_bytes}")
                     return board_id
 
-                time.sleep(.1)
         return 0
 
 

@@ -1,3 +1,5 @@
+from concurrent.futures import thread
+from turtle import color
 import PySimpleGUI as sg
 
 from hw_interface.motor_controller import RebelAxisController
@@ -6,20 +8,79 @@ import threading
 
 import time
 
+# Layout keys
+K_PAGE_1 = "-LAYOUT_PAGE_1-"
+K_PAGE_2 = "-LAYOUT_PAGE_2-"
+
+# Button keys
+K_RADIO_BUTTON_80_CLICKED = "-FUNCTION_RADIO_BUTTON_80_CLICKED-"
+K_RADIO_BUTTON_105_CLICKED = "-FUNCTION_RADIO_BUTTON_105_CLICKED-"
+K_BTN_CONNECT_CAN = "-KEY_BUTTON_CONNECT_CAN-"
+K_BTN_SOFTWARE_UPDATE = "-KEY_BUTTON_SOFTWARE_UPDATE-"
+
+
+K_BTN_NEXT_PAGE = "-KEY_BUTTON_NEXT_PAGE-"
+K_BTN_TEST = "-TEST-"
+
+# Event key from threading (updates, finished etc.)
+K_SOFTWARE_UPDATE_FEEDBACK = "-SOFTWARE_UPDATE_FEEDBACK-"
+K_SOFTWARE_UPDATE_DONE = "-SOFTWARE_UPDATE_DONE-"
+
+
+# Element keys (text, etc.)
+K_TEXT_CAN_CONNECTED_STATUS = "-TEXT_CAN_CONNECTION_STATUS-"
+K_PROGRESSBAR_SOFTWARE_UPDATE = "-PROGRESSBAR_SOFTWARE_UPDATE-"
+K_TEXT_SOFTWARE_UPDATE_STATUS_TEXT = "-TEXT_SOFTWARE_UPDATE_STATUS_TEXT-"
 
 
 
-L_PAGE_1 = "-LAYOUT_PAGE_1-"
-L_PAGE_2 = "-LAYOUT_PAGE_2-"
+######################################
+# Define the window's contents/ layout
+######################################
 
-F_RADIO_BUTTON_80_CLICKED = "-FUNCTION_RADIO_BUTTON_80_CLICKED-"
-F_RADIO_BUTTON_105_CLICKED = "-FUNCTION_RADIO_BUTTON_105_CLICKED-"
-F_BTN_CONNECT_CAN = "-KEY_BUTTON_CONNECT_CAN-"
-F_BTN_NEXT_PAGE = "-KEY_BUTTON_NEXT_PAGE-"
-F_BTN_TEST = "-TEST-"
+font_headline = "Helvetiva 25"
+font_normal = "Helvetica 15"
 
-E_LONG_OPERATION_UPDATE = "-LONG_OPERATION_UPDATE-"
-E_LONG_OPERATION_DONE = "-LONG_OPERATION_DONE-"
+
+layout_page_1 = [
+    [sg.Text("Getriebe konfigurieren:", size=(25,1), key="-headline-", font=font_headline)],
+    [sg.Button("Verbindung herstellen", key=K_BTN_CONNECT_CAN, enable_events=True, size=(20,1)), sg.Text("Nicht verbunden", key=K_TEXT_CAN_CONNECTED_STATUS, font=font_normal)],
+    [sg.Frame("", layout=[
+        [
+            sg.Text("Getriebegröße", font=font_normal),
+            sg.Radio("80", default=True, group_id="-radio_transmission_size-", font=font_normal, enable_events=True, key=K_RADIO_BUTTON_80_CLICKED), 
+            sg.Radio("105", default=False, group_id="-radio_transmission_size-",font=font_normal, enable_events=True, key=K_RADIO_BUTTON_105_CLICKED)
+        ], 
+        [
+            sg.Checkbox("Encoder vorhanden:", default=True, auto_size_text=False, font=font_normal, key=("checkbox", "encoder_existing") ) 
+        ],
+        [
+            sg.Checkbox("Bremse vorhanden:", default=False, auto_size_text=False, font=font_normal, disabled=True, key=("checkbox", "break_existing")) 
+        ],
+    ])],
+    
+    [
+        sg.Button("Software updaten", key=K_BTN_SOFTWARE_UPDATE, enable_events=True, size=(20,1)), 
+        sg.ProgressBar(max_value=10, size=(20,20), k=K_PROGRESSBAR_SOFTWARE_UPDATE),
+        sg.Text("", k=K_TEXT_SOFTWARE_UPDATE_STATUS_TEXT, font=font_normal),
+        ],
+    ]
+
+layout_page_2 = [
+    [sg.Text("Seite2!"), sg.Button("Move Motor", key=K_BTN_TEST, enable_events=True)]
+
+]
+
+
+layout = [
+    [sg.Column(layout_page_1, visible=True, key=K_PAGE_1, ),],
+    [sg.Column(layout_page_2, visible=False, key=K_PAGE_2),],
+]
+
+
+#######################
+### FUNCTIONS  ########
+#######################
 
 
 def radio_80_clicked(event, values):
@@ -33,91 +94,73 @@ def radio_105_clicked(event, values):
     # checkbox.unhide_row()
 
 def connect_can(event, values,controller):
-    print("START: Connect can")
-    result = controller.connect()
-    print("END: Connect can", result)
+    btn = window[K_BTN_CONNECT_CAN]
+    btn.update("... Verbinden")
+    threading.Thread(target=connect_can_thread, args=(window, controller), daemon=True).start()
+
+def connect_can_thread(window, controller):
+    result = controller.connect(timeout=5)
+    
+    
+    status_text = window[K_TEXT_CAN_CONNECTED_STATUS]
+    if result == True:
+        status_text.update(f"Verbindung hergestellt: CAN-ID: {hex(controller.can_id)}")
+    else:
+        status_text.update("Verbindung fehlgeschlagen", text_color="red")
+    btn = window[K_BTN_CONNECT_CAN]
+    btn.update("Verbindung herstellen", disabled=True)
+    
+
+def perform_software_update(event, values):
+    btn = window[K_BTN_SOFTWARE_UPDATE]
+    btn.update(disabled=True)
+    threading.Thread(target=perform_software_update_thread, args=(window, controller), daemon=True ).start()
+
+
+def perform_software_update_thread(window, controller):
+
+    for i in range(1,101):
+        time.sleep(.1)
+        window.write_event_value(K_SOFTWARE_UPDATE_FEEDBACK, i/10)
+    window.write_event_value(K_SOFTWARE_UPDATE_DONE, None)
+    
+
+
 
 def next_page(event, values):
     print("next page")
-    prev_layout = window[L_PAGE_1]
+    prev_layout = window[K_PAGE_1]
     prev_layout.update(visible=False)
     prev_layout.hide_row()
 
-    next_layout = window[L_PAGE_2]
+    next_layout = window[K_PAGE_2]
     next_layout.update(visible=True)
 
 
-def long_operation(event, values, window):
-    ...
-    threading.Thread(target=long_operation_thread, args=(event, values, window,), daemon=True).start()
 
 
 
-def long_operation_thread(event, values, window):
-    for i in range(10):
-        time.sleep(2)
-        print(f"long operation - {i}")
-        window.write_event_value(E_LONG_OPERATION_UPDATE, i)
-    window.write_event_value(E_LONG_OPERATION_DONE, i)
-
-
-
-
-# Define the window's contents/ layout
-layout_page_1 = [
-    [sg.Text("Getriebe konfigurieren:", size=(25,1), key="-headline-", font="Helvetiva 25")],
-    [sg.Button("Verbindung herstellen", key=F_BTN_CONNECT_CAN, enable_events=True, size=(20,1))],
-    [sg.Frame("", layout=[
-        [
-            sg.Text("Getriebegröße", font="Helvetiva 15"),
-            sg.Radio("80", default=True, group_id="-radio_transmission_size-", font="Helvetiva 15", enable_events=True, key=F_RADIO_BUTTON_80_CLICKED), 
-            sg.Radio("105", default=False, group_id="-radio_transmission_size-",font="Helvetiva 15", enable_events=True, key=F_RADIO_BUTTON_105_CLICKED)
-        ], 
-        [
-            sg.Checkbox("Encoder vorhanden:", default=True, auto_size_text=False, font="Helvetica 15", key=("checkbox", "encoder_existing") ) 
-        ],
-        [
-            sg.Checkbox("Bremse vorhanden:", default=False, auto_size_text=False, font="Helvetica 15", disabled=True, key=("checkbox", "break_existing")) 
-        ],
-    ])],
-    [sg.Button("Nächste Seite", key=F_BTN_NEXT_PAGE, enable_events=True, size=(20,1))],
-    ]
-
-layout_page_2 = [
-    [sg.Text("Seite2!"), sg.Button("Move Motor", key=F_BTN_TEST, enable_events=True)]
-
-]
-
-
-layout = [
-    [sg.Column(layout_page_1, visible=True, key=L_PAGE_1, ),],
-    [sg.Column(layout_page_2, visible=False, key=L_PAGE_2),],
-]
-
-
-def my_test_func(event, values):
-    long_operation(window)
-
-def handle_update(event, values):
-    print("update long event: ", event, values.get(E_LONG_OPERATION_UPDATE))
-
-def handle_finish(event, values):
-    print("MULTITASKING FINISHED", event, values.get(E_LONG_OPERATION_DONE))
+#################
+### MAIN ROUNTINE
+#################
 
 if __name__ == "__main__":
     window = sg.Window("ReBeL Getriebe Montage & Kalibrierung", layout, size=(800,500))
     controller = RebelAxisController()
 
     key_function_map = {
-        F_RADIO_BUTTON_80_CLICKED: (radio_80_clicked, dict()),
-        F_RADIO_BUTTON_105_CLICKED:( radio_105_clicked, dict()),
+        K_RADIO_BUTTON_80_CLICKED: (radio_80_clicked, dict()),
+        K_RADIO_BUTTON_105_CLICKED:( radio_105_clicked, dict()),
 
-        F_BTN_CONNECT_CAN: (connect_can, dict(controller=controller)),
-        F_BTN_NEXT_PAGE: (next_page, dict()),
-        F_BTN_TEST:  (long_operation, dict(window=window)), 
+        K_BTN_CONNECT_CAN: (connect_can, dict(controller=controller)),
+        K_BTN_NEXT_PAGE: (next_page, dict()),
+        K_BTN_SOFTWARE_UPDATE: (perform_software_update, dict()),
 
-        E_LONG_OPERATION_UPDATE: (handle_update, dict()),
-        E_LONG_OPERATION_DONE: (handle_finish, dict()),
+        
+        # K_SOFTWARE_UPDATE_FEEDBACK: (perform_software_update_feedback, dict()),
+        K_SOFTWARE_UPDATE_FEEDBACK: (lambda event, values: window[K_PROGRESSBAR_SOFTWARE_UPDATE].update_bar(values.get(event)), dict()),
+        K_SOFTWARE_UPDATE_DONE : (lambda event, values: window[K_TEXT_SOFTWARE_UPDATE_STATUS_TEXT].update("Software upgedated") , dict())
+
 
 
 
