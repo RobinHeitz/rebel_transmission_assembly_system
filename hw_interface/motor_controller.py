@@ -64,18 +64,24 @@ class RebelAxisController:
         self.can_id = self.find_can_id()
         # self.pos = self.__read_gear_output_encoder()
 
+        if self.can_id == 0:
+            return False
+
         self.__cmd_reset_position()
         time.sleep(self.refresh_rate)
 
         self.__cmd_reset_position()
         time.sleep(1)
 
+        return True
 
-    def find_can_id(self):
+
+    def find_can_id(self, timeout = 5):
         logger.info("find_can_id()")
+        start_time = time.time()
 
         # Umgebungsparameter 0x12 auf CAN-ID + 3
-        while True:
+        while time.time() - start_time < timeout:
             status, msg, _ = self.pcan.Read(self.channel)
             if status == PCAN_ERROR_QRCVEMPTY:
                 # Receive queue empty
@@ -88,6 +94,7 @@ class RebelAxisController:
                     return board_id
 
                 time.sleep(.1)
+        return 0
 
 
 
