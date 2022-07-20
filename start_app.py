@@ -7,14 +7,18 @@ from hw_interface.motor_controller import RebelAxisController
 from gui.definitions import *
 from gui.pages import layout_page_1, layout_page_2, layout_page_3
 
+from matplotlib.backends.backend_tkagg import FigureCanvasAgg
+import matplotlib
+
 import threading
 
 import time
 
+import numpy as np
 
 
-page_keys = [K_PAGE_1, K_PAGE_2, K_PAGE_3]
-current_page_index = 0
+
+
 
 
 layout = [
@@ -95,14 +99,60 @@ def perform_software_update_thread(window, controller):
 
 
 def start_velocity_mode(event, values, controller):
-    threading.Thread(target=start_velocity_mode_thread, args=(window, controller), daemon=True).start()
-    ...
+    global thread_velocity
+    thread_velocity = threading.Thread(target=start_velocity_mode_thread, args=(window, controller), daemon=True)
+    thread_velocity.start()
+
 
 def start_velocity_mode_thread(window, controller):
-    controller.movement_velocity_mode()
+    # controller.movement_velocity_mode()
+    start_time = time.time()
+
+    end_time = 10
+
+    controller.cmd_velocity_mode(velo=5)
+    has_no_err, pos_degree, current_mA  = controller.read_movement_response_message()
+    
+    if not has_no_err:
+        controller.cmd_reset_errors()
+        time.sleep(controller.refresh_rate)
+        controller.cmd_enable_motor()
+        time.sleep(controller.refresh_rate)
+
+    cur_thread = threading.currentThread()
+    while time.time() - start_time < end_time and getattr(cur_thread, "do_run", True):
+        controller.cmd_velocity_mode(velo=5)
+        has_no_err, pos_degree, current_mA  = controller.read_movement_response_message()
+        window.write_event_value(K_VELOCITY_MODE_UPDATE_POSITION_CURRENT, dict(position=pos_degree, current=current_mA))
+        time.sleep(controller.refresh_rate)
+
+
+        # if not has_no_err:
+        #     controller.cmd_reset_errors()
+        #     time.sleep(controller.refresh_rate)
+        #     controller.cmd_enable_motor()
+        #     time.sleep(controller.refresh_rate)
+
+
+def velocity_mode_update(event, values):
+    data = values.get(event)
+    position = data.get('position')
+    current = data.get('current')
+
 
 def stop_velocity_mode(event, values, controller):
-    controller.__cmd_disable_motor()
+    # controller.cmd_disable_motor()
+    global thread_velocity
+    thread_velocity.do_run = False
+
+def draw_figure(canvas, figure):
+    print("draw_figure")
+    canvas = window[K_CANVAS_GRAPH_PLOTTING].TKCanvas
+
+    figure_canvas = FigureCanvasAgg(figure, canvas)
+    figure_canvas.draw()
+    figure_canvas.get_tk_widget().pack(side="top", fill="both", expand=1)
+    return figure_canvas
 
 ######################################################
 # FUNCTIONS FOR ENABLING / DISABLING NAVIGATION BUTTONS
@@ -169,6 +219,18 @@ if __name__ == "__main__":
     window = sg.Window("ReBeL Getriebe Montage & Kalibrierung", layout, size=(800,500))
     controller = RebelAxisController()
 
+    thread_velocity = None
+
+    page_keys = [K_PAGE_1, K_PAGE_2, K_PAGE_3]
+    current_page_index = 0
+
+    # fig = matplotlib.figure.Figure(figsize=(5,4), dpi=100)
+    # t = np.arange(0,3,.01)
+    # fig.add_subplot(111).plot(t, 2 * np.sin(2 * np.pi * t))
+
+    # draw_figure(None, fig)
+
+
     key_function_map = {
         K_BTN_NAV_NEXT_PAGE: (_nav_next_page, dict()),
         K_BTN_NAV_PREVIOUS_PAGE: (_nav_previous_page, dict()),
@@ -184,7 +246,7 @@ if __name__ == "__main__":
 
         K_BTN_START_VELO_MODE: (start_velocity_mode, dict(controller=controller)),
         K_BTN_STOP_VELO_MODE: (stop_velocity_mode, dict(controller=controller)),
-
+        K_VELOCITY_MODE_UPDATE_POSITION_CURRENT: (velocity_mode_update, dict())
 
 
 

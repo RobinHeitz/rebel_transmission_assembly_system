@@ -66,10 +66,10 @@ class RebelAxisController:
         if self.can_id == 0:
             return False
 
-        self.__cmd_reset_position()
+        self.cmd_reset_position()
         time.sleep(self.refresh_rate)
 
-        self.__cmd_reset_position()
+        self.cmd_reset_position()
         # time.sleep(1)
 
         return True
@@ -115,14 +115,14 @@ class RebelAxisController:
     
     def movement_velocity_mode(self):
         while True:
-            self.__cmd_velocity_mode(10)
-            has_no_err, pos_degree, current_mA  = self.__read_movement_response_message()
+            self.cmd_velocity_mode(10)
+            has_no_err, pos_degree, current_mA  = self.read_movement_response_message()
             self.current_pos = pos_degree
 
             if not has_no_err:
-                self.__cmd_reset_errors()
+                self.cmd_reset_errors()
                 time.sleep(self.refresh_rate)
-                self.__cmd_enable_motor()
+                self.cmd_enable_motor()
             time.sleep(self.refresh_rate)
 
     
@@ -140,13 +140,13 @@ class RebelAxisController:
 
 
         while abs(self.pos - to_pos) > increment_degree:
-            self.__cmd_position_mode(pos_delta=s_increment_degree)
-            has_no_err, pos_degree, current_mA  = self.__read_movement_response_message()
+            self.cmd_position_mode(pos_delta=s_increment_degree)
+            has_no_err, pos_degree, current_mA  = self.read_movement_response_message()
             
             if not has_no_err:
-                self.__cmd_reset_errors()
+                self.cmd_reset_errors()
                 time.sleep(self.refresh_rate)
-                self.__cmd_enable_motor()
+                self.cmd_enable_motor()
             
 
             time.sleep(self.refresh_rate)
@@ -155,7 +155,7 @@ class RebelAxisController:
 
            
     
-    def __validate_all_channels(self):
+    def validate_all_channels(self):
         """Goes through all channels and prints out which channel, e.g. 'PCAN_USBBUS1' is possible to connect to."""
         for c, index in zip(all_channels, list(range(1,100))):
             pcan = PCANBasic()
@@ -168,7 +168,7 @@ class RebelAxisController:
             pcan.Uninitialize(c)
 
 
-    def __write_cmd(self, msg, cmd_description):
+    def write_cmd(self, msg, cmd_description):
         status = self.pcan.Write(self.channel, msg)
         if status == PCAN_ERROR_OK:
             return
@@ -176,38 +176,38 @@ class RebelAxisController:
             raise Exception(f"Status is not OK! {self.__status_str(status)} while {cmd_description}")
 
 
-    def __cmd_reset_errors(self):
+    def cmd_reset_errors(self):
         logger.debug("cmd_reset_errors()")
         msg = get_cmd_msg([0x01, 0x06], self.can_id)
-        self.__write_cmd(msg, "reset_errors")
+        self.write_cmd(msg, "reset_errors")
 
 
-    def __cmd_enable_motor(self):
+    def cmd_enable_motor(self):
         logger.debug("cmd_enable_motor()")
         msg = get_cmd_msg([0x01, 0x09], self.can_id)
-        self.__write_cmd(msg, "enable_motors")
+        self.write_cmd(msg, "enable_motors")
 
 
-    def __cmd_reset_position(self):
+    def cmd_reset_position(self):
         logger.debug("cmd_reset_position()")
         """Needs to be sent 2 times within 20ms at start."""
         msg = get_cmd_msg([0x01, 0x08], self.can_id)
-        self.__write_cmd(msg, "reset_position")
+        self.write_cmd(msg, "reset_position")
 
 
-    def __cmd_disable_motor(self):
+    def cmd_disable_motor(self):
         logger.debug("cmd_disable_motor()")
         msg = get_cmd_msg([0x01, 0x0A], self.can_id)
-        self.__write_cmd(msg, "disable_motors")
+        self.write_cmd(msg, "disable_motors")
 
 
-    def __cmd_allign_rotor(self):
+    def cmd_allign_rotor(self):
         logger.debug("cmd_allign_rotor()")
         msg = get_cmd_msg([0x01, 0x0C], self.can_id)
-        self.__write_cmd(msg, "align_rotor")
+        self.write_cmd(msg, "align_rotor")
 
     
-    def __cmd_velocity_mode(self, velo=10):
+    def cmd_velocity_mode(self, velo=10):
         """Command for Velocity mode.
         Params:
         pcan: PCANBasic instance
@@ -225,10 +225,10 @@ class RebelAxisController:
 
         
         msg = get_cmd_msg([0x25, *velo_bytes], self.can_id)
-        self.__write_cmd(msg, "velocity_mode")
+        self.write_cmd(msg, "velocity_mode")
 
 
-    def __cmd_position_mode(self, pos_delta):
+    def cmd_position_mode(self, pos_delta):
         """Position mode where ticks indicates the angle in degrees.
         Params:
         - position: Gear output position delta in degrees
@@ -241,16 +241,16 @@ class RebelAxisController:
         newTics = int(round(self.tics + pos_delta * 1031.111,0))
         tics_32_bits = int_to_bytes(newTics, num_bytes=4, signed=True)
         msg = get_cmd_msg([0x14,0x0,*tics_32_bits], self.can_id)    
-        self.__write_cmd(msg, "position_mode")
+        self.write_cmd(msg, "position_mode")
 
 
-    def __timestamp_str(self, timestamp):
+    def timestamp_str(self, timestamp):
         return f"Timestamps Milliseconds: {timestamp.millis} // Milliseconds (overflow): {timestamp.millis_overflow} // Microseconds: {timestamp.micros}"
 
-    def __status_str(self, status):
+    def status_str(self, status):
         return f"Current Status: {PCAN_DICT_STATUS.get(status)}"
 
-    def __response_error_codes(self, error_byte):
+    def response_error_codes(self, error_byte):
         #check if the 1st bit is in set:
         errors = []
         for i in range(0,8):
@@ -260,12 +260,12 @@ class RebelAxisController:
         return errors
 
     
-    def __read_gear_output_encoder(self):
+    def read_gear_output_encoder(self):
         
         logger.debug("#"*10)
         logger.debug("__read_movement_response_message()")
 
-        def __read():
+        def read():
             status, msg, timestamp = self.pcan.Read(self.channel)
             return status, msg, timestamp
 
@@ -273,7 +273,7 @@ class RebelAxisController:
         found_gear_output_msg = False
         while not found_gear_output_msg:
         # while msg.ID != (self.can_id + 2) and msg.DATA[0] != 0xef:
-            status, msg, timestamp = __read()
+            status, msg, timestamp = read()
             if msg.ID == (self.can_id + 2) and msg.DATA[0] == 0xef:
                 found_gear_output_msg = True            
             
@@ -287,7 +287,7 @@ class RebelAxisController:
 
 
 
-    def __read_movement_response_message(self):
+    def read_movement_response_message(self):
         """Read the response from a movement cmd.
         
         Returns tuple of:
@@ -298,20 +298,20 @@ class RebelAxisController:
         logger.debug("#"*10)
         logger.debug("__read_movement_response_message()")
 
-        def __read():
+        def read():
             status, msg, timestamp = self.pcan.Read(self.channel)
             return status, msg, timestamp
         
         
-        status, msg, timestamp = __read()
+        status, msg, timestamp = read()
 
         while msg.ID != self.can_id + 1:
-            status, msg, timestamp = __read()
+            status, msg, timestamp = read()
         
         logger.debug("Movement cmd response detected.")
         
         data = msg.DATA
-        error_codes = self.__response_error_codes(data[0])
+        error_codes = self.response_error_codes(data[0])
 
 
         self.tics = bytes_to_int(data[1:5],signed=True)        
@@ -326,7 +326,7 @@ class RebelAxisController:
         return len(error_codes) == 0, self.pos, current
    
    
-    def __read_messages(self):
+    def read_messages(self):
         """
         Reads a message. The answer from a movement command has the CAN-ID = BoardID + 1
         
@@ -343,7 +343,7 @@ class RebelAxisController:
             logger.debug("Received msg CAN-ID + 1")
             data = msg.DATA
             
-            error_codes = self.__response_error_codes(data[0])
+            error_codes = self.response_error_codes(data[0])
             logging.info(f"Error codes while receiving msg CAN-ID + 1: {error_codes}")
 
             # tics from motor encoder
