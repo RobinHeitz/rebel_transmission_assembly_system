@@ -15,7 +15,6 @@ from .calculations import bytes_to_int, int_to_bytes
 from .definitions import RESPONSE_ERROR_CODES, RESPONSE_ERROR_CODES_DICT
 from .helper_functions import get_cmd_msg
 
-from data_visualization.test_matplotlib import DynamicUpdate
 
 
 import logging
@@ -23,7 +22,7 @@ logFormatter = logging.Formatter("'%(asctime)s - %(message)s")
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
 
-fileHandler = logging.FileHandler("log.log", mode="w")
+fileHandler = logging.FileHandler("motor_controller.log", mode="w")
 fileHandler.setFormatter(logFormatter)
 logger.addHandler(fileHandler)
 

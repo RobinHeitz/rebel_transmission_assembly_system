@@ -3,6 +3,14 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import numpy as np
 
+import time, threading
+
+def generate_data(window:sg.Window):
+    while True:
+        time.sleep(.1)
+        new_data = np.random.random(1024)
+        window.write_event_value("new_data_available", new_data)
+
 class updateable_matplotlib_plot():
     def __init__(self, canvas) -> None:
         self.fig_agg = None
@@ -38,7 +46,7 @@ class updateable_matplotlib_plot():
 def getGUI():
     # All the stuff inside your window.
     layout = [  [sg.Canvas(size=(500,500), key='canvas')],
-                [sg.Button('Update', key='update'), sg.Button('Close')] ]
+                [sg.Button('Update', key='update'), sg.Button('Close'), sg.Button("Auto-update", key="update_auto")] ]
 
     # Create the Window
     window = sg.Window('Updating a plot example....', layout)
@@ -50,11 +58,22 @@ if __name__ == '__main__':
     spectraPlot = updateable_matplotlib_plot(window['canvas']) #what canvas are you plotting it on
     window.finalize() #show the window
     spectraPlot.plot(np.zeros(1024)) # plot an empty plot    
+    
     while True:
         event, values = window.read()
+        if event == sg.WIN_CLOSED or event == 'Close': break # if user closes window or clicks cancel
+        
         if event == "update":
              some_spectrum = np.random.random(1024) # data to be plotted
              spectraPlot.plot(some_spectrum) #plot the data           
-        if event == sg.WIN_CLOSED or event == 'Close': break # if user closes window or clicks cancel
+
+        elif event == "update_auto":
+            print("Button clicked")
+            threading.Thread(target=generate_data, args=(window, ), daemon=True).start()
+
+        elif event == "new_data_available":
+            print("new Data")
+            new_data = values[event]
+            spectraPlot.plot(new_data)
 
     window.close()
