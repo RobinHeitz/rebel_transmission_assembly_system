@@ -1,3 +1,4 @@
+from errno import errorcode
 from socket import MsgFlag
 from can.interfaces.pcan.basic import (
     PCAN_USBBUS1, PCAN_USBBUS2, PCAN_USBBUS3, PCAN_USBBUS4, PCAN_USBBUS5, PCAN_USBBUS6, 
@@ -105,6 +106,9 @@ class RebelAxisController:
     
     motor_no_err = False
     motor_enabled = False
+    motor_referenced = False
+    motor_position_is_resetted = False
+    motor_rotor_is_aligned = False
 
     lock = Lock()
     
@@ -113,16 +117,19 @@ class RebelAxisController:
     motor_env_status = []
 
 
-    def __init__(self, _can_id = None) -> None:
+    def __init__(self, _can_id = None, can_auto_detect = True) -> None:
         self.pcan = PCANBasic()
-        self.can_id = _can_id
-
         status = self.pcan.Initialize(self.channel, self.std_baudrate)
-        
         if status != PCAN_ERROR_OK:
-            raise Exception(f"Initializing failed! Status = {self.__status_str(status)}")
+            raise Exception(f"Initializing failed! Status = {self.status_str(status)}")
         else:
             logger.info("Connection was succesfull")
+
+        if can_auto_detect is True:
+            self.can_id = self.find_can_id(timeout=2)
+        else:
+            self.can_id = _can_id
+
         logger.debug("Initializing was succesfull.")
 
 
@@ -147,7 +154,12 @@ class RebelAxisController:
                     error_codes = response_error_codes(msg.DATA[0])
                     with self.lock:
                         self.movement_cmd_errors = error_codes
-                        self.motor_no_err = len(error_codes) == 0
+                        if len(error_codes) == 0:
+                            self.motor_no_err = True
+                        else:
+                            self.motor_no_err = False
+                            self.motor_enabled = False
+
                     logger.info(f"Current Error Codes: {self.movement_cmd_errors}")
 
                     self.tics = bytes_to_int(msg.DATA[1:5], signed=True)
@@ -162,8 +174,71 @@ class RebelAxisController:
 
 
 
-                elif msg.ID == self.can_id + 2:
-                    ...
+                elif msg.ID == self.can_id + 2 and msg.DATA[0] == 0x06:
+                    # Antwort auf ResetError, MotorEnable, ZeroPosition, DisableMotor, Referenzierung, AlignRotor
+
+                    differentiate_msg = bytes_to_int(msg.DATA[2:4])
+                    
+                    if differentiate_msg == 0x0106:
+                        # Antwort auf ResetError
+                        with self.lock:
+                            self.motor_no_err = True
+                        logging.error("Motor Errors have been resettet")
+
+                    elif differentiate_msg == 0x0109:
+                        # Antwort auf MotorEnable
+                        with self.lock:
+                            self.motor_enabled = True
+                        logging.error("Motor is enabled")
+                    
+                    elif differentiate_msg == 0x010A:
+                        # Antwort auf Motor disable
+                        logging.error("Motor is disabled")
+                        with self.lock:
+                            self.motor_enabled = False
+                   
+                    elif differentiate_msg == 0x020B:
+                        # Antwort auf Referenzierung
+                        count_ref = bytes_to_int(msg.DATA[4:6])
+                        logging.error(f"Answer to motor referencing: Call No. { count_ref }")
+                        with self.lock:
+                            if count_ref == 2:
+                                self.motor_referenced = True
+                            else:
+                                self.motor_referenced = False
+                    
+                    elif differentiate_msg == 0x0108:
+                        # Antwort auf Position Reset: Nicht erfolgreich
+                        logging.error(f"Failed to reset position.")
+                        with self.lock:
+                            self.motor_position_is_resetted = False
+                    
+                    elif differentiate_msg == 0x0208:
+                        # Antwort auf Position Reset: Erfolgreich
+                        count_reset_posi = bytes_to_int(msg.DATA[4:6])
+                        logging.error(f"Reset position, Call No. {count_reset_posi}.")
+                        with self.lock:
+                            self.motor_position_is_resetted = True if count_reset_posi == 2 else False
+                    
+                    elif differentiate_msg == 0x020C :
+                        # Antwort auf: Align Rotor
+                        count_align_rotor= bytes_to_int(msg.DATA[4:6])
+                        logging.error(f"Align Rotor, Call No. {count_align_rotor}.")
+                        with self.lock:
+                            if count_align_rotor == 0x02:
+                                self.motor_rotor_is_aligned = True
+                            else:
+                                self.motor_rotor_is_aligned = False
+                
+                
+                elif msg.ID == self.can_id + 2 and msg.DATA[0] == 0x07:
+                    
+                    if bytes_to_int(msg.DATA[2:4], signed=True) == 0x020B:
+                    # Referenzierung der Achse bereits aktiv
+                        logging.error("Motor has finished referencing!")
+                        with self.lock:
+                            self.motor_referenced = True
+
 
                 elif msg.ID == self.can_id + 3:
                     # Umgebungsparameter, ca. 1 mal pro Sekunde
@@ -171,8 +246,6 @@ class RebelAxisController:
                     voltage = bytes_to_int(msg.DATA[2:4], signed=True) #mV
                     temp_motor = bytes_to_int(msg.DATA[4:6], signed=True) #m°C
                     temp_board = bytes_to_int(msg.DATA[6:8], signed=True) #m°C
-
-                    logger.warning(f"bytes: {msg.DATA[6]} {msg.DATA[7]}")
 
                     m = MessageEnvironmentStatus(voltage, temp_motor, temp_board, timestamp.millis)
                     logger.warning(m)
@@ -327,6 +400,12 @@ class RebelAxisController:
         """Needs to be sent 2 times within 20ms at start."""
         msg = get_cmd_msg([0x01, 0x08], self.can_id)
         self.write_cmd(msg, "reset_position")
+    
+    
+    def cmd_reference(self):
+        logger.debug("cmd_reference()")
+        msg = get_cmd_msg([0x01, 0x0B], self.can_id)
+        self.write_cmd(msg, "reference")
 
 
     def cmd_disable_motor(self):
