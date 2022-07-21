@@ -5,33 +5,20 @@ import numpy as np
 
 import time, threading
 
+min_x = 0
+max_x = 360
 
 class GraphPlotter:
-    figure = None
     fig_agg = None
 
     def __init__(self, canvas) -> None:
         self.canvas = canvas
+        self.figure = plt.figure()
 
     
-    def plot_data(self, data):
-        self.data = data
-        self.figure_setup()
+    def plot_data(self, data_x, data_y):
+        plt.plot(data_x, data_y)
         self.draw_figure_in_canvas()
-    
-
-    def figure_setup(self):
-        if self.figure is None:
-            self.figure = plt.figure()
-            self.axes = self.figure.add_subplot(111)
-            self.line, = self.axes.plot(self.data)
-            self.axes.set_title("Example of a Matplotlib plot updating in PySimpleGUI")
-        #all other runs
-        else:            
-            self.line.set_ydata(self.data)#update data            
-            self.axes.relim() #scale the y scale
-            self.axes.autoscale_view() #scale the y scale
-
     
     def draw_figure_in_canvas(self):
         if self.fig_agg is not None: self.fig_agg.get_tk_widget().forget()

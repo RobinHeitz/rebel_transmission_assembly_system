@@ -12,8 +12,14 @@ class MessageMovementCommandReply:
     """
     current: float
     position: float
-    millis: float
+    millis: int
 
+    def __lt__(self, other):
+        return self.position < other.position
+
+    def __gt__(self, other):
+        return self.position > other.position
+    
 @dataclass
 class MessageEnvironmentStatus:
     """
