@@ -1,4 +1,5 @@
 
+
 class RESPONSE_ERROR_CODES:
     ERR_CODE_TEMP = 0
     ERR_CODE_ESTOP = 1
