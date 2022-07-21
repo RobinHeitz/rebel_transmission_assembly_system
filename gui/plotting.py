@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import numpy as np
 
+import logging 
 
 class GraphPlotter:
     fig_agg = None
@@ -15,6 +16,11 @@ class GraphPlotter:
         self.ax = self.figure.add_subplot(111)
 
     def plot_data(self, data_x, data_y):
+        logging.warning("*"*10)
+        logging.warning("plot_data():")
+        logging.warning(data_x)
+        logging.warning(data_y)
+        logging.warning("*"*10)
         
         def _plot(data_x, data_y):
             self.line.set_xdata(data_x)
