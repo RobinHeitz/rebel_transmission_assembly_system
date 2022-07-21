@@ -26,9 +26,9 @@ fileHandler = logging.FileHandler("motor_controller.log", mode="w")
 fileHandler.setFormatter(logFormatter)
 logger.addHandler(fileHandler)
 
-consolerHandler = logging.StreamHandler()
-consolerHandler.setFormatter(logFormatter)
-logger.addHandler(consolerHandler)
+# consolerHandler = logging.StreamHandler()
+# consolerHandler.setFormatter(logFormatter)
+# logger.addHandler(consolerHandler)
 
 
 

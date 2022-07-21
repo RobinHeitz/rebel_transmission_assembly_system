@@ -10,13 +10,20 @@ from gui.pages import layout_page_1, layout_page_2, layout_page_3
 from gui.plotting import GraphPlotter
 
 from matplotlib.backends.backend_tkagg import FigureCanvasAgg
-import matplotlib
-
-import threading
-
-import time
-
 import numpy as np
+import logging, time, threading
+
+logFormatter = logging.Formatter("'%(asctime)s - %(message)s")
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+
+fileHandler = logging.FileHandler("gui.log", mode="w")
+fileHandler.setFormatter(logFormatter)
+logger.addHandler(fileHandler)
+
+consolerHandler = logging.StreamHandler()
+consolerHandler.setFormatter(logFormatter)
+logger.addHandler(consolerHandler)
 
 
 
@@ -129,12 +136,6 @@ def start_velocity_mode_thread(window, controller):
         time.sleep(controller.refresh_rate)
 
 
-        # if not has_no_err:
-        #     controller.cmd_reset_errors()
-        #     time.sleep(controller.refresh_rate)
-        #     controller.cmd_enable_motor()
-        #     time.sleep(controller.refresh_rate)
-
 
 def velocity_mode_update(event, values):
     """Gets called from main event loop."""
@@ -151,15 +152,6 @@ def stop_velocity_mode(event, values, controller):
     global thread_velocity
     thread_velocity.do_run = False
 
-def draw_figure(canvas, figure):
-    ...
-    # print("draw_figure")
-    # canvas = window[K_CANVAS_GRAPH_PLOTTING].TKCanvas
-
-    # figure_canvas = FigureCanvasAgg(figure, canvas)
-    # figure_canvas.draw()
-    # figure_canvas.get_tk_widget().pack(side="top", fill="both", expand=1)
-    # return figure_canvas
 
 ######################################################
 # FUNCTIONS FOR ENABLING / DISABLING NAVIGATION BUTTONS
@@ -231,16 +223,12 @@ if __name__ == "__main__":
     page_keys = [K_PAGE_1, K_PAGE_2, K_PAGE_3]
     current_page_index = 0
 
-
-    graph_plotter = GraphPlotter(window[K_CANVAS_GRAPH_PLOTTING])
-
     current_data = []
 
-    # fig = matplotlib.figure.Figure(figsize=(5,4), dpi=100)
-    # t = np.arange(0,3,.01)
-    # fig.add_subplot(111).plot(t, 2 * np.sin(2 * np.pi * t))
+    graph_plotter = GraphPlotter(window[K_CANVAS_GRAPH_PLOTTING])
+    graph_plotter.plot_data(np.random.random(1024))
 
-    # draw_figure(None, fig)
+
 
 
     key_function_map = {

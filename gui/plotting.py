@@ -16,6 +16,8 @@ class GraphPlotter:
     
     def plot_data(self, data):
         self.data = data
+        self.figure_setup()
+        self.draw_figure_in_canvas()
     
 
     def figure_setup(self):
