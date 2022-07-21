@@ -4,7 +4,7 @@ import time
 
 
 def add_to_var():
-    while True:
+    while my_flag:
         global myVar
         with lock:
             myVar += 1
@@ -14,15 +14,22 @@ def add_to_var():
 if __name__ == "__main__":
 
     myVar = 0
+
+    my_flag = True
     lock = Lock()
 
     t = Thread(target=add_to_var, daemon=True)
     t.start()
+    print(myVar)
+    time.sleep(1)
+    print(myVar)
+    time.sleep(1)
+    print(myVar)
+    time.sleep(1)
+    print(myVar)
+    time.sleep(1)
 
-    while True:
-        
-        time.sleep(2)
-        print(myVar)
+    my_flag = False
 
 
 

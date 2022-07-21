@@ -6,7 +6,9 @@ from can.interfaces.pcan.basic import (
     PCAN_USBBUS13, PCAN_USBBUS14, PCAN_USBBUS15, PCAN_USBBUS16)
 
 from can.interfaces.pcan.basic import PCANBasic, PCAN_DICT_STATUS, TPCANHandle, TPCANMsg, TPCANTimestamp, PCAN_BAUD_500K, PCAN_MESSAGE_STANDARD
-from can.interfaces.pcan.basic import PCAN_ERROR_OK, PCAN_ERROR_XMTFULL, PCAN_ERROR_OVERRUN, PCAN_ERROR_ANYBUSERR, PCAN_ERROR_QRCVEMPTY, PCAN_ERROR_QOVERRUN, PCAN_ERROR_QXMTFULL, PCAN_ERROR_REGTEST
+from can.interfaces.pcan.basic import PCAN_ERROR_OK,PCAN_ERROR_BUSHEAVY, PCAN_ERROR_XMTFULL, PCAN_ERROR_OVERRUN, PCAN_ERROR_ANYBUSERR, PCAN_ERROR_QRCVEMPTY, PCAN_ERROR_QOVERRUN, PCAN_ERROR_QXMTFULL, PCAN_ERROR_REGTEST
+
+
 
 import time
 
@@ -257,6 +259,9 @@ class RebelAxisController:
             elif status == PCAN_ERROR_QRCVEMPTY:
                 ...
                 # logging.error("QUEUE EMPTY")
+
+            elif status == PCAN_ERROR_BUSHEAVY:
+                logging.error("*** BUS ERROR - Motor might be off ***")
             
             else: 
                 logging.error(f"NEW PCAN ERROR TYPE OCCURED: {status}")
@@ -267,19 +272,19 @@ class RebelAxisController:
 
 
 
-    def connect(self, timeout=2):
-        self.can_id = self.find_can_id(timeout=timeout)
+    # def connect(self, timeout=2):
+    #     self.can_id = self.find_can_id(timeout=timeout)
 
-        if self.can_id == 0:
-            return False
+    #     if self.can_id == 0:
+    #         return False
 
-        self.cmd_reset_position()
-        time.sleep(self.cycle_time)
+    #     self.cmd_reset_position()
+    #     time.sleep(self.cycle_time)
 
-        self.cmd_reset_position()
-        # time.sleep(1)
+    #     self.cmd_reset_position()
+    #     # time.sleep(1)
 
-        return True
+    #     return True
 
 
     def find_can_id(self, timeout = 5):
@@ -320,45 +325,45 @@ class RebelAxisController:
 
     
     
-    def movement_velocity_mode(self):
-        while True:
-            self.cmd_velocity_mode(10)
-            has_no_err, pos_degree, current_mA  = self.read_movement_response_message()
-            self.current_pos = pos_degree
+    # def movement_velocity_mode(self):
+    #     while True:
+    #         self.cmd_velocity_mode(10)
+    #         has_no_err, pos_degree, current_mA  = self.read_movement_response_message()
+    #         self.current_pos = pos_degree
 
-            if not has_no_err:
-                self.cmd_reset_errors()
-                time.sleep(self.cycle_time)
-                self.cmd_enable_motor()
-            time.sleep(self.cycle_time)
+    #         if not has_no_err:
+    #             self.cmd_reset_errors()
+    #             time.sleep(self.cycle_time)
+    #             self.cmd_enable_motor()
+    #         time.sleep(self.cycle_time)
 
     
-    def movement_position_mode(self, to_pos, clock_wise = True, velo=5):
-        """Moves axis, controlled my position mode.
+    # def movement_position_mode(self, to_pos, clock_wise = True, velo=5):
+    #     """Moves axis, controlled my position mode.
 
-        Params:
-        - to_pos: Goal position in degrees [0; 360]
-        - clock_wise: Movement direction (default: True)
-        - velo: Velocity for movement [degree/ sec]
-        """
+    #     Params:
+    #     - to_pos: Goal position in degrees [0; 360]
+    #     - clock_wise: Movement direction (default: True)
+    #     - velo: Velocity for movement [degree/ sec]
+    #     """
         
-        increment_degree = velo * self.cycle_time 
-        s_increment_degree = increment_degree if clock_wise else increment_degree * -1
+    #     increment_degree = velo * self.cycle_time 
+    #     s_increment_degree = increment_degree if clock_wise else increment_degree * -1
 
 
-        while abs(self.pos - to_pos) > increment_degree:
-            self.cmd_position_mode(pos_delta=s_increment_degree)
-            has_no_err, pos_degree, current_mA  = self.read_movement_response_message()
+    #     while abs(self.pos - to_pos) > increment_degree:
+    #         self.cmd_position_mode(pos_delta=s_increment_degree)
+    #         has_no_err, pos_degree, current_mA  = self.read_movement_response_message()
             
-            if not has_no_err:
-                self.cmd_reset_errors()
-                time.sleep(self.cycle_time)
-                self.cmd_enable_motor()
+    #         if not has_no_err:
+    #             self.cmd_reset_errors()
+    #             time.sleep(self.cycle_time)
+    #             self.cmd_enable_motor()
             
 
-            time.sleep(self.cycle_time)
+    #         time.sleep(self.cycle_time)
         
-        logger.warning(f"Finished Position movement cmd! Current Position = {self.pos}")
+    #     logger.warning(f"Finished Position movement cmd! Current Position = {self.pos}")
 
            
     
@@ -465,132 +470,132 @@ class RebelAxisController:
 
    
     
-    def read_gear_output_encoder(self):
+    # def read_gear_output_encoder(self):
         
-        logger.debug("#"*10)
-        logger.debug("__read_movement_response_message()")
+    #     logger.debug("#"*10)
+    #     logger.debug("__read_movement_response_message()")
 
-        def read():
-            status, msg, timestamp = self.pcan.Read(self.channel)
-            return status, msg, timestamp
+    #     def read():
+    #         status, msg, timestamp = self.pcan.Read(self.channel)
+    #         return status, msg, timestamp
 
 
-        found_gear_output_msg = False
-        while not found_gear_output_msg:
-        # while msg.ID != (self.can_id + 2) and msg.DATA[0] != 0xef:
-            status, msg, timestamp = read()
-            if msg.ID == (self.can_id + 2) and msg.DATA[0] == 0xef:
-                found_gear_output_msg = True            
+    #     found_gear_output_msg = False
+    #     while not found_gear_output_msg:
+    #     # while msg.ID != (self.can_id + 2) and msg.DATA[0] != 0xef:
+    #         status, msg, timestamp = read()
+    #         if msg.ID == (self.can_id + 2) and msg.DATA[0] == 0xef:
+    #             found_gear_output_msg = True            
             
 
-        data = msg.DATA
-        logger.info(data[0])
-        encoder_pos = bytes_to_int(data[4:8], signed=True) / 100
-        logger.info(f"Encoder absolute position = {encoder_pos}")
+    #     data = msg.DATA
+    #     logger.info(data[0])
+    #     encoder_pos = bytes_to_int(data[4:8], signed=True) / 100
+    #     logger.info(f"Encoder absolute position = {encoder_pos}")
 
-        return encoder_pos
+    #     return encoder_pos
 
 
 
-    def read_movement_response_message(self):
-        """Read the response from a movement cmd.
+    # def read_movement_response_message(self):
+    #     """Read the response from a movement cmd.
         
-        Returns tuple of:
-        - has_no_errors (Boolean)
-        - position (in degrees)
-        - current (in mA)"""
+    #     Returns tuple of:
+    #     - has_no_errors (Boolean)
+    #     - position (in degrees)
+    #     - current (in mA)"""
         
-        logger.debug("#"*10)
-        logger.debug("__read_movement_response_message()")
+    #     logger.debug("#"*10)
+    #     logger.debug("__read_movement_response_message()")
 
-        def read():
-            status, msg, timestamp = self.pcan.Read(self.channel)
-            return status, msg, timestamp
+    #     def read():
+    #         status, msg, timestamp = self.pcan.Read(self.channel)
+    #         return status, msg, timestamp
         
         
-        status, msg, timestamp = read()
+    #     status, msg, timestamp = read()
 
-        while msg.ID != self.can_id + 1:
-            status, msg, timestamp = read()
+    #     while msg.ID != self.can_id + 1:
+    #         status, msg, timestamp = read()
         
-        logger.debug("Movement cmd response detected.")
+    #     logger.debug("Movement cmd response detected.")
         
-        data = msg.DATA
-        error_codes = response_error_codes(data[0])
+    #     data = msg.DATA
+    #     error_codes = response_error_codes(data[0])
 
 
-        self.tics = bytes_to_int(data[1:5],signed=True)        
+    #     self.tics = bytes_to_int(data[1:5],signed=True)        
         
-        # pos transission [°]
-        self.pos = (self.tics / 1031.111) % 360
-        logger.warning(f"Current Position: {self.pos} // Tics: {self.tics}")
+    #     # pos transission [°]
+    #     self.pos = (self.tics / 1031.111) % 360
+    #     logger.warning(f"Current Position: {self.pos} // Tics: {self.tics}")
 
-        current = bytes_to_int(data[5:7], signed=True)
-        logger.info(f"Current: {current}")
+    #     current = bytes_to_int(data[5:7], signed=True)
+    #     logger.info(f"Current: {current}")
 
-        return len(error_codes) == 0, self.pos, current
+    #     return len(error_codes) == 0, self.pos, current
    
    
-    def read_messages(self):
-        """
-        Reads a message. The answer from a movement command has the CAN-ID = BoardID + 1
+    # def read_messages(self):
+    #     """
+    #     Reads a message. The answer from a movement command has the CAN-ID = BoardID + 1
         
-        """
-        logger.debug("#"*10)
-        logger.debug("read_messages()")
-        status, msg, timestamp = self.pcan.Read(self.channel)
+    #     """
+    #     logger.debug("#"*10)
+    #     logger.debug("read_messages()")
+    #     status, msg, timestamp = self.pcan.Read(self.channel)
 
-        if msg.ID == 1:
-            logger.warning("Msg.ID == 1")
+    #     if msg.ID == 1:
+    #         logger.warning("Msg.ID == 1")
 
-        elif msg.ID == self.can_id + 1:
-            # answer to movement cmds
-            logger.debug("Received msg CAN-ID + 1")
-            data = msg.DATA
+    #     elif msg.ID == self.can_id + 1:
+    #         # answer to movement cmds
+    #         logger.debug("Received msg CAN-ID + 1")
+    #         data = msg.DATA
             
-            error_codes = response_error_codes(data[0])
-            logging.info(f"Error codes while receiving msg CAN-ID + 1: {error_codes}")
+    #         error_codes = response_error_codes(data[0])
+    #         logging.info(f"Error codes while receiving msg CAN-ID + 1: {error_codes}")
 
-            # tics from motor encoder
-            tics = bytes_to_int(data[1:5],signed=True)        
+    #         # tics from motor encoder
+    #         tics = bytes_to_int(data[1:5],signed=True)        
             
-            # pos transission [°]
-            pos = tics / 1031.111
-            logger.info(f"Current Position: {pos} // Tics: {tics}")
+    #         # pos transission [°]
+    #         pos = tics / 1031.111
+    #         logger.info(f"Current Position: {pos} // Tics: {tics}")
 
-            current = bytes_to_int(data[5:7], signed=True)
-            logger.info(f"Current: {current}")
+    #         current = bytes_to_int(data[5:7], signed=True)
+    #         logger.info(f"Current: {current}")
         
     
-        elif msg.ID == self.can_id + 2:
-            # answer to reset error (0x06) cmd / reset position cmd (0x09) / Gear output encoder (Abtriebsencoder/ Absolutwertgeber)
-            ...
-            logger.debug("Received msg CAN-ID + 2")
-            data = msg.DATA
+    #     elif msg.ID == self.can_id + 2:
+    #         # answer to reset error (0x06) cmd / reset position cmd (0x09) / Gear output encoder (Abtriebsencoder/ Absolutwertgeber)
+    #         ...
+    #         logger.debug("Received msg CAN-ID + 2")
+    #         data = msg.DATA
 
-            is_enable_motor_response = True
+    #         is_enable_motor_response = True
 
-            if data[0] != 0x06:
-                is_enable_motor_response = False
-            elif data[1] != 0x0:
-                is_enable_motor_response = False
-            elif bytes_to_int(data[2:4]) != 0x0109:
-                is_enable_motor_response = False
-            elif bytes_to_int(data[4:6]) != 0x0001:
-                is_enable_motor_response = False
-            elif bytes_to_int(data[6:8]) != 0x0000:
-                is_enable_motor_response = False
+    #         if data[0] != 0x06:
+    #             is_enable_motor_response = False
+    #         elif data[1] != 0x0:
+    #             is_enable_motor_response = False
+    #         elif bytes_to_int(data[2:4]) != 0x0109:
+    #             is_enable_motor_response = False
+    #         elif bytes_to_int(data[4:6]) != 0x0001:
+    #             is_enable_motor_response = False
+    #         elif bytes_to_int(data[6:8]) != 0x0000:
+    #             is_enable_motor_response = False
             
-            logger.warning(f"SHOULD MOTOR BE ENABLED? {is_enable_motor_response}")
+    #         logger.warning(f"SHOULD MOTOR BE ENABLED? {is_enable_motor_response}")
             
         
-        elif msg.ID == self.can_id + 3:
-            # once a second the controller sends a message voltage, motor temperature and board temperature
-            logger.debug("Received msg CAN-ID + 3")
-            ...
+    #     elif msg.ID == self.can_id + 3:
+    #         # once a second the controller sends a message voltage, motor temperature and board temperature
+    #         logger.debug("Received msg CAN-ID + 3")
+    #         ...
     
-        else:
-            logger.debug(f"Different Msg ID (int) {msg.ID} and in hex: {hex(msg.ID)}")
+    #     else:
+    #         logger.debug(f"Different Msg ID (int) {msg.ID} and in hex: {hex(msg.ID)}")
         
 
     

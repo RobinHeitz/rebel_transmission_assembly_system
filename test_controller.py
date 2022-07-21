@@ -10,29 +10,16 @@ def do_cycle():
 c = RebelAxisController()
 c.start_msg_listener_thread()
 
-time.sleep(2)
-print("Time to reset errors:")
-
-c.cmd_reset_position()
-do_cycle()
-c.cmd_reset_position()
-do_cycle()
-
-
-c.cmd_reset_errors()
-do_cycle()
-c.cmd_reset_errors()
-do_cycle()
-
-c.cmd_enable_motor()
-time.sleep(2)
-
 
 
 try:
+
+    if c.motor_enabled == False or c.motor_no_err == False:
+        c.cmd_reset_errors()
+        do_cycle()
+        c.cmd_enable_motor()
+
     while True:
-        print(f"Motor is aligned? {c.motor_rotor_is_aligned} // Errs resettet? {c.motor_no_err} // Referenced? {c.motor_referenced} // Motor enabled? {c.motor_enabled}")
-        ...
         do_cycle()
         c.cmd_velocity_mode()
 
