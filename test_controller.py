@@ -18,10 +18,11 @@ try:
         c.cmd_reset_errors()
         do_cycle()
         c.cmd_enable_motor()
+        do_cycle()
 
     while True:
-        do_cycle()
         c.cmd_velocity_mode()
+        do_cycle()
 
 
 except KeyboardInterrupt:

@@ -99,6 +99,9 @@ def tics_from_pos(pos):
     return pos * GEAR_SCALE
 
 
+####################
+# Class: Controller
+####################
 class RebelAxisController:
     cycle_time  = 1/50
     pos = 0
@@ -111,6 +114,8 @@ class RebelAxisController:
     motor_referenced = False
     motor_position_is_resetted = False
     motor_rotor_is_aligned = False
+    
+    motor_is_moving = False
 
     lock = Lock()
     
@@ -133,7 +138,29 @@ class RebelAxisController:
             self.can_id = _can_id
 
         logger.debug("Initializing was succesfull.")
+    
+    def do_cycle(self):
+        time.sleep(self.cycle_time)
 
+    def can_move(self):
+        return (self.motor_enabled == True ) and (self.motor_no_err == True)
+    
+
+    def move_velocity_mode(self, velocity, duration):
+        if self.motor_enabled == False or self.motor_no_err == False:
+            self.cmd_reset_errors()
+            self.do_cycle()
+            self.cmd_enable_motor()
+            self.do_cycle()
+            self.motor_is_moving = True
+
+        start_time = time.time()
+        while self.motor_is_moving and time.time - start_time < duration:
+            self.cmd_velocity_mode(velocity)
+            self.do_cycle()
+
+    def stop_movement(self):
+        self.motor_is_moving = False
 
 
 
@@ -309,14 +336,14 @@ class RebelAxisController:
 
 
 
-    @property 
-    def current_pos(self):
-        return self._current_pos
+    # @property 
+    # def current_pos(self):
+    #     return self._current_pos
     
-    @current_pos.setter
-    def current_pos(self, newPos):
-        self._current_pos = newPos
-        logging.info(f"New current_pos set: {newPos}")
+    # @current_pos.setter
+    # def current_pos(self, newPos):
+    #     self._current_pos = newPos
+    #     logging.info(f"New current_pos set: {newPos}")
 
 
 

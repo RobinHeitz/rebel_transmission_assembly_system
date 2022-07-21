@@ -113,28 +113,9 @@ def start_velocity_mode(event, values, controller):
     thread_velocity.start()
 
 
-def start_velocity_mode_thread(window, controller):
-    # controller.movement_velocity_mode()
-    start_time = time.time()
-
-    end_time = 10
-
-    controller.cmd_velocity_mode(velo=5)
-    has_no_err, pos_degree, current_mA  = controller.read_movement_response_message()
-    
-    if not has_no_err:
-        controller.cmd_reset_errors()
-        time.sleep(controller.refresh_rate)
-        controller.cmd_enable_motor()
-        time.sleep(controller.refresh_rate)
-
-    cur_thread = threading.currentThread()
-    while time.time() - start_time < end_time and getattr(cur_thread, "do_run", True):
-        controller.cmd_velocity_mode(velo=5)
-        has_no_err, pos_degree, current_mA  = controller.read_movement_response_message()
-        window.write_event_value(K_VELOCITY_MODE_UPDATE_POSITION_CURRENT, dict(position=pos_degree, current=current_mA))
-        time.sleep(controller.refresh_rate)
-
+def start_velocity_mode_thread(window, controller:RebelAxisController):
+    duration = 10
+    controller.move_velocity_mode(velocity = 10, duration = duration)
 
 
 def velocity_mode_update(event, values):
@@ -147,10 +128,10 @@ def velocity_mode_update(event, values):
     graph_plotter.plot_data(current_data)
 
 
-def stop_velocity_mode(event, values, controller):
+def stop_velocity_mode(event, values, controller:RebelAxisController):
     # controller.cmd_disable_motor()
-    global thread_velocity
-    thread_velocity.do_run = False
+    logger.warning("BTN CLICKED: Stop Motor movement")
+    controller.stop_movement()
 
 
 ######################################################
@@ -215,8 +196,10 @@ def _disable_enable_nav_buttons():
 #################
 
 if __name__ == "__main__":
-    window = sg.Window("ReBeL Getriebe Montage & Kalibrierung", layout, size=(800,500))
+    window = sg.Window("ReBeL Getriebe Montage & Kalibrierung", layout, size=(800,500), finalize=True)
+    
     controller = RebelAxisController()
+    controller.start_msg_listener_thread()
 
     thread_velocity = None
 
@@ -228,6 +211,7 @@ if __name__ == "__main__":
     graph_plotter = GraphPlotter(window[K_CANVAS_GRAPH_PLOTTING])
     graph_plotter.plot_data(np.random.random(1024))
 
+    # window.finalize()
 
 
 
