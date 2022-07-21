@@ -115,8 +115,6 @@ class RebelAxisController:
     motor_position_is_resetted = False
     motor_rotor_is_aligned = False
     
-    motor_is_moving = False
-
     lock = Lock()
     
     movement_cmd_errors = []
@@ -146,22 +144,20 @@ class RebelAxisController:
         return (self.motor_enabled == True ) and (self.motor_no_err == True)
     
 
-    def move_velocity_mode(self, velocity, duration):
-        if self.motor_enabled == False or self.motor_no_err == False:
-            self.cmd_reset_errors()
-            self.do_cycle()
-            self.cmd_enable_motor()
-            self.do_cycle()
-            self.motor_is_moving = True
+    # def move_velocity_mode(self, velocity, duration):
+    #     if self.motor_enabled == False or self.motor_no_err == False:
+    #         self.cmd_reset_errors()
+    #         self.do_cycle()
+    #         self.cmd_enable_motor()
+    #         self.do_cycle()
 
-        start_time = time.time()
-        while self.motor_is_moving and time.time - start_time < duration:
-            self.cmd_velocity_mode(velocity)
-            self.do_cycle()
+    #     start_time = time.time()
+    #     while time.time() - start_time < duration:
+    #         self.cmd_velocity_mode(velocity)
+    #         self.do_cycle()
 
     def stop_movement(self):
-        self.motor_is_moving = False
-
+        self.cmd_disable_motor()
 
 
     def start_msg_listener_thread(self):

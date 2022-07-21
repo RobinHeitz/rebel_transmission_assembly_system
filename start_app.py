@@ -89,23 +89,20 @@ def connect_can_thread(window, controller):
     btn.update("Verbindung herstellen", disabled=True)
     
 
-
-
+# Software update dummy
 def perform_software_update(event, values):
     btn = window[K_BTN_SOFTWARE_UPDATE]
     btn.update(disabled=True)
     threading.Thread(target=perform_software_update_thread, args=(window, controller), daemon=True ).start()
 
-
 def perform_software_update_thread(window, controller):
-
     for i in range(1,101):
         time.sleep(.1)
         window.write_event_value(K_SOFTWARE_UPDATE_FEEDBACK, i/10)
     window.write_event_value(K_SOFTWARE_UPDATE_DONE, None)
     
 
-
+# VELOCITY MODE
 
 def start_velocity_mode(event, values, controller):
     global thread_velocity
@@ -115,23 +112,41 @@ def start_velocity_mode(event, values, controller):
 
 def start_velocity_mode_thread(window, controller:RebelAxisController):
     duration = 10
-    controller.move_velocity_mode(velocity = 10, duration = duration)
+    current_thread = threading.currentThread()
 
+    if not controller.can_move():
+        controller.cmd_reset_errors()
+        controller.do_cycle()
+        controller.cmd_enable_motor()
+        controller.do_cycle()
 
-def velocity_mode_update(event, values):
-    """Gets called from main event loop."""
-    global current_data
-    data = values.get(event)
-    position = data.get('position')
-    current = data.get('current')
-    current_data.append(current)
-    graph_plotter.plot_data(current_data)
+    start_time = time.time()
+    while time.time() - start_time < duration and getattr(current_thread, 'do_move', True):
+        controller.cmd_velocity_mode(10)
+        controller.do_cycle()
 
 
 def stop_velocity_mode(event, values, controller:RebelAxisController):
     # controller.cmd_disable_motor()
     logger.warning("BTN CLICKED: Stop Motor movement")
     controller.stop_movement()
+    global thread_velocity
+    thread_velocity.do_move = False
+
+def update_graph_thread(event, values):
+    ...
+
+
+# def velocity_mode_update(event, values):
+#     """Gets called from main event loop."""
+#     global current_data
+#     data = values.get(event)
+#     position = data.get('position')
+#     current = data.get('current')
+#     current_data.append(current)
+#     graph_plotter.plot_data(current_data)
+
+
 
 
 ######################################################
@@ -230,7 +245,7 @@ if __name__ == "__main__":
 
         K_BTN_START_VELO_MODE: (start_velocity_mode, dict(controller=controller)),
         K_BTN_STOP_VELO_MODE: (stop_velocity_mode, dict(controller=controller)),
-        K_VELOCITY_MODE_UPDATE_POSITION_CURRENT: (velocity_mode_update, dict())
+        # K_VELOCITY_MODE_UPDATE_POSITION_CURRENT: (velocity_mode_update, dict())
 
 
 

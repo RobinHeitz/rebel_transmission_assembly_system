@@ -28,3 +28,4 @@ try:
 except KeyboardInterrupt:
 
     c.cmd_disable_motor()
+    # c.stop_movement()
