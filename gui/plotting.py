@@ -10,6 +10,7 @@ max_x = 360
 
 class GraphPlotter:
     fig_agg = None
+    lines = None
 
     def __init__(self, canvas) -> None:
         self.canvas = canvas
@@ -17,7 +18,13 @@ class GraphPlotter:
 
     
     def plot_data(self, data_x, data_y):
-        plt.plot(data_x, data_y)
+
+        if self.lines:
+            line = self.lines.pop(0)
+            line.remove()
+
+
+        self.lines = plt.plot(data_x, data_y)
         self.draw_figure_in_canvas()
     
     def draw_figure_in_canvas(self):

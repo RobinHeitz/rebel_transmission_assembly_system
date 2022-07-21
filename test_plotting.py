@@ -34,9 +34,9 @@ def get_data():
 
 def update_graph_thread(window:sg.Window):
     while True:
-        time.sleep(5)
+        time.sleep(.5)
         x, y = get_data()
-        # window.write_event_value("UPDATE", dict(x=x, y=y))
+        window.write_event_value("UPDATE", dict(x=x, y=y))
         
 def update_graph(event, values):
     d = values[event]
