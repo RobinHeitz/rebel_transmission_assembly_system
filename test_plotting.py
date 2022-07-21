@@ -43,7 +43,7 @@ def update_graph(event, values):
     x, y = d.get('x'), d.get('y')
     global graph_plotter
     graph_plotter.plot_data(x, y)
-
+    # graph_plotter.plot_update(x,y)
 
 if __name__ == "__main__":
 
