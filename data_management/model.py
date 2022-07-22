@@ -28,6 +28,9 @@ class Author(Base):
         "Publisher", secondary=author_publisher, back_populates="authors"
     )
 
+    def __str__(self):
+        return f"Author's name: {self.first_name} {self.last_name}"
+
 class Book(Base):
     __tablename__ = "book"
     book_id = Column(Integer, primary_key=True)
@@ -36,6 +39,9 @@ class Book(Base):
     publishers = relationship(
         "Publisher", secondary=book_publisher, back_populates="books"
     )
+
+    def __str__(self) -> str:
+        return f"Book: book_id = {self.book_id} / author_id = {self.author_id} / title = {self.title}"
 
 class Publisher(Base):
     __tablename__ = "publisher"

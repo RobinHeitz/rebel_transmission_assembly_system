@@ -6,7 +6,7 @@
 
 
 
-## Database: SQAlchemy 
+## Database: SQLAlchemy 
 ### Using alembic auto-migration:
 alembic revision --autogenerate -m "my migration description" 
 alembic upgrade head
