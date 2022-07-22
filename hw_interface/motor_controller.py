@@ -1,27 +1,19 @@
-from errno import errorcode
-from socket import MsgFlag
-from can.interfaces.pcan.basic import (
-    PCAN_USBBUS1, PCAN_USBBUS2, PCAN_USBBUS3, PCAN_USBBUS4, PCAN_USBBUS5, PCAN_USBBUS6, 
-    PCAN_USBBUS7, PCAN_USBBUS8, PCAN_USBBUS9, PCAN_USBBUS10, PCAN_USBBUS11, PCAN_USBBUS12, 
-    PCAN_USBBUS13, PCAN_USBBUS14, PCAN_USBBUS15, PCAN_USBBUS16)
+from can.interfaces.pcan.basic import PCAN_USBBUS1
+from can.interfaces.pcan.basic import PCANBasic, PCAN_DICT_STATUS, PCAN_BAUD_500K
+from can.interfaces.pcan.basic import PCAN_ERROR_OK,PCAN_ERROR_BUSHEAVY, PCAN_ERROR_QRCVEMPTY
 
-from can.interfaces.pcan.basic import PCANBasic, PCAN_DICT_STATUS, TPCANHandle, TPCANMsg, TPCANTimestamp, PCAN_BAUD_500K, PCAN_MESSAGE_STANDARD
-from can.interfaces.pcan.basic import PCAN_ERROR_OK,PCAN_ERROR_BUSHEAVY, PCAN_ERROR_XMTFULL, PCAN_ERROR_OVERRUN, PCAN_ERROR_ANYBUSERR, PCAN_ERROR_QRCVEMPTY, PCAN_ERROR_QOVERRUN, PCAN_ERROR_QXMTFULL, PCAN_ERROR_REGTEST
-
-
-
-import time
+import time, logging
 
 from ctypes import *
 
 from .helper_functions import get_cmd_msg, bytes_to_int, int_to_bytes
 from .helper_functions import pos_from_tics, tics_from_pos, response_error_codes
 
+from .definitions import MessageMovementCommandReply, MessageEnvironmentStatus
+from .definitions import Exception_PCAN_Connection_Failed, Exception_Controller_No_CAN_ID
+
 from threading import Thread, Lock
 
-
-
-import logging
 logFormatter = logging.Formatter("'%(asctime)s - %(message)s")
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
@@ -29,9 +21,6 @@ logger.setLevel(logging.DEBUG)
 fileHandler = logging.FileHandler("motor_controller.log", mode="w")
 fileHandler.setFormatter(logFormatter)
 logger.addHandler(fileHandler)
-
-from .definitions import MessageMovementCommandReply, MessageEnvironmentStatus
-from .definitions import Exception_PCAN_Connection_Failed
 
 
 
@@ -67,7 +56,8 @@ class RebelAxisController:
             logger.info("Connection was succesfull")
 
         if can_auto_detect is True:
-            self.can_id = self.find_can_id(timeout=2)
+            id = self.find_can_id(timeout=2)
+            self.can_id = id if id != -1 else None
         else:
             self.can_id = _can_id
 
@@ -87,8 +77,8 @@ class RebelAxisController:
 
 
     def start_msg_listener_thread(self):
-        if self.can_id is None:
-            raise Exception("MotorController: No CAN-ID is set!")
+        if self.can_id is None or self.can_id == -1:
+            raise Exception_Controller_No_CAN_ID("MotorController: No valid CAN-ID is set!")
         self.thread_read_msg = Thread(target=self.read_msg_thread, args=(), daemon=True)
         self.thread_read_msg.start()
         
@@ -222,6 +212,7 @@ class RebelAxisController:
         logger.info("find_can_id()")
         start_time = time.time()
 
+        board_id = -1
         # Umgebungsparameter 0x12 auf CAN-ID + 3
         while time.time() - start_time < timeout:
             status, msg, _ = self.pcan.Read(self.channel)
@@ -233,9 +224,13 @@ class RebelAxisController:
                 board_id = msg.ID - 3
                 if board_id in [0x10, 0x20, 0x30, 0x40, 0x50, 0x60] and first_2_bytes == 0x1200:
                     logger.info(f"Found CAN ID: {board_id} // status = {status} // first 2 bytes = {first_2_bytes}")
-                    return board_id
-
-        return 0
+                    # return board_id
+                    break
+                else:
+                    board_id = -1
+        
+        self.can_id = board_id
+        return board_id
 
 
 

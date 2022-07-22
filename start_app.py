@@ -1,18 +1,12 @@
-from concurrent.futures import thread
-from pydoc import visiblename
-from random import random
-from turtle import color
 import PySimpleGUI as sg
 
 from hw_interface.motor_controller import RebelAxisController
-from hw_interface.definitions import Exception_PCAN_Connection_Failed
+from hw_interface.definitions import Exception_Controller_No_CAN_ID, Exception_PCAN_Connection_Failed
 
 from gui.definitions import *
 from gui.pages import layout_page_1, layout_page_2, layout_page_3
 from gui.plotting import GraphPlotter
 
-from matplotlib.backends.backend_tkagg import FigureCanvasAgg
-import numpy as np
 import logging, time, threading
 
 logFormatter = logging.Formatter("'%(asctime)s - %(message)s")
@@ -28,10 +22,6 @@ consolerHandler.setFormatter(logFormatter)
 logger.addHandler(consolerHandler)
 
 
-
-
-
-
 layout = [
 
     [
@@ -42,10 +32,8 @@ layout = [
             sg.Text("Getriebe konfigurieren:", key="-headline-", font=font_headline),
             sg.Push(),
             sg.Button("Weiter", key=K_BTN_NAV_NEXT_PAGE, enable_events=True,  font=font_normal),
-            
             ],
         ]),
-
     ],
     [sg.HorizontalSeparator(pad=(5,5,5,5,))],
 
@@ -73,30 +61,46 @@ def radio_105_clicked(event, values):
     # checkbox.unhide_row()
 
 
-def _can_connected(window):
+# CONNECT BUTTON
+def update_connect_btn_status(status):
+    global window
+    global controller
     btn = window[K_BTN_CONNECT_CAN]
-    btn.update("Verbindung herstellen", disabled=True)
+    txt = window[K_TEXT_CAN_CONNECTED_STATUS]
+    
+    if status == "PCAN_HW_ERROR":
+        btn.update("Verbindung fehlgeschlagen", disabled = True)
+        txt.update("Ist der PCAN-Adapter eingesteckt?")
+    
+    elif status == "FOUND_CAN_ID":
+        btn.update("Verbindung herstellen", disabled=True)
+        txt.update(f"Verbindung hergestellt: CAN-ID = {hex(controller.can_id)}", text_color="white")
+
+    elif status == "TRY_FIND_CAN_ID":
+        btn.update("... Verbinden", disabled=True)
+        threading.Thread(target=connect_can_thread, args=(window, controller), daemon=True).start()
+
+    elif status == "ERROR_NO_CAN_ID_FOUND":
+        txt.update("Verbindung fehlgeschlagen", text_color="red")
+        btn.update("Erneut versuchen", disabled=False)
 
 
 def connect_can(event, values,controller: RebelAxisController):
-    if controller.can_id != None:
-        ...
-
-    btn = window[K_BTN_CONNECT_CAN]
-    btn.update("... Verbinden")
+    if controller.can_id != None and controller.can_id != -1:
+        update_connect_btn_status(status="FOUND_CAN_ID")
+    else:
+        update_connect_btn_status(status="TRY_FIND_CAN_ID")
     threading.Thread(target=connect_can_thread, args=(window, controller), daemon=True).start()
 
+
 def connect_can_thread(window, controller:RebelAxisController):
-    result = controller.connect(timeout=5)
-    
-    status_text = window[K_TEXT_CAN_CONNECTED_STATUS]
-    if result == True:
-        status_text.update(f"Verbindung hergestellt: CAN-ID: {hex(controller.can_id)}")
+    board_id = controller.find_can_id(timeout=2)
+    if board_id != -1:
+        update_connect_btn_status(status="FOUND_CAN_ID")
     else:
-        status_text.update("Verbindung fehlgeschlagen", text_color="red")
-    btn = window[K_BTN_CONNECT_CAN]
-    btn.update("Verbindung herstellen", disabled=True)
-    
+        update_connect_btn_status(status="ERROR_NO_CAN_ID_FOUND")
+
+
 
 # Software update dummy
 def perform_software_update(event, values):
@@ -245,6 +249,10 @@ if __name__ == "__main__":
         controller.start_msg_listener_thread()
     except Exception_PCAN_Connection_Failed as e:
         print(e)
+        update_connect_btn_status(status="PCAN_HW_ERROR")
+    except Exception_Controller_No_CAN_ID:
+        ...
+        update_connect_btn_status(status="ERROR_NO_CAN_ID_FOUND")
 
     thread_velocity = None
     thread_graph_updater = None
