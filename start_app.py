@@ -112,6 +112,9 @@ def start_velocity_mode(event, values, controller):
 
 
 def start_velocity_mode_thread(window, controller:RebelAxisController):
+    global thread_graph_updater
+    thread_graph_updater.start()
+    
     duration = 10
     current_thread = threading.currentThread()
 
@@ -131,39 +134,30 @@ def stop_velocity_mode(event, values, controller:RebelAxisController):
     # controller.cmd_disable_motor()
     logger.warning("BTN CLICKED: Stop Motor movement")
     controller.stop_movement()
-    global thread_velocity
+    global thread_velocity, thread_graph_updater
     thread_velocity.do_move = False
+    thread_graph_updater.do_plot = False
+
+
+
 
 def graph_update_cycle(window:sg.Window, controller:RebelAxisController):
-    """Runs in a thread, ever 2 seconds it's raising an event for the graphical main queue to trigger graph updating."""
-    while True:
-        time.sleep(3)
+    """Runs in a thread, ever few seconds it's raising an event for the graphical main queue to trigger graph updating."""
+    cur_thread = threading.currentThread()
+    while getattr(cur_thread, 'do_plot', True):
+        time.sleep(1)
         
         sorted_data = sorted(controller.movement_cmd_reply_list)
         x_data = [i.position for i in sorted_data]
         y_data = [i.current for i in sorted_data]
         window.write_event_value(K_UPDATE_GRAPH, dict(x=x_data, y=y_data))
 
-def update_graph(event, values):
-    # data = values[event]
-    # x_data = data.get("x", [])
-    # y_data = data.get("y", [])
-
+def update_graph(event, values, plotter:GraphPlotter):
     d = values[event]
     x, y = d.get('x'), d.get('y')
     if len(x) == 0:
         return
-
-    global graph_plotter
-    graph_plotter.plot_data(x, y)
-
-    # def update_graph(event, values):
-    # d = values[event]
-    # x, y = d.get('x'), d.get('y')
-    # global graph_plotter
-    # graph_plotter.plot_data(x, y)
-    # # graph_plotter.plot_update(x,y)
-
+    plotter.plot_data(x, y)
 
 
 ######################################################
@@ -243,13 +237,11 @@ if __name__ == "__main__":
 
     graph_plotter = GraphPlotter(window[K_CANVAS_GRAPH_PLOTTING])
 
-    x = [1069.4705818965517, 1069.6344827586206, 1069.860452586207, 1070.0650862068965, 1070.278448275862, 1070.49375, 1070.704202586207, 1070.9214439655173, 1071.140625, 1071.3501077586207, 1071.557650862069, 1071.7603448275863, 1071.9717672413794, 1072.171551724138, 1072.3868534482758, 1072.6050646551723, 1072.8203663793104, 1073.0259698275863, 1073.2335129310345, 1073.4691810344827, 1073.667025862069, 1073.8852370689656, 1074.0956896551725, 1074.3080818965518, 1074.5321120689655, 1074.750323275862, 1074.9627155172413, 1075.181896551724, 1075.3681034482759, 1075.579525862069, 1075.7977370689655, 1076.0033405172414, 1076.2196120689655]
-    y = [0, 445, 445, 445, 445, 445, 445, 356, 356, 267, 267, 356, 356, 356, 356, 356, 356, 356, 356, 356, 445, 445, 445, 445, 356, 356, 356, 267, 356, 356, 356, 356, 356]
 
-    graph_plotter.plot_data(x, y)
+    graph_plotter.plot_data([], [])
 
     thread_graph_updater = threading.Thread(target=graph_update_cycle, args=(window, controller, ), daemon=True)
-    thread_graph_updater.start()
+    # thread_graph_updater.start()
 
 
 
@@ -268,7 +260,7 @@ if __name__ == "__main__":
 
         K_BTN_START_VELO_MODE: (start_velocity_mode, dict(controller=controller)),
         K_BTN_STOP_VELO_MODE: (stop_velocity_mode, dict(controller=controller)),
-        K_UPDATE_GRAPH: (update_graph, dict())
+        K_UPDATE_GRAPH: (update_graph, dict(plotter=graph_plotter))
 
 
 
@@ -283,8 +275,8 @@ if __name__ == "__main__":
             func, args = key_function_map.get(event)
             func(event, values, **args)
         except Exception as e:
-            print(e.__traceback__)
-            print(f"WARNING: Missing event in 'key_functin_map': Event = {event} // values = {values.get(event)}")
+            logger.error(e.__traceback__)
+            logger.error(f"WARNING: Missing event in 'key_functin_map': Event = {event} // values = {values.get(event)}")
         
 
     window.close()

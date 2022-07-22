@@ -14,6 +14,8 @@ class GraphPlotter:
         self.canvas = canvas
         self.figure = plt.figure()
         self.ax = self.figure.add_subplot(111)
+        self.ax.set_autoscaley_on(True)
+
 
     def plot_data(self, data_x, data_y):
         logging.warning("*"*10)
@@ -25,6 +27,8 @@ class GraphPlotter:
         def _plot(data_x, data_y):
             self.line.set_xdata(data_x)
             self.line.set_ydata(data_y)
+            self.ax.relim()
+            self.ax.autoscale_view()
             self.figure.canvas.draw()
             self.figure.canvas.flush_events()
         
