@@ -20,8 +20,6 @@ class GraphPlotter:
     def plot_data(self, data_x, data_y):
         logging.warning("*"*10)
         logging.warning("plot_data():")
-        logging.warning(data_x)
-        logging.warning(data_y)
         logging.warning("*"*10)
         
         def _plot(data_x, data_y):

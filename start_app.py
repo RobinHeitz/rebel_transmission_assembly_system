@@ -106,14 +106,15 @@ def perform_software_update_thread(window, controller):
 # VELOCITY MODE
 
 def start_velocity_mode(event, values, controller):
-    global thread_velocity
+    global thread_velocity, thread_graph_updater
     thread_velocity = threading.Thread(target=start_velocity_mode_thread, args=(window, controller), daemon=True)
+    thread_graph_updater = threading.Thread(target=graph_update_cycle, args=(window, controller, ), daemon=True)
+    
     thread_velocity.start()
+    thread_graph_updater.start()
 
 
 def start_velocity_mode_thread(window, controller:RebelAxisController):
-    global thread_graph_updater
-    thread_graph_updater.start()
     
     duration = 10
     current_thread = threading.currentThread()
@@ -128,6 +129,8 @@ def start_velocity_mode_thread(window, controller:RebelAxisController):
     while time.time() - start_time < duration and getattr(current_thread, 'do_move', True):
         controller.cmd_velocity_mode(10)
         controller.do_cycle()
+    global thread_graph_updater
+    thread_graph_updater.do_plot = False
 
 
 def stop_velocity_mode(event, values, controller:RebelAxisController):
@@ -146,13 +149,16 @@ def graph_update_cycle(window:sg.Window, controller:RebelAxisController):
     cur_thread = threading.currentThread()
     while getattr(cur_thread, 'do_plot', True):
         time.sleep(1)
-        
+
+        logger.warning("graph_update_cycle()")
+
         sorted_data = sorted(controller.movement_cmd_reply_list)
         x_data = [i.position for i in sorted_data]
         y_data = [i.current for i in sorted_data]
         window.write_event_value(K_UPDATE_GRAPH, dict(x=x_data, y=y_data))
 
 def update_graph(event, values, plotter:GraphPlotter):
+    """Updates graph. Gets called from a thread running graph_update_cycle()."""
     d = values[event]
     x, y = d.get('x'), d.get('y')
     if len(x) == 0:
@@ -228,6 +234,7 @@ if __name__ == "__main__":
     controller.start_msg_listener_thread()
 
     thread_velocity = None
+    thread_graph_updater = None
 
     page_keys = [K_PAGE_1, K_PAGE_2, K_PAGE_3]
     current_page_index = 0
@@ -240,8 +247,7 @@ if __name__ == "__main__":
 
     graph_plotter.plot_data([], [])
 
-    thread_graph_updater = threading.Thread(target=graph_update_cycle, args=(window, controller, ), daemon=True)
-    # thread_graph_updater.start()
+    
 
 
 
