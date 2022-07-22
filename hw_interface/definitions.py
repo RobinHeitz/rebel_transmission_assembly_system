@@ -1,4 +1,14 @@
+from lib2to3.pytree import Base
+
+
 GEAR_SCALE = 7424*50/360
+
+
+class Exception_PCAN_Connection_Failed(BaseException):
+    def __init__(self, error_status):            
+        message = f"Connection to PCAN USB Adapter failed. Is the adapter plugged in? Error Code = {error_status}"
+        super().__init__(message)
+            
 
 
 from dataclasses import dataclass

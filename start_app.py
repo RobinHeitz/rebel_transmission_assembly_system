@@ -5,6 +5,7 @@ from turtle import color
 import PySimpleGUI as sg
 
 from hw_interface.motor_controller import RebelAxisController
+from hw_interface.definitions import Exception_PCAN_Connection_Failed
 
 from gui.definitions import *
 from gui.pages import layout_page_1, layout_page_2, layout_page_3
@@ -72,13 +73,20 @@ def radio_105_clicked(event, values):
     # checkbox.unhide_row()
 
 
+def _can_connected(window):
+    btn = window[K_BTN_CONNECT_CAN]
+    btn.update("Verbindung herstellen", disabled=True)
 
-def connect_can(event, values,controller):
+
+def connect_can(event, values,controller: RebelAxisController):
+    if controller.can_id != None:
+        ...
+
     btn = window[K_BTN_CONNECT_CAN]
     btn.update("... Verbinden")
     threading.Thread(target=connect_can_thread, args=(window, controller), daemon=True).start()
 
-def connect_can_thread(window, controller):
+def connect_can_thread(window, controller:RebelAxisController):
     result = controller.connect(timeout=5)
     
     status_text = window[K_TEXT_CAN_CONNECTED_STATUS]
@@ -115,6 +123,7 @@ def start_velocity_mode(event, values, controller):
 
 
 def start_velocity_mode_thread(window, controller:RebelAxisController):
+    """Thread-run method for resetting/ enabling motor and loop over velocity-cmds afterwards."""
     
     duration = 10
     current_thread = threading.currentThread()
@@ -129,12 +138,13 @@ def start_velocity_mode_thread(window, controller:RebelAxisController):
     while time.time() - start_time < duration and getattr(current_thread, 'do_move', True):
         controller.cmd_velocity_mode(10)
         controller.do_cycle()
+    
+    controller.stop_movement()
     global thread_graph_updater
     thread_graph_updater.do_plot = False
 
 
 def stop_velocity_mode(event, values, controller:RebelAxisController):
-    # controller.cmd_disable_motor()
     logger.warning("BTN CLICKED: Stop Motor movement")
     controller.stop_movement()
     global thread_velocity, thread_graph_updater
@@ -229,9 +239,12 @@ def _disable_enable_nav_buttons():
 
 if __name__ == "__main__":
     window = sg.Window("ReBeL Getriebe Montage & Kalibrierung", layout, size=(800,500), finalize=True)
-    
-    controller = RebelAxisController()
-    controller.start_msg_listener_thread()
+    controller = None
+    try:
+        controller = RebelAxisController()
+        controller.start_msg_listener_thread()
+    except Exception_PCAN_Connection_Failed as e:
+        print(e)
 
     thread_velocity = None
     thread_graph_updater = None

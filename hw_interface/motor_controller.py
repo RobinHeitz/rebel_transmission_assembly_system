@@ -14,12 +14,11 @@ import time
 
 from ctypes import *
 
-from .definitions import RESPONSE_ERROR_CODES, RESPONSE_ERROR_CODES_DICT, GEAR_SCALE
 from .helper_functions import get_cmd_msg, bytes_to_int, int_to_bytes
+from .helper_functions import pos_from_tics, tics_from_pos, response_error_codes
 
 from threading import Thread, Lock
 
-from dataclasses import dataclass
 
 
 import logging
@@ -32,22 +31,8 @@ fileHandler.setFormatter(logFormatter)
 logger.addHandler(fileHandler)
 
 from .definitions import MessageMovementCommandReply, MessageEnvironmentStatus
+from .definitions import Exception_PCAN_Connection_Failed
 
-
-def response_error_codes(error_byte):
-        #check if the 1st bit is in set:
-        errors = []
-        for i in range(0,8):
-            if error_byte & (1 << i) != 0:
-                # if true, error-bit i is active
-                errors.append(RESPONSE_ERROR_CODES_DICT.get(i)[0])
-        return errors
-
-def pos_from_tics(tics):
-    return tics/GEAR_SCALE
-
-def tics_from_pos(pos):
-    return pos * GEAR_SCALE
 
 
 ####################
@@ -77,7 +62,7 @@ class RebelAxisController:
         self.pcan = PCANBasic()
         status = self.pcan.Initialize(self.channel, self.std_baudrate)
         if status != PCAN_ERROR_OK:
-            raise Exception(f"Initializing failed! Status = {self.status_str(status)}")
+            raise Exception_PCAN_Connection_Failed(self.status_str(status))
         else:
             logger.info("Connection was succesfull")
 
@@ -97,6 +82,8 @@ class RebelAxisController:
 
     def stop_movement(self):
         self.cmd_disable_motor()
+        self.motor_enabled = False
+        self.motor_no_err = False
 
 
     def start_msg_listener_thread(self):
@@ -130,13 +117,12 @@ class RebelAxisController:
                     self.pos = pos_from_tics(self.tics)
 
                     current = bytes_to_int(msg.DATA[5:7], signed=True)
-                    msg = MessageMovementCommandReply(current, self.pos, millis=timestamp.millis)
-                    logger.debug(msg)
+                    if current != 0:
+                        msg = MessageMovementCommandReply(current, self.pos, millis=timestamp.millis)
+                        logger.debug(msg)
 
-                    with self.lock:
-                        self.movement_cmd_reply_list.append(msg)
-
-
+                        with self.lock:
+                            self.movement_cmd_reply_list.append(msg)
 
                 elif msg.ID == self.can_id + 2 and msg.DATA[0] == 0x06:
                     # Antwort auf ResetError, MotorEnable, ZeroPosition, DisableMotor, Referenzierung, AlignRotor

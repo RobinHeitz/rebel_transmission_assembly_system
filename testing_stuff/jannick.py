@@ -40,13 +40,13 @@ else:
             print("Message mit can_id + 3 gefunden.")
 
         
-            voltage = bytes_to_int(data[2:4], signed=False)
-            temp_motor = bytes_to_int(data[4:6], signed=False)
-            temp_board = bytes_to_int(data[6:8], signed=False)
+            milli_voltage = bytes_to_int(data[2:4])
+            centi_temp_motor = bytes_to_int(data[4:6])
+            centi_temp_board = bytes_to_int(data[6:8])
 
-            print(f"Voltagte = {voltage}")
-            print(f"Motortemperatur = {temp_motor}")
-            print(f"Board Temperatur = {temp_board}")
+            print(f"Voltagte = {milli_voltage / 1000}")
+            print(f"Motortemperatur = {centi_temp_motor / 100}")
+            print(f"Board Temperatur = {centi_temp_board / 100}")
             
 
 
