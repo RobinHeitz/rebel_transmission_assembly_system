@@ -9,7 +9,7 @@ from ctypes import *
 from .helper_functions import get_cmd_msg, bytes_to_int, int_to_bytes
 from .helper_functions import pos_from_tics, tics_from_pos, response_error_codes
 
-from .definitions import RESPONSE_ERROR_CODES, MessageMovementCommandReply, MessageEnvironmentStatus
+from .definitions import GEAR_SCALE, RESPONSE_ERROR_CODES, MessageMovementCommandReply, MessageEnvironmentStatus
 from .definitions import Exception_PCAN_Connection_Failed, Exception_Controller_No_CAN_ID, Exception_Movement_Command_Reply_Error
 
 from threading import Thread, Lock
@@ -66,6 +66,15 @@ class RebelAxisController:
     def do_cycle(self):
         time.sleep(self.cycle_time)
 
+    
+    def get_tics_step(self, output_velocity):
+        """Returns delta tics for position movement cmd to reach gear-output velocity.
+        Params:
+        - output_velocity: Gear output velocity in [°/s]."""
+        return output_velocity * self.cycle_time * GEAR_SCALE
+
+
+
     def can_move(self):
         return (self.motor_enabled == True ) and (self.motor_no_err == True)
     
@@ -101,19 +110,17 @@ class RebelAxisController:
                         else:
                             self.motor_no_err = False
                             self.motor_enabled = False
+                            logger.info(f"Current Error Codes: {self.movement_cmd_errors}")
 
-                    logger.info(f"Current Error Codes: {self.movement_cmd_errors}")
-
-                    self.tics = bytes_to_int(msg.DATA[1:5], signed=True)
-                    self.pos = pos_from_tics(self.tics)
+                    tics = bytes_to_int(msg.DATA[1:5], signed=True)
+                    pos = pos_from_tics(tics)
 
                     current = bytes_to_int(msg.DATA[5:7], signed=True)
-                    if current != 0:
-                        msg = MessageMovementCommandReply(current, self.pos, millis=timestamp.millis)
-                        logger.debug(msg)
+                    msg = MessageMovementCommandReply(current, pos,tics, millis=timestamp.millis)
+                    logger.debug(msg)
 
-                        with self.lock:
-                            self.movement_cmd_reply_list.append(msg)
+                    with self.lock:
+                        self.movement_cmd_reply_list.append(msg)
 
                 
                 
@@ -121,6 +128,7 @@ class RebelAxisController:
                     # Antwort auf ResetError, MotorEnable, ZeroPosition, DisableMotor, Referenzierung, AlignRotor
 
                     differentiate_msg = bytes_to_int(msg.DATA[2:4])
+                    logger.debug(f"CAN-ID + 2: Differentiate MSG based on Bytes 2-4: {hex(differentiate_msg)}")
                     
                     if differentiate_msg == 0x0106:
                         # Antwort auf ResetError
@@ -152,7 +160,7 @@ class RebelAxisController:
                     
                     elif differentiate_msg == 0x0108:
                         # Antwort auf Position Reset: Nicht erfolgreich
-                        logging.error(f"Failed to reset position.")
+                        logging.error(f"Failed to reset position. Bytes 4-6: {hex(bytes_to_int(msg.DATA[4:6]))}")
                         with self.lock:
                             self.motor_position_is_resetted = False
                     
@@ -181,6 +189,11 @@ class RebelAxisController:
                         logging.error("Motor has finished referencing!")
                         with self.lock:
                             self.motor_referenced = True
+                
+                elif msg.ID == self.can_id + 2:
+                    if bytes_to_int(msg.DATA[0:1]) == 0xEF:
+                        pos_degree = bytes_to_int(msg.DATA[4:8]) / 100
+                        logger.debug(f"Abtriebsencoder Position: {pos_degree}")
 
 
                 elif msg.ID == self.can_id + 3:

@@ -57,10 +57,12 @@ class MessageMovementCommandReply:
     Params:
     - current (mA) : float
     - position (°): float
+    - tics: int
     - millis: float
     """
     current: float
     position: float
+    tics: int
     millis: int
 
     def __lt__(self, other):
@@ -70,7 +72,7 @@ class MessageMovementCommandReply:
         return self.position > other.position
     def __call__(self):
         """Returns the attributes of the instance: current, position, millis"""
-        return self.current, self.position, self.millis
+        return self.current, self.position, self.tics, self.millis
     
 @dataclass
 class MessageEnvironmentStatus:

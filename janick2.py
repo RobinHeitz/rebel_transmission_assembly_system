@@ -30,7 +30,7 @@ def publish_env_data(msg:MessageEnvironmentStatus, client:mqtt.Client):
 
 def publish_motor_stats(msg:MessageMovementCommandReply, client:mqtt.Client):
     if PRINT_PUBLISHING_MSGS == True: print("publish_motor_stats()")
-    current, position, _ = msg()
+    current, position, tics,  _ = msg()
     client.publish("current", current)
     client.publish("position", position)
     
@@ -77,15 +77,26 @@ if __name__ == "__main__":
     
     try:
         ...
+        time.sleep(2)
+        print("START")
+        # c.cmd_velocity_mode(10)
+        # c.do_cycle()
+
 
         c.cmd_reset_position()
         c.do_cycle()
         c.cmd_reset_position()
         c.do_cycle()
+        c.cmd_velocity_mode(10)
 
-        print("Start moving now")
+        # print("Start moving now")
 
 
+
+
+        #################
+        # WORKIGN EXAMPLE
+        #################
         while True:
             try:
 
