@@ -61,6 +61,9 @@ class MessageMovementCommandReply:
 
     def __gt__(self, other):
         return self.position > other.position
+    def __call__(self):
+        """Returns the attributes of the instance: current, position, millis"""
+        return self.current, self.position, self.millis
     
 @dataclass
 class MessageEnvironmentStatus:
@@ -86,5 +89,5 @@ class MessageEnvironmentStatus:
 
     def __call__(self):
         """Returns the attributes of the instance: voltage, temp_motor and temp_board."""
-        return self.voltage, self.temp_motor, self.temp_board
+        return self.voltage, self.temp_motor, self.temp_board, self.millis
 

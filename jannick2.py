@@ -1,6 +1,7 @@
+from threading import Thread
 from can.interfaces.pcan.basic import PCANBasic,PCAN_USBBUS1, PCAN_BAUD_500K, PCAN_ERROR_OK
 import time
-from hw_interface.definitions import MessageEnvironmentStatus
+from hw_interface.definitions import MessageEnvironmentStatus, MessageMovementCommandReply
 
 from hw_interface.motor_controller import RebelAxisController
 
@@ -18,14 +19,42 @@ THING_KEY = "mb53pdj8nf768jxonvf1tx27i527abbw"
 
 
 def publish_env_data(msg:MessageEnvironmentStatus, client:mqtt.Client):
-    voltage, temp_motor, temp_board = msg()
-
+    print("publish_env_dat()")
+    voltage, temp_motor, temp_board, _ = msg()
     client.publish("voltage", voltage)
     client.publish("temp_motor", temp_motor)
     client.publish("temp_board", temp_board)
 
+def publish_motor_stats(msg:MessageMovementCommandReply, client:mqtt.Client):
+    print("publish_motor_stats()")
+    current, position, _ = msg()
+    client.publish("current", current)
+    client.publish("position", position)
+    
 
 
+def publish_env_data_thread(c:RebelAxisController, client:mqtt.Client):
+    while True:
+        try:
+            ...
+            env_msg = c.motor_env_status_list.pop(0)
+            publish_env_data(env_msg, client)
+            time.sleep(2)
+        
+        except IndexError:
+            ...
+
+def publish_movement_reply_data_thread(c:RebelAxisController, client:mqtt.Client):
+    while True:
+        try:
+            ...
+            env_msg = c.movement_cmd_reply_list.pop(0)
+            publish_motor_stats(env_msg, client)
+            time.sleep(1)
+        
+        except IndexError:
+            ...
+    
 
 
 if __name__ == "__main__":
@@ -35,26 +64,35 @@ if __name__ == "__main__":
     client.username_pw_set("thing", THING_KEY)
     client.connect("mqtt.tingg.io") 
 
-    client.publish("voltage", 123.456)
+    # client.publish("voltage", 123.456)
     
     c = RebelAxisController()
     c.start_msg_listener_thread()
     
-
+    Thread(target=publish_env_data_thread, args=(c, client), daemon=True).start()
+    Thread(target=publish_movement_reply_data_thread, args=(c, client), daemon=True).start()
+    
+    
     try:
+        ...
+
+        c.cmd_reset_position()
+        c.do_cycle()
+        c.cmd_reset_position()
+        c.do_cycle()
+        c.cmd_reset_errors()
+        c.do_cycle()
+        c.cmd_enable_motor()
+        c.do_cycle()
+
         while True:
-            ...
+            c.cmd_velocity_mode(10)
+            c.do_cycle()
+        
+        
 
-            try:
-                ...
-                env_msg = c.motor_env_status_list.pop(0)
-                publish_env_data(env_msg, client)
-                time.sleep(5)
-
-
-            except IndexError:
-                ...
-
+    
+   
 
     except KeyboardInterrupt:
         ...
