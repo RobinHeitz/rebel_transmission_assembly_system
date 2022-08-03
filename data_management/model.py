@@ -4,6 +4,20 @@ from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
 
+class AssemblyStep(Base):
+    ...
+    # Beschreibung
+    # id
+    # Bild??
+
+class ErrorDescription(Base):
+    ...
+
+
+
+
+
+
 # author_publisher = Table(
 #     "author_publisher",
 #     Base.metadata,
