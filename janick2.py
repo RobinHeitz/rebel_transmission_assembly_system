@@ -37,7 +37,7 @@ def publish_env_data_thread(c:RebelAxisController, client:mqtt.Client):
     while True:
         try:
             ...
-            env_msg = c.motor_env_status_list.pop(0)
+            env_msg = c.motor_env_status_list.pop()
             publish_env_data(env_msg, client)
             time.sleep(2)
         
@@ -48,7 +48,7 @@ def publish_movement_reply_data_thread(c:RebelAxisController, client:mqtt.Client
     while True:
         try:
             ...
-            env_msg = c.movement_cmd_reply_list.pop(0)
+            env_msg = c.movement_cmd_reply_list.pop()
             publish_motor_stats(env_msg, client)
             time.sleep(1)
         
