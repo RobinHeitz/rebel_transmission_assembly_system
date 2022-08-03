@@ -44,7 +44,7 @@ class RebelAxisController:
     
     movement_cmd_errors = []
     movement_cmd_reply_list = []
-    motor_env_status = []
+    motor_env_status_list = []
 
 
     def __init__(self, _can_id = None, can_auto_detect = True) -> None:
@@ -190,7 +190,7 @@ class RebelAxisController:
                     m = MessageEnvironmentStatus(voltage, temp_motor, temp_board, timestamp.millis)
                     logger.warning(m)
                     with self.lock:
-                        self.motor_env_status.append(m)
+                        self.motor_env_status_list.append(m)
 
               
             
