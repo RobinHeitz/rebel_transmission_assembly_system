@@ -39,6 +39,13 @@ class Exception_Controller_No_CAN_ID(BaseException):
     ...
 
 
+class Exception_Movement_Command_Reply_Error(BaseException):
+    def __init__(self, error_codes):
+        message = f"Movement CMD Reply has at least one error code: {error_codes}"
+        super().__init__(message)
+        self.error_codes = error_codes
+
+
 
 #########
 # CLASSES

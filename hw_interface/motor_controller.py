@@ -9,8 +9,8 @@ from ctypes import *
 from .helper_functions import get_cmd_msg, bytes_to_int, int_to_bytes
 from .helper_functions import pos_from_tics, tics_from_pos, response_error_codes
 
-from .definitions import MessageMovementCommandReply, MessageEnvironmentStatus
-from .definitions import Exception_PCAN_Connection_Failed, Exception_Controller_No_CAN_ID
+from .definitions import RESPONSE_ERROR_CODES, MessageMovementCommandReply, MessageEnvironmentStatus
+from .definitions import Exception_PCAN_Connection_Failed, Exception_Controller_No_CAN_ID, Exception_Movement_Command_Reply_Error
 
 from threading import Thread, Lock
 
@@ -90,12 +90,13 @@ class RebelAxisController:
             if status == PCAN_ERROR_OK:
 
                 if msg.ID == self.can_id + 1:
-                # Movement cmd answer
+                    # Movement cmd answer
                     
-                    error_codes = response_error_codes(msg.DATA[0])
+                    error_descriptions_list, error_codes_list = response_error_codes(msg.DATA[0])
+                    
                     with self.lock:
-                        self.movement_cmd_errors = error_codes
-                        if len(error_codes) == 0:
+                        self.movement_cmd_errors = error_descriptions_list
+                        if len(error_descriptions_list) == 0:
                             self.motor_no_err = True
                         else:
                             self.motor_no_err = False
@@ -117,7 +118,7 @@ class RebelAxisController:
                 
                 
                 elif msg.ID == self.can_id + 2 and msg.DATA[0] == 0x06:
-                # Antwort auf ResetError, MotorEnable, ZeroPosition, DisableMotor, Referenzierung, AlignRotor
+                    # Antwort auf ResetError, MotorEnable, ZeroPosition, DisableMotor, Referenzierung, AlignRotor
 
                     differentiate_msg = bytes_to_int(msg.DATA[2:4])
                     

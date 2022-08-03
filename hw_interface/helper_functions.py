@@ -32,13 +32,19 @@ def bytes_to_int(bytes_array, signed=True):
 
 
 def response_error_codes(error_byte):
-        #check if the 1st bit is in set:
-        errors = []
+        """Checks which errors exists based on input error byte.
+        
+        Returns 2 lists
+        - error_descriptions_list: List of short error codes, like 'COM', 'MNE', etc.
+        - error_codes_list: Returns list of errors as 'RESPONSE_ERROR_CODES'-type (int)."""
+        error_descriptions_list = []
+        error_codes_list = []
         for i in range(0,8):
             if error_byte & (1 << i) != 0:
                 # if true, error-bit i is active
-                errors.append(RESPONSE_ERROR_CODES_DICT.get(i)[0])
-        return errors
+                error_descriptions_list.append(RESPONSE_ERROR_CODES_DICT.get(i)[0])
+                error_codes_list.append(i)
+        return error_descriptions_list, error_codes_list
 
 def pos_from_tics(tics):
     return tics/GEAR_SCALE
