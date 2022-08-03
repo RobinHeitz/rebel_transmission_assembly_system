@@ -1,11 +1,12 @@
 from threading import Thread
 from can.interfaces.pcan.basic import PCANBasic,PCAN_USBBUS1, PCAN_BAUD_500K, PCAN_ERROR_OK
 import time
-from hw_interface.definitions import MessageEnvironmentStatus, MessageMovementCommandReply
+import paho.mqtt.client as mqtt 
 
+from hw_interface.definitions import MessageEnvironmentStatus, MessageMovementCommandReply
 from hw_interface.motor_controller import RebelAxisController
 
-import paho.mqtt.client as mqtt 
+
 
 
 ###########################################

@@ -90,8 +90,8 @@ class RebelAxisController:
             if status == PCAN_ERROR_OK:
 
                 if msg.ID == self.can_id + 1:
+                # Movement cmd answer
                     
-                    # Movement cmd answer
                     error_codes = response_error_codes(msg.DATA[0])
                     with self.lock:
                         self.movement_cmd_errors = error_codes
@@ -114,8 +114,10 @@ class RebelAxisController:
                         with self.lock:
                             self.movement_cmd_reply_list.append(msg)
 
+                
+                
                 elif msg.ID == self.can_id + 2 and msg.DATA[0] == 0x06:
-                    # Antwort auf ResetError, MotorEnable, ZeroPosition, DisableMotor, Referenzierung, AlignRotor
+                # Antwort auf ResetError, MotorEnable, ZeroPosition, DisableMotor, Referenzierung, AlignRotor
 
                     differentiate_msg = bytes_to_int(msg.DATA[2:4])
                     
