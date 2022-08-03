@@ -12,7 +12,7 @@ def bytes_to_int(bytes_array, signed=True):
 pcan = PCANBasic()
 channel = PCAN_USBBUS1
 connect_status = pcan.Initialize(channel, PCAN_BAUD_500K)
-can_id = 0x10
+can_id = 0x20
 
 if connect_status != PCAN_ERROR_OK:
     print("Connection war nicht möglich.")

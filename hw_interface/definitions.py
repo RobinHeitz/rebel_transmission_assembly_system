@@ -84,3 +84,7 @@ class MessageEnvironmentStatus:
         self.temp_board = _temp_board / 100
         self.millis = _millis
 
+    def __call__(self):
+        """Returns the attributes of the instance: voltage, temp_motor and temp_board."""
+        return self.voltage, self.temp_motor, self.temp_board
+
