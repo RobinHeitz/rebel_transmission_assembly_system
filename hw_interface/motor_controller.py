@@ -6,7 +6,7 @@ import time, logging
 
 from ctypes import *
 
-from .helper_functions import get_cmd_msg, bytes_to_int, int_to_bytes
+from .helper_functions import get_cmd_msg, bytes_to_int, get_cmd_msg_4_bytes, int_to_bytes
 from .helper_functions import pos_from_tics, tics_from_pos, response_error_codes
 
 from .definitions import GEAR_SCALE, RESPONSE_ERROR_CODES, MessageMovementCommandReply, MessageEnvironmentStatus
@@ -110,7 +110,7 @@ class RebelAxisController:
                         else:
                             self.motor_no_err = False
                             self.motor_enabled = False
-                            logger.info(f"Current Error Codes: {self.movement_cmd_errors}")
+                    logger.info(f"Current Error Codes: {self.movement_cmd_errors}")
 
                     tics = bytes_to_int(msg.DATA[1:5], signed=True)
                     pos = pos_from_tics(tics)
@@ -189,6 +189,25 @@ class RebelAxisController:
                         logging.error("Motor has finished referencing!")
                         with self.lock:
                             self.motor_referenced = True
+                
+                elif msg.ID == self.can_id + 2 and msg.DATA[0] == 0xE0:
+                    logging.error("**************************")
+                    logging.error("Erweiterte Fehlernachricht!")
+                    
+                    motor_error_byte = msg.DATA[1]
+                    # bits: Motor n.C. / OC RMS / OC Single Phase / Over Temperature
+                    
+                    adc_error_byte = msg.DATA[2]
+                    # ADC Offset
+                    
+                    rebel_error = msg.DATA[3]
+                    # Com Error / Out of Range
+                    
+                    control_error = msg.DATA[4]
+                    # Velocity High / Low Allign / Parameter Fault
+
+                    logging.error(f"MotorError: {motor_error_byte} / ADC Error: {adc_error_byte} / Rebel Error: {rebel_error} / Control Error: {control_error}")
+                    logging.error("**************************")
                 
                 elif msg.ID == self.can_id + 2:
                     if bytes_to_int(msg.DATA[0:1]) == 0xEF:
@@ -277,8 +296,14 @@ class RebelAxisController:
     def cmd_reset_position(self):
         logger.debug("cmd_reset_position()")
         """Needs to be sent 2 times within 20ms at start."""
-        msg = get_cmd_msg([0x01, 0x08], self.can_id)
-        self.write_cmd(msg, "reset_position")
+
+        #############################################################################
+        # Commented out / BLDC-Board freezes in Module Dead b/c of short msg (4 bytes)
+        #############################################################################
+
+
+        # msg = get_cmd_msg_4_bytes ([0x01, 0x08], self.can_id)
+        # self.write_cmd(msg, "reset_position")
     
     
     def cmd_reference(self):

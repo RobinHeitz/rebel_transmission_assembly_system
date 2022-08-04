@@ -62,22 +62,22 @@ def publish_movement_reply_data_thread(c:RebelAxisController, client:mqtt.Client
 
 if __name__ == "__main__":
     ...
-
-    PRINT_PUBLISHING_MSGS = False
-    
-    client = mqtt.Client(THING_ID)
-    client.username_pw_set("thing", THING_KEY)
-    client.connect("mqtt.tingg.io") 
-
     c = RebelAxisController()
     c.start_msg_listener_thread()
+
+
+    PRINT_PUBLISHING_MSGS = False
+    # client = mqtt.Client(THING_ID)
+    # client.username_pw_set("thing", THING_KEY)
+    # client.connect("mqtt.tingg.io") 
+    # Thread(target=publish_env_data_thread, args=(c, client), daemon=True).start()
+    # Thread(target=publish_movement_reply_data_thread, args=(c, client), daemon=True).start()
+
     
-    Thread(target=publish_env_data_thread, args=(c, client), daemon=True).start()
-    Thread(target=publish_movement_reply_data_thread, args=(c, client), daemon=True).start()
     
     try:
         ...
-        time.sleep(2)
+        time.sleep(1)
         print("START")
         # c.cmd_velocity_mode(10)
         # c.do_cycle()
