@@ -113,7 +113,7 @@ class RebelAxisController:
                     logger.info(f"Current Error Codes: {self.movement_cmd_errors}")
 
                     tics = bytes_to_int(msg.DATA[1:5], signed=True)
-                    pos = pos_from_tics(tics)
+                    pos = round(pos_from_tics(tics),2)
 
                     current = bytes_to_int(msg.DATA[5:7], signed=True)
                     msg = MessageMovementCommandReply(current, pos,tics, millis=timestamp.millis)
