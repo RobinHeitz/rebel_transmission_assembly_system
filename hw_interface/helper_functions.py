@@ -25,39 +25,6 @@ def get_cmd_msg(data, can_id):
 
         return msg
 
-def get_cmd_msg_4_bytes(data, can_id):
-        """Basic construction of a can message with 8 bytes.
-        
-        Params:
-        data: List of bytes as hex.
-        data_len: Length of data in bytes"""
-        if not 0 <= len(data) <= 4:
-            raise ValueError("Length of parameter 'data' is not within [0,4].")
-        msg = TPCANMsg4Bytes()
-        msg.DATA = (c_ubyte * 4)()
-
-        for index, data_item in enumerate(data):
-            msg.DATA[index] = data_item
-        msg.LEN = c_ubyte(len(data))
-        msg.MSGTYPE = PCAN_MESSAGE_STANDARD
-        msg.ID = can_id
-
-        return msg
-
-
-class TPCANMsg4Bytes(TPCANMsg):
-    """
-    Represents a PCAN message wiht only 4 bytes.
-    """
-
-    _fields_ = [
-        ("ID", c_uint),  # 11/29-bit message identifier
-        ("MSGTYPE", TPCANMessageType),  # Type of the message
-        ("LEN", c_ubyte),  # Data Length Code of the message (0..8)
-        ("DATA", c_ubyte * 4),
-    ]  # Data of the message (DATA[0]..DATA[7])
-
-
 
 
 def int_to_bytes(number, num_bytes=4, signed=True):

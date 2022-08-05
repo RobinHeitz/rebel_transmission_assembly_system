@@ -6,7 +6,7 @@ import time, logging
 
 from ctypes import *
 
-from .helper_functions import get_cmd_msg, bytes_to_int, get_cmd_msg_4_bytes, int_to_bytes
+from .helper_functions import get_cmd_msg, bytes_to_int, int_to_bytes
 from .helper_functions import pos_from_tics, tics_from_pos, response_error_codes
 
 from .definitions import GEAR_SCALE, RESPONSE_ERROR_CODES, MessageMovementCommandReply, MessageEnvironmentStatus
@@ -128,7 +128,7 @@ class RebelAxisController:
                     # Antwort auf ResetError, MotorEnable, ZeroPosition, DisableMotor, Referenzierung, AlignRotor
 
                     differentiate_msg = bytes_to_int(msg.DATA[2:4])
-                    logger.debug(f"CAN-ID + 2: Differentiate MSG based on Bytes 2-4: {hex(differentiate_msg)}")
+                    # logger.debug(f"CAN-ID + 2: Differentiate MSG based on Bytes 2-4: {hex(differentiate_msg)}")
                     
                     if differentiate_msg == 0x0106:
                         # Antwort auf ResetError
@@ -159,15 +159,16 @@ class RebelAxisController:
                                 self.motor_referenced = False
                     
                     elif differentiate_msg == 0x0108:
-                        # Antwort auf Position Reset: Nicht erfolgreich
-                        logging.error(f"Failed to reset position. Bytes 4-6: {hex(bytes_to_int(msg.DATA[4:6]))}")
-                        with self.lock:
-                            self.motor_position_is_resetted = False
+                        ...
+                        # Antwort auf Position Reset CMD, unabhängig von Erfolg oder nicht
+                        # logging.error(f"Failed to reset position. Bytes 4-6: {hex(bytes_to_int(msg.DATA[4:6]))}")
+                        # with self.lock:
+                        #     self.motor_position_is_resetted = False
                     
                     elif differentiate_msg == 0x0208:
                         # Antwort auf Position Reset: Erfolgreich
                         count_reset_posi = bytes_to_int(msg.DATA[4:6])
-                        logging.error(f"Reset position, Call No. {count_reset_posi}.")
+                        logging.error(f"Reset position, Call No. {count_reset_posi} at time: {timestamp.millis}.")
                         with self.lock:
                             self.motor_position_is_resetted = True if count_reset_posi == 2 else False
                     
@@ -296,14 +297,8 @@ class RebelAxisController:
     def cmd_reset_position(self):
         logger.debug("cmd_reset_position()")
         """Needs to be sent 2 times within 20ms at start."""
-
-        #############################################################################
-        # Commented out / BLDC-Board freezes in Module Dead b/c of short msg (4 bytes)
-        #############################################################################
-
-
-        # msg = get_cmd_msg_4_bytes ([0x01, 0x08], self.can_id)
-        # self.write_cmd(msg, "reset_position")
+        msg = get_cmd_msg ([0x01, 0x08], self.can_id)
+        self.write_cmd(msg, "reset_position")
     
     
     def cmd_reference(self):
