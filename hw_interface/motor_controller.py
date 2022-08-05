@@ -29,7 +29,10 @@ logger.addHandler(fileHandler)
 ####################
 class RebelAxisController:
     cycle_time  = 1/50
-    tics = 0
+
+    tics_current = 0
+    tics_setpoint = 0
+    
     std_baudrate = PCAN_BAUD_500K
     channel = PCAN_USBBUS1
     
@@ -104,17 +107,18 @@ class RebelAxisController:
                     error_descriptions_list, error_codes_list = response_error_codes(msg.DATA[0])
                     logger.info(f"Current Error Codes: {error_descriptions_list}")
 
-                    tics = bytes_to_int(msg.DATA[1:5], signed=True)
-                    pos = round(pos_from_tics(tics),2)
+                    _tics_current = bytes_to_int(msg.DATA[1:5], signed=True)
+                    pos = round(pos_from_tics(_tics_current),2)
                     current = bytes_to_int(msg.DATA[5:7], signed=True)
                     
-                    msg = MessageMovementCommandReply(current, pos,tics, millis=timestamp.millis)
+                    msg = MessageMovementCommandReply(current, pos,_tics_current, millis=timestamp.millis)
                     logger.debug(msg)
+                    logger.debug(f"Current Tics: {_tics_current} / Tics setpoint: {self.tics_setpoint} / Lag: {abs(self.tics_setpoint - _tics_current)}")
 
                     with self.lock:
                         self.movement_cmd_errors = error_descriptions_list
                         self.movement_cmd_reply_list.append(msg)
-                        self.tics = tics
+                        self.tics_current = _tics_current
 
                         
                         if len(error_descriptions_list) == 0:
@@ -171,7 +175,8 @@ class RebelAxisController:
                         count_reset_posi = bytes_to_int(msg.DATA[4:6])
                         logging.error(f"Reset position, Call No. {count_reset_posi} at time: {timestamp.millis}.")
                         with self.lock:
-                            self.motor_position_is_resetted = True if count_reset_posi == 2 else False
+                            if count_reset_posi == 2:
+                                self.motor_position_is_resetted = True 
                     
                     elif differentiate_msg == 0x020C :
                         # Antwort auf: Align Rotor
@@ -341,18 +346,72 @@ class RebelAxisController:
         self.write_cmd(msg, "velocity_mode")
 
 
-    def cmd_position_mode(self, delta_tics):
+    def cmd_position_mode(self, to_tics:int):
         """Position mode with delta tics to move.
         Params:
         - delta_tics: Setpoint in delta tics to current position (in tics).
         """
+        if type(to_tics)  != int:
+            raise ValueError("Tics need to be integer values.")
+        
         logger.debug("#"*10)
         logger.debug("cmd_position_mode")
 
-        newTics = int(round(self.tics + delta_tics,0))
-        tics_32_bits = int_to_bytes(newTics, num_bytes=4, signed=True)
+        tics_32_bits = int_to_bytes(to_tics, num_bytes=4, signed=True)
         msg = get_cmd_msg([0x14,0x0,*tics_32_bits], self.can_id)    
         self.write_cmd(msg, "position_mode")
+
+    
+    def move_position_mode(self, target_pos=90, velo=10):
+        ...
+        target_tics = target_pos * GEAR_SCALE
+        delta_tics = 400
+
+        setpoint = self.tics_current
+
+
+        while abs(target_tics - self.tics_current) > 1 * GEAR_SCALE:
+            print("Move_position_mode() :::: LOOP")
+
+            if self.motor_enabled == False:
+                self.cmd_enable_motor()
+            
+            setpoint = setpoint + delta_tics
+            self.cmd_position_mode(setpoint)
+            # self.do_cycle()
+            time.sleep(0.02)
+        
+   
+    def move_position_mode2(self, target_pos=90, velo=10):
+        ...
+        alpha = 0.08
+        target_tics = target_pos * GEAR_SCALE
+        delta_tics = 50
+        delta_tics_max = 400
+
+        setpoint = self.tics_current
+
+
+        while abs(target_tics - self.tics_current) > 1 * GEAR_SCALE:
+
+            if self.motor_enabled == False:
+                self.cmd_enable_motor()
+            
+            delta_tics = int(alpha*delta_tics_max + (1-alpha) * delta_tics)
+            print("Move_position_mode() :::: LOOP", delta_tics)
+
+            setpoint = int(setpoint + delta_tics)
+            self.cmd_position_mode(setpoint)
+            # self.do_cycle()
+            time.sleep(0.02)
+        
+
+
+
+
+
+
+    
 
 
     def timestamp_str(self, timestamp):

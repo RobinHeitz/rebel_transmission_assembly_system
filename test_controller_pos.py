@@ -81,17 +81,24 @@ if __name__ == "__main__":
     try:
         ...
         time.sleep(1)
-        print("START")
 
+        print("Start Rotor allignment")
+        c.cmd_allign_rotor()
+        c.cmd_allign_rotor()
+
+        time.sleep(6)
+
+        print("START Resetting")
         c.cmd_reset_position()
         c.do_cycle()
         c.cmd_reset_position()
         c.do_cycle()
+
 
         print("Start moving now")
 
 
-        delta_tics = 1000
+        delta_tics = 300
 
         #################
         # WORKIGN EXAMPLE
@@ -102,16 +109,22 @@ if __name__ == "__main__":
                 if c.motor_no_err == False:
                     raise Exception_Movement_Command_Reply_Error(c.movement_cmd_errors)
 
-                c.cmd_position_mode(delta_tics)
-                c.do_cycle()
+                # c.cmd_position_mode(delta_tics)
+                # c.do_cycle()
+
+                c.move_position_mode2(target_pos=90)
             
             except Exception_Movement_Command_Reply_Error:
+                print("Exception_Movement_Command_Reply_Error()")
                 if max_err_reset >= err_reset_counter:
                     ...
                     c.cmd_reset_errors()
                     c.do_cycle()
                     c.cmd_enable_motor()
                     c.do_cycle()
+
+                    c.tics_setpoint, c.tics_current = 0,0
+
                     err_reset_counter += 1
                 else:
                     c.stop_movement()
