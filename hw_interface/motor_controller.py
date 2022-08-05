@@ -61,6 +61,7 @@ class RebelAxisController:
         else:
             self.can_id = _can_id
 
+        self.cmd_velocity_mode(0)
         logger.debug("Initializing was succesfull.")
     
     def do_cycle(self):
@@ -161,7 +162,7 @@ class RebelAxisController:
                     elif differentiate_msg == 0x0108:
                         ...
                         # Antwort auf Position Reset CMD, unabhängig von Erfolg oder nicht
-                        # logging.error(f"Failed to reset position. Bytes 4-6: {hex(bytes_to_int(msg.DATA[4:6]))}")
+                        logging.error(f"Received reply: Reset_Position")
                         # with self.lock:
                         #     self.motor_position_is_resetted = False
                     
@@ -297,7 +298,7 @@ class RebelAxisController:
     def cmd_reset_position(self):
         logger.debug("cmd_reset_position()")
         """Needs to be sent 2 times within 20ms at start."""
-        msg = get_cmd_msg ([0x01, 0x08], self.can_id)
+        msg = get_cmd_msg ([0x01, 0x08, 0x0, 0x0], self.can_id)
         self.write_cmd(msg, "reset_position")
     
     

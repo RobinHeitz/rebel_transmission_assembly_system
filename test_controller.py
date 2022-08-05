@@ -65,6 +65,9 @@ if __name__ == "__main__":
     c = RebelAxisController()
     c.start_msg_listener_thread()
 
+    max_err_reset = 5
+    err_reset_counter = 0
+
 
     PRINT_PUBLISHING_MSGS = False
     # client = mqtt.Client(THING_ID)
@@ -85,11 +88,12 @@ if __name__ == "__main__":
 
         c.cmd_reset_position()
         c.do_cycle()
+        # time.sleep(1)
         c.cmd_reset_position()
         c.do_cycle()
         c.cmd_velocity_mode(10)
 
-        # print("Start moving now")
+        print("Start moving now")
 
 
 
@@ -107,10 +111,16 @@ if __name__ == "__main__":
                 c.do_cycle()
             
             except Exception_Movement_Command_Reply_Error:
-                c.cmd_reset_errors()
-                c.do_cycle()
-                c.cmd_enable_motor()
-                c.do_cycle()
+                if max_err_reset >= err_reset_counter:
+                    ...
+                    c.cmd_reset_errors()
+                    c.do_cycle()
+                    c.cmd_enable_motor()
+                    c.do_cycle()
+                    err_reset_counter += 1
+                else:
+                    c.stop_movement()
+                    break
 
 
 
