@@ -82,21 +82,16 @@ if __name__ == "__main__":
         ...
         time.sleep(1)
         print("START")
-        # c.cmd_velocity_mode(10)
-        # c.do_cycle()
-
 
         c.cmd_reset_position()
         c.do_cycle()
-        # time.sleep(1)
         c.cmd_reset_position()
         c.do_cycle()
-        c.cmd_velocity_mode(10)
 
         print("Start moving now")
 
 
-
+        delta_tics = 1000
 
         #################
         # WORKIGN EXAMPLE
@@ -107,7 +102,7 @@ if __name__ == "__main__":
                 if c.motor_no_err == False:
                     raise Exception_Movement_Command_Reply_Error(c.movement_cmd_errors)
 
-                c.cmd_velocity_mode(10)
+                c.cmd_position_mode(delta_tics)
                 c.do_cycle()
             
             except Exception_Movement_Command_Reply_Error:

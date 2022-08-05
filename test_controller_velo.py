@@ -82,16 +82,11 @@ if __name__ == "__main__":
         ...
         time.sleep(1)
         print("START")
-        # c.cmd_velocity_mode(10)
-        # c.do_cycle()
-
 
         c.cmd_reset_position()
         c.do_cycle()
-        # time.sleep(1)
         c.cmd_reset_position()
         c.do_cycle()
-        c.cmd_velocity_mode(10)
 
         print("Start moving now")
 

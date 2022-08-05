@@ -29,7 +29,6 @@ logger.addHandler(fileHandler)
 ####################
 class RebelAxisController:
     cycle_time  = 1/50
-    pos = 0
     tics = 0
     std_baudrate = PCAN_BAUD_500K
     channel = PCAN_USBBUS1
@@ -103,27 +102,28 @@ class RebelAxisController:
                     # Movement cmd answer
                     
                     error_descriptions_list, error_codes_list = response_error_codes(msg.DATA[0])
+                    logger.info(f"Current Error Codes: {error_descriptions_list}")
+
+                    tics = bytes_to_int(msg.DATA[1:5], signed=True)
+                    pos = round(pos_from_tics(tics),2)
+                    current = bytes_to_int(msg.DATA[5:7], signed=True)
                     
+                    msg = MessageMovementCommandReply(current, pos,tics, millis=timestamp.millis)
+                    logger.debug(msg)
+
                     with self.lock:
                         self.movement_cmd_errors = error_descriptions_list
+                        self.movement_cmd_reply_list.append(msg)
+                        self.tics = tics
+
+                        
                         if len(error_descriptions_list) == 0:
                             self.motor_no_err = True
                         else:
                             self.motor_no_err = False
                             self.motor_enabled = False
-                    logger.info(f"Current Error Codes: {self.movement_cmd_errors}")
 
-                    tics = bytes_to_int(msg.DATA[1:5], signed=True)
-                    pos = round(pos_from_tics(tics),2)
 
-                    current = bytes_to_int(msg.DATA[5:7], signed=True)
-                    msg = MessageMovementCommandReply(current, pos,tics, millis=timestamp.millis)
-                    logger.debug(msg)
-
-                    with self.lock:
-                        self.movement_cmd_reply_list.append(msg)
-
-                
                 
                 elif msg.ID == self.can_id + 2 and msg.DATA[0] == 0x06:
                     # Antwort auf ResetError, MotorEnable, ZeroPosition, DisableMotor, Referenzierung, AlignRotor
@@ -341,17 +341,15 @@ class RebelAxisController:
         self.write_cmd(msg, "velocity_mode")
 
 
-    def cmd_position_mode(self, pos_delta):
-        """Position mode where ticks indicates the angle in degrees.
+    def cmd_position_mode(self, delta_tics):
+        """Position mode with delta tics to move.
         Params:
-        - position: Gear output position delta in degrees
+        - delta_tics: Setpoint in delta tics to current position (in tics).
         """
-        
-
         logger.debug("#"*10)
         logger.debug("cmd_position_mode")
 
-        newTics = int(round(self.tics + pos_delta * 1031.111,0))
+        newTics = int(round(self.tics + delta_tics,0))
         tics_32_bits = int_to_bytes(newTics, num_bytes=4, signed=True)
         msg = get_cmd_msg([0x14,0x0,*tics_32_bits], self.can_id)    
         self.write_cmd(msg, "position_mode")
