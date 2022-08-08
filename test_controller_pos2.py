@@ -1,3 +1,4 @@
+import logging
 from threading import Thread
 import threading
 from tkinter import E
@@ -77,7 +78,6 @@ if __name__ == "__main__":
     # Thread(target=publish_movement_reply_data_thread, args=(c, client), daemon=True).start()
 
 
-    delta_tics = 1000
     
     
     try:
@@ -86,9 +86,9 @@ if __name__ == "__main__":
         print("START Alignment")
         c.cmd_allign_rotor()
         c.cmd_allign_rotor()
-
         time.sleep(6)
         print("END ALLIGNMENT")
+
 
         c.cmd_reset_position()
         c.do_cycle()
@@ -100,11 +100,24 @@ if __name__ == "__main__":
 
         time_stamp = 0
 
+
+        delta_tics_max = 1000
+        delta_tics = 1000
+
+        alpha = 0.05
+
+
         #################
         # WORKIGN EXAMPLE
         #################
         while True:
             time_stamp = (time_stamp + 1) % 256
+
+            # if delta_tics > 900: 
+            #     delta_tics = delta_tics_max
+            # else:
+            #     delta_tics = int(delta_tics_max * alpha + (1-alpha)*delta_tics)
+
             c.tics_setpoint = c.tics_current + delta_tics
             try:
 
@@ -113,10 +126,12 @@ if __name__ == "__main__":
 
                 c.cmd_position_mode(c.tics_setpoint, time_stamp)
                 # c.do_cycle()
-                time.sleep(1/20)
+                time.sleep(1/10)
 
             
             except Exception_Movement_Command_Reply_Error:
+                
+                print("Exception occured: Reset Errors & enable Motors")
                 if max_err_reset >= err_reset_counter:
                     ...
                     c.cmd_reset_errors()

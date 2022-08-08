@@ -28,7 +28,7 @@ logger.addHandler(fileHandler)
 # Class: Controller
 ####################
 class RebelAxisController:
-    cycle_time  = 1/50
+    cycle_time  = 1/15
 
     tics_current = 0
     tics_setpoint = 0
@@ -63,7 +63,6 @@ class RebelAxisController:
         else:
             self.can_id = _can_id
 
-        self.cmd_velocity_mode(0)
         logger.debug("Initializing was succesfull.")
     
     def do_cycle(self):
@@ -358,28 +357,29 @@ class RebelAxisController:
         logger.debug("cmd_position_mode")
 
         tics_32_bits = int_to_bytes(to_tics, num_bytes=4, signed=True)
+        # msg = get_cmd_msg([0x14,0x0,*tics_32_bits, time_stamp, 0x0], self.can_id)    
         msg = get_cmd_msg([0x14,0x0,*tics_32_bits, time_stamp, 0x0], self.can_id)    
         self.write_cmd(msg, "position_mode")
 
     
     def move_position_mode(self, target_pos=90, velo=10):
-        ...
+        logger.info("move_position_mode()")
         target_tics = target_pos * GEAR_SCALE
         delta_tics = 400
 
-        setpoint = self.tics_current
+        # setpoint = self.tics_current
 
 
         while abs(target_tics - self.tics_current) > 1 * GEAR_SCALE:
-            print("Move_position_mode() :::: LOOP")
+            logger.info("Move_position_mode() :::: LOOP")
 
             if self.motor_enabled == False:
                 self.cmd_enable_motor()
             
-            setpoint = setpoint + delta_tics
+            setpoint = self.tics_current + delta_tics
             self.cmd_position_mode(setpoint)
             # self.do_cycle()
-            time.sleep(0.06)
+            time.sleep(1/10)
         
    
     def move_position_mode2(self, target_pos=90, velo=10):
