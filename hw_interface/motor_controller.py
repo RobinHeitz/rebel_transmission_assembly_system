@@ -28,7 +28,7 @@ logger.addHandler(fileHandler)
 # Class: Controller
 ####################
 class RebelAxisController:
-    cycle_time  = 1/15
+    cycle_time  = 1/20
 
     tics_current = 0
     tics_setpoint = 0
