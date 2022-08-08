@@ -346,7 +346,7 @@ class RebelAxisController:
         self.write_cmd(msg, "velocity_mode")
 
 
-    def cmd_position_mode(self, to_tics:int):
+    def cmd_position_mode(self, to_tics:int, time_stamp:int):
         """Position mode with delta tics to move.
         Params:
         - delta_tics: Setpoint in delta tics to current position (in tics).
@@ -358,7 +358,7 @@ class RebelAxisController:
         logger.debug("cmd_position_mode")
 
         tics_32_bits = int_to_bytes(to_tics, num_bytes=4, signed=True)
-        msg = get_cmd_msg([0x14,0x0,*tics_32_bits], self.can_id)    
+        msg = get_cmd_msg([0x14,0x0,*tics_32_bits, time_stamp, 0x0], self.can_id)    
         self.write_cmd(msg, "position_mode")
 
     
@@ -378,12 +378,10 @@ class RebelAxisController:
             
             setpoint = setpoint + delta_tics
             self.cmd_position_mode(setpoint)
-            # self.do_cycle()
-            time.sleep(0.02)
+            self.do_cycle()
         
    
     def move_position_mode2(self, target_pos=90, velo=10):
-        ...
         alpha = 0.08
         target_tics = target_pos * GEAR_SCALE
         delta_tics = 50
@@ -391,19 +389,26 @@ class RebelAxisController:
 
         setpoint = self.tics_current
 
+        time_stamp = 0
+
 
         while abs(target_tics - self.tics_current) > 1 * GEAR_SCALE:
 
             if self.motor_enabled == False:
                 self.cmd_enable_motor()
             
-            delta_tics = int(alpha*delta_tics_max + (1-alpha) * delta_tics)
-            print("Move_position_mode() :::: LOOP", delta_tics)
+            if delta_tics > 360:
+                delta_tics = delta_tics_max
+            else:
+                delta_tics = int(alpha*delta_tics_max + (1-alpha) * delta_tics)
+            
+            
+            print(f"Move_position_mode() : LOOP / delta_tics: {delta_tics} / current tics: {self.tics_current}")
 
             setpoint = int(setpoint + delta_tics)
-            self.cmd_position_mode(setpoint)
-            # self.do_cycle()
-            time.sleep(0.02)
+            time_stamp = (time_stamp + 1) % 256
+            self.cmd_position_mode(setpoint, time_stamp)
+            self.do_cycle()
         
 
 
