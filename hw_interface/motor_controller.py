@@ -285,7 +285,7 @@ class RebelAxisController:
         if status == PCAN_ERROR_OK:
             return
         else:
-            raise Exception(f"Status is not OK! {self.__status_str(status)} while {cmd_description}")
+            raise Exception(f"Status is not OK! {self.status_str(status)} while {cmd_description}")
 
 
     def cmd_reset_errors(self):
@@ -347,9 +347,9 @@ class RebelAxisController:
 
 
     def cmd_position_mode(self, to_tics:int, time_stamp:int):
-        """Position mode with delta tics to move.
+        """Position mode with position in tics to move to.
         Params:
-        - delta_tics: Setpoint in delta tics to current position (in tics).
+        - to_tics: Setpoint in delta tics.
         """
         if type(to_tics)  != int:
             raise ValueError("Tics need to be integer values.")
@@ -378,7 +378,8 @@ class RebelAxisController:
             
             setpoint = setpoint + delta_tics
             self.cmd_position_mode(setpoint)
-            self.do_cycle()
+            # self.do_cycle()
+            time.sleep(0.06)
         
    
     def move_position_mode2(self, target_pos=90, velo=10):
@@ -406,9 +407,11 @@ class RebelAxisController:
             print(f"Move_position_mode() : LOOP / delta_tics: {delta_tics} / current tics: {self.tics_current}")
 
             setpoint = int(setpoint + delta_tics)
+            self.tics_setpoint = setpoint
             time_stamp = (time_stamp + 1) % 256
             self.cmd_position_mode(setpoint, time_stamp)
-            self.do_cycle()
+            # self.do_cycle()
+            time.sleep(0.06)
         
 
 
