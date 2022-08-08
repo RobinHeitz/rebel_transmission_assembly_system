@@ -4,6 +4,7 @@ import time
 from hw_interface.definitions import MessageEnvironmentStatus, MessageMovementCommandReply, Exception_Movement_Command_Reply_Error
 from hw_interface.motor_controller import RebelAxisController
 
+import sys
 
 ###########################################
 # Using MotorController Class to move motor
@@ -11,8 +12,25 @@ from hw_interface.motor_controller import RebelAxisController
 
 
 if __name__ == "__main__":
-    ...
-    c = RebelAxisController()
+
+    log_env = False
+    log_ext_err = False
+
+    args = sys.argv
+
+    if "env_msg" in args:
+        log_env = True
+    else:
+        log_env = False
+    
+    if "ext_err_msg":
+        log_ext_err = True
+    else:
+        log_ext_err = False
+
+
+
+    c = RebelAxisController(log_environment_messages=log_env, log_extended_error_messages=log_ext_err)
     c.start_msg_listener_thread()
 
     max_err_reset = 5

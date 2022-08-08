@@ -49,7 +49,11 @@ class RebelAxisController:
     motor_env_status_list = []
 
 
-    def __init__(self, _can_id = None, can_auto_detect = True) -> None:
+    def __init__(self, _can_id = None, can_auto_detect = True, log_environment_messages = False, log_extended_error_messages = False) -> None:
+        
+        self.log_environment_messages = log_environment_messages
+        self.log_extended_error_messages = log_extended_error_messages
+        
         self.pcan = PCANBasic()
         status = self.pcan.Initialize(self.channel, self.std_baudrate)
         if status != PCAN_ERROR_OK:
@@ -197,23 +201,24 @@ class RebelAxisController:
                             self.motor_referenced = True
                 
                 elif msg.ID == self.can_id + 2 and msg.DATA[0] == 0xE0:
-                    logging.error("**************************")
-                    logging.error("Erweiterte Fehlernachricht!")
-                    
-                    motor_error_byte = msg.DATA[1]
-                    # bits: Motor n.C. / OC RMS / OC Single Phase / Over Temperature
-                    
-                    adc_error_byte = msg.DATA[2]
-                    # ADC Offset
-                    
-                    rebel_error = msg.DATA[3]
-                    # Com Error / Out of Range
-                    
-                    control_error = msg.DATA[4]
-                    # Velocity High / Low Allign / Parameter Fault
+                    if self.log_extended_error_messages:
+                        logging.error("**************************")
+                        logging.error("Erweiterte Fehlernachricht!")
+                        
+                        motor_error_byte = msg.DATA[1]
+                        # bits: Motor n.C. / OC RMS / OC Single Phase / Over Temperature
+                        
+                        adc_error_byte = msg.DATA[2]
+                        # ADC Offset
+                        
+                        rebel_error = msg.DATA[3]
+                        # Com Error / Out of Range
+                        
+                        control_error = msg.DATA[4]
+                        # Velocity High / Low Allign / Parameter Fault
 
-                    logging.error(f"MotorError: {motor_error_byte} / ADC Error: {adc_error_byte} / Rebel Error: {rebel_error} / Control Error: {control_error}")
-                    logging.error("**************************")
+                        logging.error(f"MotorError: {motor_error_byte} / ADC Error: {adc_error_byte} / Rebel Error: {rebel_error} / Control Error: {control_error}")
+                        logging.error("**************************")
                 
                 elif msg.ID == self.can_id + 2:
                     if bytes_to_int(msg.DATA[0:1]) == 0xEF:
@@ -224,14 +229,15 @@ class RebelAxisController:
                 elif msg.ID == self.can_id + 3:
                     # Umgebungsparameter, ca. 1 mal pro Sekunde
 
-                    voltage = bytes_to_int(msg.DATA[2:4], signed=True) #mV
-                    temp_motor = bytes_to_int(msg.DATA[4:6], signed=True) #m°C
-                    temp_board = bytes_to_int(msg.DATA[6:8], signed=True) #m°C
+                    if self.log_environment_messages:
+                        voltage = bytes_to_int(msg.DATA[2:4], signed=True) #mV
+                        temp_motor = bytes_to_int(msg.DATA[4:6], signed=True) #m°C
+                        temp_board = bytes_to_int(msg.DATA[6:8], signed=True) #m°C
 
-                    m = MessageEnvironmentStatus(voltage, temp_motor, temp_board, timestamp.millis)
-                    logger.warning(m)
-                    with self.lock:
-                        self.motor_env_status_list.append(m)
+                        m = MessageEnvironmentStatus(voltage, temp_motor, temp_board, timestamp.millis)
+                        logger.warning(m)
+                        with self.lock:
+                            self.motor_env_status_list.append(m)
 
               
             
