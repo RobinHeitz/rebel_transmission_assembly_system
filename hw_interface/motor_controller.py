@@ -253,8 +253,8 @@ class RebelAxisController:
               
             
             elif status == PCAN_ERROR_QRCVEMPTY:
-                if self.__verbose == True:
-                    logging.error("QUEUE EMPTY")
+                ...
+                # logging.error("QUEUE EMPTY")
 
             elif status == PCAN_ERROR_BUSHEAVY:
                 logging.error("*** BUS ERROR - Motor might be off ***")
