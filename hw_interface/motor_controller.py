@@ -109,8 +109,8 @@ class RebelAxisController:
             logger.info("STARTING __move() - LOOP again.")
             if len(self.movement_queue) > 0:
                 ...
-                current_action = self.movement_queue.pop(0)
-                if type(current_action) == MovementPositionMode:
+                current_action = self.movement_queue[0]
+                if type(current_action) == MovementPositionMode and current_action.finished == False:
                     ...
                     target_tics = current_action.target_tics
                     velo = current_action.velo
@@ -118,8 +118,12 @@ class RebelAxisController:
 
                     current_tics = self.tics_current
                     err_reset_counter = 0
-
-                    delta_tics = 200
+                    
+                    if current_tics < target_tics:
+                        delta_tics = 700
+                    else: 
+                        delta_tics = -700
+                        
 
                     while abs(self.tics_current - target_tics) > threshold_tics:
                          
@@ -131,10 +135,11 @@ class RebelAxisController:
                             self.cmd_reset_errors()
                             self.cmd_enable_motor()
 
-                        current_tics += delta_tics
+                        current_tics += delta_tics 
                         self.cmd_position_mode(current_tics, 0)
                         time.sleep(1/20)
                     
+                    current_action.finished = True
                     logger.info("*"*10)
                     logger.info("MOVEMENT-ACTION FINISHED!")
                 

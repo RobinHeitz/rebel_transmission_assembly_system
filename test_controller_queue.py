@@ -87,7 +87,20 @@ if __name__ == "__main__":
         print("Added movement action to queue")
 
 
-        while True:
+        while c.movement_queue[0].finished == False:
+            print("..")
+            time.sleep(5)
+        
+        print("Action finished!")
+        c.movement_queue.pop(0)
+
+        time.sleep(3)
+
+        m = MovementPositionMode(0)
+        c.movement_queue.append(m)
+        print("Added movement action to queue")
+
+        while c.movement_queue[0].finished == False:
             print("..")
             time.sleep(5)
 
