@@ -14,9 +14,8 @@ import random
 
 
 def generate_random_action():
-    pos = random.randint(-7424*50,7424*50)
-    velo = random.randint(10,30)
-
+    pos = random.randint(-3712*50,3712*50)
+    velo = random.randint(15,40)
     return MovementPositionMode(pos,velo)
 
 
@@ -37,9 +36,14 @@ if __name__ == "__main__":
 
     try:
         
-        for i in range(10):
+        for i in range(5):
             m = generate_random_action()
             c.movement_queue.append(m)
+        
+        # Homing after work is done.
+        c.movement_queue.append(
+            MovementPositionMode(0,20)
+        )
         
         print("Waiting for start!")
         time.sleep(1)

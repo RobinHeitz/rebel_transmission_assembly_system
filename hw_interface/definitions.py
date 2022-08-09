@@ -61,6 +61,9 @@ class MovementPositionMode(MovementActionBase):
         self.target_tics = target_tics
         self.velo = velo
         self.threshold_tics = threshold_tics
+    
+    def __str__(self):
+        return f"MovementPositionMode: Target = {self.target_tics} / velo={self.velo}"
 
 
 class MovementVelocityMode(MovementActionBase):
