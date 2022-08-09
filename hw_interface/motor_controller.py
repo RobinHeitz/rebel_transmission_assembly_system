@@ -201,7 +201,8 @@ class RebelAxisController:
                             self.motor_referenced = True
                 
                 elif msg.ID == self.can_id + 2 and msg.DATA[0] == 0xE0:
-                    if self.log_extended_error_messages:
+                    print("self.log_extended_error_message", self.log_extended_error_messages)
+                    if self.log_extended_error_messages == True:
                         logging.error("**************************")
                         logging.error("Erweiterte Fehlernachricht!")
                         
@@ -343,7 +344,7 @@ class RebelAxisController:
         if abs(velo) > 36:
             raise TypeError("Parameter velo should not be greater than 36°/sec!")
 
-        rpm = velo * 50/6
+        rpm = velo * 50/6 # w = 360°/6 * n[1/min] with [w] = °/sec; RPM_motor =  50* RPM_Gear
         velo_bytes = int_to_bytes(rpm, 2, True)
 
         
