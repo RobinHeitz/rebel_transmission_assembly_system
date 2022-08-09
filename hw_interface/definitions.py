@@ -51,6 +51,26 @@ class Exception_Movement_Command_Reply_Error(BaseException):
 # CLASSES
 #########
 
+class MovementActionBase:
+    finished = False
+
+
+class MovementPositionMode(MovementActionBase):
+    def __init__(self, target_tics, velo=10, threshold_tics = 1000) -> None:
+        super().__init__()
+        self.target_tics = target_tics
+        self.velo = velo
+        self.threshold_tics = threshold_tics
+
+
+class MovementVelocityMode(MovementActionBase):
+    def __init__(self, duration, velo=10) -> None:
+        super().__init__()
+        self.duration = duration
+        self.velo = 10
+
+
+
 @dataclass
 class MessageMovementCommandReply:
     """Reply message from movement commands.

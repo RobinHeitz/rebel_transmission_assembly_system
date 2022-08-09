@@ -9,7 +9,7 @@ from ctypes import *
 from .helper_functions import get_cmd_msg, bytes_to_int, int_to_bytes
 from .helper_functions import pos_from_tics, tics_from_pos, response_error_codes
 
-from .definitions import GEAR_SCALE, RESPONSE_ERROR_CODES, MessageMovementCommandReply, MessageEnvironmentStatus
+from .definitions import GEAR_SCALE, RESPONSE_ERROR_CODES, MessageMovementCommandReply, MessageEnvironmentStatus, MovementPositionMode, MovementVelocityMode
 from .definitions import Exception_PCAN_Connection_Failed, Exception_Controller_No_CAN_ID, Exception_Movement_Command_Reply_Error
 
 from threading import Thread, Lock
@@ -47,6 +47,7 @@ class RebelAxisController:
     movement_cmd_errors = []
     movement_cmd_reply_list = []
     motor_env_status_list = []
+    movement_queue = []
 
 
     def __init__(self, _can_id = None, can_auto_detect = True, verbose = False) -> None:
@@ -94,12 +95,67 @@ class RebelAxisController:
         self.motor_enabled = False
         self.motor_no_err = False
 
+    def start_movement_thread(self):
+        self.thread_movement = Thread(target=self.__move, args=(), daemon=True)
+        self.thread_movement.start()
+
+
+    def __move(self):
+        self.cmd_reset_position()
+        time.sleep(1/20)
+        self.cmd_reset_position()
+
+        while True:
+            logger.info("STARTING __move() - LOOP again.")
+            if len(self.movement_queue) > 0:
+                ...
+                current_action = self.movement_queue.pop(0)
+                if type(current_action) == MovementPositionMode:
+                    ...
+                    target_tics = current_action.target_tics
+                    velo = current_action.velo
+                    threshold_tics = current_action.threshold_tics
+
+                    current_tics = self.tics_current
+                    err_reset_counter = 0
+
+                    delta_tics = 200
+
+                    while abs(self.tics_current - target_tics) > threshold_tics:
+                         
+                        if not self.can_move():
+                            if err_reset_counter >= 5:
+                                logger.debug("ERROR: Reset was done 5 times, max_counter exceeded!")
+                                print("ERROR RESET 5 TIMES!")
+                                break
+                            self.cmd_reset_errors()
+                            self.cmd_enable_motor()
+
+                        current_tics += delta_tics
+                        self.cmd_position_mode(current_tics, 0)
+                        time.sleep(1/20)
+                    
+                    logger.info("*"*10)
+                    logger.info("MOVEMENT-ACTION FINISHED!")
+                
+                
+                
+                
+                
+                elif type(current_action) == MovementVelocityMode:
+                    ...
+            
+
+            time.sleep(1)
+
+
 
     def start_msg_listener_thread(self):
         if self.can_id is None or self.can_id == -1:
             raise Exception_Controller_No_CAN_ID("MotorController: No valid CAN-ID is set!")
         self.thread_read_msg = Thread(target=self.read_msg_thread, args=(), daemon=True)
         self.thread_read_msg.start()
+
         
    
     def read_msg_thread(self):
