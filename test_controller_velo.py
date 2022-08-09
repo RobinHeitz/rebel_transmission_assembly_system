@@ -62,7 +62,15 @@ def publish_movement_reply_data_thread(c:RebelAxisController, client:mqtt.Client
 
 if __name__ == "__main__":
     ...
-    c = RebelAxisController()
+
+    import argparse
+    parser = argparse.ArgumentParser(description='Script so useful.')
+    parser.add_argument("-v", "--verbose", action="store_true", help="increase verbosity of log file.")
+    args = parser.parse_args()
+    verbose = args.verbose
+
+
+    c = RebelAxisController(verbose=verbose)
     c.start_msg_listener_thread()
 
     max_err_reset = 5

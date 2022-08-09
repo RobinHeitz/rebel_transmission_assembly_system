@@ -12,25 +12,13 @@ import sys
 
 
 if __name__ == "__main__":
+    import argparse
+    parser = argparse.ArgumentParser(description='Script so useful.')
+    parser.add_argument("-v", "--verbose", action="store_true", help="increase verbosity of log file.")
+    args = parser.parse_args()
+    verbose = args.verbose
 
-    log_env = False
-    log_ext_err = False
-
-    args = sys.argv
-
-    if "env_msg" in args:
-        log_env = True
-    else:
-        log_env = False
-    
-    if "ext_err_msg":
-        log_ext_err = True
-    else:
-        log_ext_err = False
-
-
-
-    c = RebelAxisController(log_environment_messages=log_env, log_extended_error_messages=log_ext_err)
+    c = RebelAxisController(verbose=verbose)
     c.start_msg_listener_thread()
 
     max_err_reset = 5

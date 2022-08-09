@@ -49,10 +49,9 @@ class RebelAxisController:
     motor_env_status_list = []
 
 
-    def __init__(self, _can_id = None, can_auto_detect = True, log_environment_messages = False, log_extended_error_messages = False) -> None:
-        
-        self.log_environment_messages = log_environment_messages
-        self.log_extended_error_messages = log_extended_error_messages
+    def __init__(self, _can_id = None, can_auto_detect = True, verbose = False) -> None:
+
+        self.__verbose = verbose
         
         self.pcan = PCANBasic()
         status = self.pcan.Initialize(self.channel, self.std_baudrate)
@@ -68,6 +67,11 @@ class RebelAxisController:
             self.can_id = _can_id
 
         logger.debug("Initializing was succesfull.")
+    
+    def __log_verbose(self, msg):
+        if self.__verbose == True:
+            logger.debug(msg)
+
     
     def do_cycle(self):
         time.sleep(self.cycle_time)
@@ -104,6 +108,10 @@ class RebelAxisController:
 
             if status == PCAN_ERROR_OK:
 
+                
+                ##############################
+                ### RECEIVED MSG ON CAN-ID + 1
+                ##############################
                 if msg.ID == self.can_id + 1:
                     # Movement cmd answer
                     
@@ -131,106 +139,108 @@ class RebelAxisController:
                             self.motor_enabled = False
 
 
-                
-                elif msg.ID == self.can_id + 2 and msg.DATA[0] == 0x06:
-                    # Antwort auf ResetError, MotorEnable, ZeroPosition, DisableMotor, Referenzierung, AlignRotor
 
-                    differentiate_msg = bytes_to_int(msg.DATA[2:4])
-                    # logger.debug(f"CAN-ID + 2: Differentiate MSG based on Bytes 2-4: {hex(differentiate_msg)}")
-                    
-                    if differentiate_msg == 0x0106:
-                        # Antwort auf ResetError
-                        with self.lock:
-                            self.motor_no_err = True
-                        logging.error("Motor Errors have been resettet")
-
-                    elif differentiate_msg == 0x0109:
-                        # Antwort auf MotorEnable
-                        with self.lock:
-                            self.motor_enabled = True
-                        logging.error("Motor is enabled")
-                    
-                    elif differentiate_msg == 0x010A:
-                        # Antwort auf Motor disable
-                        logging.error("Motor is disabled")
-                        with self.lock:
-                            self.motor_enabled = False
-                   
-                    elif differentiate_msg == 0x020B:
-                        # Antwort auf Referenzierung
-                        count_ref = bytes_to_int(msg.DATA[4:6])
-                        logging.error(f"Answer to motor referencing: Call No. { count_ref }")
-                        with self.lock:
-                            if count_ref == 2:
-                                self.motor_referenced = True
-                            else:
-                                self.motor_referenced = False
-                    
-                    elif differentiate_msg == 0x0108:
-                        ...
-                        # Antwort auf Position Reset CMD, unabhängig von Erfolg oder nicht
-                        logging.error(f"Received reply: Reset_Position")
-                        # with self.lock:
-                        #     self.motor_position_is_resetted = False
-                    
-                    elif differentiate_msg == 0x0208:
-                        # Antwort auf Position Reset: Erfolgreich
-                        count_reset_posi = bytes_to_int(msg.DATA[4:6])
-                        logging.error(f"Reset position, Call No. {count_reset_posi} at time: {timestamp.millis}.")
-                        with self.lock:
-                            if count_reset_posi == 2:
-                                self.motor_position_is_resetted = True 
-                    
-                    elif differentiate_msg == 0x020C :
-                        # Antwort auf: Align Rotor
-                        count_align_rotor= bytes_to_int(msg.DATA[4:6])
-                        logging.error(f"Align Rotor, Call No. {count_align_rotor}.")
-                        with self.lock:
-                            if count_align_rotor == 0x02:
-                                self.motor_rotor_is_aligned = True
-                            else:
-                                self.motor_rotor_is_aligned = False
-                
-                
-                elif msg.ID == self.can_id + 2 and msg.DATA[0] == 0x07:
-                    
-                    if bytes_to_int(msg.DATA[2:4], signed=True) == 0x020B:
-                    # Referenzierung der Achse bereits aktiv
-                        logging.error("Motor has finished referencing!")
-                        with self.lock:
-                            self.motor_referenced = True
-                
-                elif msg.ID == self.can_id + 2 and msg.DATA[0] == 0xE0:
-                    print("self.log_extended_error_message", self.log_extended_error_messages)
-                    if self.log_extended_error_messages == True:
-                        logging.error("**************************")
-                        logging.error("Erweiterte Fehlernachricht!")
-                        
-                        motor_error_byte = msg.DATA[1]
-                        # bits: Motor n.C. / OC RMS / OC Single Phase / Over Temperature
-                        
-                        adc_error_byte = msg.DATA[2]
-                        # ADC Offset
-                        
-                        rebel_error = msg.DATA[3]
-                        # Com Error / Out of Range
-                        
-                        control_error = msg.DATA[4]
-                        # Velocity High / Low Allign / Parameter Fault
-
-                        logging.error(f"MotorError: {motor_error_byte} / ADC Error: {adc_error_byte} / Rebel Error: {rebel_error} / Control Error: {control_error}")
-                        logging.error("**************************")
-                
+                ##############################
+                ### RECEIVED MSG ON CAN-ID + 2
+                ##############################
                 elif msg.ID == self.can_id + 2:
-                    if bytes_to_int(msg.DATA[0:1]) == 0xEF:
+                    
+                    if msg.DATA[0] == 0x06:
+                        differentiate_msg = bytes_to_int(msg.DATA[2:4])
+                        # logger.debug(f"CAN-ID + 2: Differentiate MSG based on Bytes 2-4: {hex(differentiate_msg)}")
+                        
+                        if differentiate_msg == 0x0106:
+                            # Antwort auf ResetError
+                            with self.lock:
+                                self.motor_no_err = True
+                            logging.error("Motor Errors have been resettet")
+
+                        elif differentiate_msg == 0x0109:
+                            # Antwort auf MotorEnable
+                            with self.lock:
+                                self.motor_enabled = True
+                            logging.error("Motor is enabled")
+                        
+                        elif differentiate_msg == 0x010A:
+                            # Antwort auf Motor disable
+                            logging.error("Motor is disabled")
+                            with self.lock:
+                                self.motor_enabled = False
+                    
+                        elif differentiate_msg == 0x020B:
+                            # Antwort auf Referenzierung
+                            count_ref = bytes_to_int(msg.DATA[4:6])
+                            logging.error(f"Answer to motor referencing: Call No. { count_ref }")
+                            with self.lock:
+                                if count_ref == 2:
+                                    self.motor_referenced = True
+                                else:
+                                    self.motor_referenced = False
+                        
+                        elif differentiate_msg == 0x0108:
+                            ...
+                            # Antwort auf Position Reset CMD, unabhängig von Erfolg oder nicht
+                            logging.error(f"Received reply: Reset_Position")
+                        
+                        elif differentiate_msg == 0x0208:
+                            # Antwort auf Position Reset: Erfolgreich
+                            count_reset_posi = bytes_to_int(msg.DATA[4:6])
+                            logging.error(f"Reset position, Call No. {count_reset_posi} at time: {timestamp.millis}.")
+                            with self.lock:
+                                if count_reset_posi == 2:
+                                    self.motor_position_is_resetted = True 
+                        
+                        elif differentiate_msg == 0x020C :
+                            # Antwort auf: Align Rotor
+                            count_align_rotor= bytes_to_int(msg.DATA[4:6])
+                            logging.error(f"Align Rotor, Call No. {count_align_rotor}.")
+                            with self.lock:
+                                if count_align_rotor == 0x02:
+                                    self.motor_rotor_is_aligned = True
+                                else:
+                                    self.motor_rotor_is_aligned = False
+                    
+                    elif msg.DATA[0] == 0x07:
+                        if bytes_to_int(msg.DATA[2:4], signed=True) == 0x020B:
+                        # Referenzierung der Achse bereits aktiv
+                            logging.error("Motor has finished referencing!")
+                            with self.lock:
+                                self.motor_referenced = True
+                    
+                    elif msg.DATA[0] == 0xE0:
+                        if self.__verbose == True:
+                            logging.error("**************************")
+                            logging.error("Erweiterte Fehlernachricht!")
+                            
+                            motor_error_byte = msg.DATA[1]
+                            # bits: Motor n.C. / OC RMS / OC Single Phase / Over Temperature
+                            
+                            adc_error_byte = msg.DATA[2]
+                            # ADC Offset
+                            
+                            rebel_error = msg.DATA[3]
+                            # Com Error / Out of Range
+                            
+                            control_error = msg.DATA[4]
+                            # Velocity High / Low Allign / Parameter Fault
+
+                            logging.error(f"MotorError: {motor_error_byte} / ADC Error: {adc_error_byte} / Rebel Error: {rebel_error} / Control Error: {control_error}")
+                            logging.error("**************************")
+                    
+                    
+                    elif msg.DATA[0] == 0xEF:
+                        ...
                         pos_degree = bytes_to_int(msg.DATA[4:8]) / 100
                         logger.debug(f"Abtriebsencoder Position: {pos_degree}")
+                    
 
-
+                
+                ##############################
+                ### RECEIVED MSG ON CAN-ID + 3
+                ##############################
                 elif msg.ID == self.can_id + 3:
                     # Umgebungsparameter, ca. 1 mal pro Sekunde
-
-                    if self.log_environment_messages:
+                    if self.__verbose == True:
                         voltage = bytes_to_int(msg.DATA[2:4], signed=True) #mV
                         temp_motor = bytes_to_int(msg.DATA[4:6], signed=True) #m°C
                         temp_board = bytes_to_int(msg.DATA[6:8], signed=True) #m°C
@@ -243,8 +253,8 @@ class RebelAxisController:
               
             
             elif status == PCAN_ERROR_QRCVEMPTY:
-                ...
-                logging.error("QUEUE EMPTY")
+                if self.__verbose == True:
+                    logging.error("QUEUE EMPTY")
 
             elif status == PCAN_ERROR_BUSHEAVY:
                 logging.error("*** BUS ERROR - Motor might be off ***")
