@@ -107,9 +107,13 @@ class RebelAxisController:
         self.thread_movement = Thread(target=self.__move, args=(), daemon=True)
         self.thread_movement.start()
 
+
+    def __move_velo_mode(self, action:MovementVelocityMode):
+        ...
     
     def __move_position_mode(self, action:MovementPositionMode):
         ...
+        time.sleep(1)
         target_tics, velo, threshold_tics = action()
         current_tics = self.tics_current
         err_reset_counter = 0
@@ -125,7 +129,6 @@ class RebelAxisController:
                     break
                 self.cmd_reset_errors()
                 self.do_cycle()
-                # time.sleep(1/f_hz)
                 self.cmd_enable_motor()
                 err_reset_counter += 1
 
@@ -133,7 +136,6 @@ class RebelAxisController:
             self.cmd_position_mode(current_tics, 0)
             
             self.do_cycle()
-            # time.sleep(1/f_hz)
     
         self.cmd_disable_motor()
         self.__log_verbose("*"*10)
@@ -142,9 +144,6 @@ class RebelAxisController:
 
 
     def __move(self):
-
-        f_hz = 20
-
         self.cmd_reset_position()
         self.do_cycle()
         # time.sleep(1/f_hz)
@@ -161,48 +160,15 @@ class RebelAxisController:
                 
                 if type(current_action) == MovementPositionMode:
                     self.__move_position_mode(current_action)
-                    ...
-                    # target_tics, velo, threshold_tics = current_action()
-
-                    # current_tics = self.tics_current
-                    # err_reset_counter = 0
-
-                    # delta_tics = self.get_delta_tics_for_output_velo(velo)
-
-                    # if current_tics > target_tics:
-                    #     delta_tics = delta_tics *-1
-                        
-
-                    # while abs(self.tics_current - target_tics) > threshold_tics:
-                    #     if not self.can_move():
-                    #         if err_reset_counter >= 5:
-                    #             logger.debug("ERROR: Reset was done 5 times, max_counter exceeded!")
-                    #             print("ERROR RESET 5 TIMES!")
-                    #             break
-                    #         self.cmd_reset_errors()
-                    #         time.sleep(1/f_hz)
-                    #         self.cmd_enable_motor()
-                    #         err_reset_counter += 1
-
-                    #     current_tics += delta_tics 
-                    #     self.cmd_position_mode(current_tics, 0)
-                        
-                    #     time.sleep(1/f_hz)
-                
-                    # self.cmd_disable_motor()
-                    # self.__log_verbose("*"*10)
-                    # self.__log_verbose("MOVEMENT-ACTION FINISHED!")
-                    # time.sleep(2)
-                
-                
-                
-                
                 
                 elif type(current_action) == MovementVelocityMode:
-                    ...
+                    self.__move_velo_mode(current_action)
             
+            else:
+                # There are no actions left in the queue
+                ...
 
-            time.sleep(1)
+            self.do_cycle()
 
 
 
@@ -486,71 +452,10 @@ class RebelAxisController:
         logger.debug("cmd_position_mode")
 
         tics_32_bits = int_to_bytes(to_tics, num_bytes=4, signed=True)
-        # msg = get_cmd_msg([0x14,0x0,*tics_32_bits, time_stamp, 0x0], self.can_id)    
         msg = get_cmd_msg([0x14,0x0,*tics_32_bits, time_stamp, 0x0], self.can_id)    
         self.write_cmd(msg, "position_mode")
 
     
-    # def move_position_mode(self, target_pos=90, velo=10):
-    #     logger.info("move_position_mode()")
-    #     target_tics = target_pos * GEAR_SCALE
-    #     delta_tics = 400
-
-    #     # setpoint = self.tics_current
-
-
-    #     while abs(target_tics - self.tics_current) > 1 * GEAR_SCALE:
-    #         logger.info("Move_position_mode() :::: LOOP")
-
-    #         if self.motor_enabled == False:
-    #             self.cmd_enable_motor()
-            
-    #         setpoint = self.tics_current + delta_tics
-    #         self.cmd_position_mode(setpoint)
-    #         # self.do_cycle()
-    #         time.sleep(1/10)
-        
-   
-    # def move_position_mode2(self, target_pos=90, velo=10):
-    #     alpha = 0.08
-    #     target_tics = target_pos * GEAR_SCALE
-    #     delta_tics = 50
-    #     delta_tics_max = 400
-
-    #     setpoint = self.tics_current
-
-    #     time_stamp = 0
-
-
-    #     while abs(target_tics - self.tics_current) > 1 * GEAR_SCALE:
-
-    #         if self.motor_enabled == False:
-    #             self.cmd_enable_motor()
-            
-    #         if delta_tics > 360:
-    #             delta_tics = delta_tics_max
-    #         else:
-    #             delta_tics = int(alpha*delta_tics_max + (1-alpha) * delta_tics)
-            
-            
-    #         print(f"Move_position_mode() : LOOP / delta_tics: {delta_tics} / current tics: {self.tics_current}")
-
-    #         setpoint = int(setpoint + delta_tics)
-    #         self.tics_setpoint = setpoint
-    #         time_stamp = (time_stamp + 1) % 256
-    #         self.cmd_position_mode(setpoint, time_stamp)
-    #         # self.do_cycle()
-    #         time.sleep(0.06)
-        
-
-
-
-
-
-
-    
-
-
     def timestamp_str(self, timestamp):
         return f"Timestamps Milliseconds: {timestamp.millis} // Milliseconds (overflow): {timestamp.millis_overflow} // Microseconds: {timestamp.micros}"
 
