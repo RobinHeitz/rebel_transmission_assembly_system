@@ -28,7 +28,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     verbose = args.verbose
 
-    c = RebelAxisController(verbose=verbose)
+    c = RebelAxisController(verbose=verbose, start_movement_queue=True)
     # c.start_msg_listener_thread()
     # c.start_movement_thread()
 

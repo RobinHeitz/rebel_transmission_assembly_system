@@ -131,34 +131,10 @@ def start_velocity_mode(event, values, controller):
 
 def start_velocity_mode_thread(window, controller:RebelAxisController):
     """Thread-run method for resetting/ enabling motor and loop over velocity-cmds afterwards."""
-
     controller.start_movement_velocity_mode()
 
 
-    # duration = 10
-    # current_thread = threading.currentThread()
-
-    # if not controller.can_move():
-    #     controller.cmd_reset_errors()
-    #     controller.do_cycle()
-    #     controller.cmd_enable_motor()
-    #     controller.do_cycle()
-
-    # start_time = time.time()
-    # while time.time() - start_time < duration and getattr(current_thread, 'do_move', True):
-    #     controller.cmd_velocity_mode(10)
-    #     controller.do_cycle()
-    
-    # controller.stop_movement()
-    # global thread_graph_updater
-    # thread_graph_updater.do_plot = False
-
-
 def stop_velocity_mode(event, values, controller:RebelAxisController):
-    # logger.warning("BTN CLICKED: Stop Motor movement")
-    # controller.stop_movement()
-    # global thread_velocity, thread_graph_updater
-    # thread_velocity.do_move = False
     controller.stop_movement_velocity_mode()
     thread_graph_updater.do_plot = False
 
@@ -170,7 +146,6 @@ def graph_update_cycle(window:sg.Window, controller:RebelAxisController):
     cur_thread = threading.currentThread()
     while getattr(cur_thread, 'do_plot', True):
         time.sleep(1)
-
         logger.warning("graph_update_cycle()")
 
         # sorted_data = sorted(controller.movement_cmd_reply_list)
