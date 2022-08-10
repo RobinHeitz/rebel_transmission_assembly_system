@@ -7,13 +7,6 @@ import time
 
 
 
-def sleep(duration, get_now=time.perf_counter):
-    now = get_now()
-    end = now + duration
-    while now < end:
-        now = get_now()
-
-
 def get_cmd_msg(data, can_id):
         """Basic construction of a can message with 8 bytes.
         
