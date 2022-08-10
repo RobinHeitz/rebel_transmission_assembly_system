@@ -3,6 +3,15 @@ from can.interfaces.pcan.basic import TPCANMsg, PCAN_MESSAGE_STANDARD, TPCANMess
 from ctypes import *
 
 from .definitions import GEAR_SCALE, RESPONSE_ERROR_CODES_DICT
+import time
+
+
+
+def sleep(duration, get_now=time.perf_counter):
+    now = get_now()
+    end = now + duration
+    while now < end:
+        now = get_now()
 
 
 def get_cmd_msg(data, can_id):

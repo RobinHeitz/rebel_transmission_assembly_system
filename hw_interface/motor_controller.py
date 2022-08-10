@@ -6,7 +6,7 @@ import time, logging
 
 from ctypes import *
 
-from .helper_functions import get_cmd_msg, bytes_to_int, int_to_bytes
+from .helper_functions import get_cmd_msg, bytes_to_int, int_to_bytes, sleep
 from .helper_functions import pos_from_tics, tics_from_pos, response_error_codes
 
 from .definitions import GEAR_SCALE, RESPONSE_ERROR_CODES, MessageMovementCommandReply, MessageEnvironmentStatus, MovementPositionMode, MovementVelocityMode
@@ -109,15 +109,16 @@ class RebelAxisController:
         self.cmd_reset_position()
 
         while True:
-            logger.info("STARTING __move() - LOOP again.")
+            self.__log_verbose("STARTING __move() - LOOP again.")
             if len(self.movement_queue) > 0:
                 ...
                 current_action = self.movement_queue.pop(0)
-                logger.debug("#"*15)
-                logger.debug(f"New Movemen: {str(current_action)}")
-                logger.debug("#"*15)
+                self.__log_verbose("#"*15)
+                self.__log_verbose(f"New Movemen: {str(current_action)}")
+                self.__log_verbose("#"*15)
                 if type(current_action) == MovementPositionMode:
                     ...
+                    # target_tics, velo, threshold_tics = current_action()
                     target_tics = current_action.target_tics
                     velo = current_action.velo
                     threshold_tics = current_action.threshold_tics
@@ -137,7 +138,6 @@ class RebelAxisController:
                         
 
                     while abs(self.tics_current - target_tics) > threshold_tics:
-                         
                         if not self.can_move():
                             if err_reset_counter >= 5:
                                 logger.debug("ERROR: Reset was done 5 times, max_counter exceeded!")
@@ -146,14 +146,20 @@ class RebelAxisController:
                             self.cmd_reset_errors()
                             time.sleep(1/f_hz)
                             self.cmd_enable_motor()
+                            err_reset_counter += 1
 
                         current_tics += delta_tics 
                         self.cmd_position_mode(current_tics, 0)
+                        
                         time.sleep(1/f_hz)
-                    
+
+                        # sleep(1/f_hz)
+
+
                     self.cmd_disable_motor()
-                    logger.info("*"*10)
-                    logger.info("MOVEMENT-ACTION FINISHED!")
+                    self.__log_verbose("*"*10)
+                    self.__log_verbose("MOVEMENT-ACTION FINISHED!")
+                    time.sleep(2)
                 
                 
                 

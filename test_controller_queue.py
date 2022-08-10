@@ -38,6 +38,7 @@ if __name__ == "__main__":
         
         for i in range(5):
             m = generate_random_action()
+            # m = MovementPositionMode(15000*i, 10, 1000)
             c.movement_queue.append(m)
         
         # Homing after work is done.

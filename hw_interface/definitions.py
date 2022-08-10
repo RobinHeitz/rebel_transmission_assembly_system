@@ -65,6 +65,10 @@ class MovementPositionMode(MovementActionBase):
     def __str__(self):
         return f"MovementPositionMode: Target = {self.target_tics} / velo={self.velo}"
 
+    def __call__(self):
+        """Returns parameters as tuple:
+        return (target_tics, velo, threshold_tics)"""
+        return self.target_tics, self.velo, self.threshold_tics
 
 class MovementVelocityMode(MovementActionBase):
     def __init__(self, duration, velo=10) -> None:
