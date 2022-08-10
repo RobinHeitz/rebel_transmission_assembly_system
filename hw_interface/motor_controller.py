@@ -50,7 +50,7 @@ class RebelAxisController:
     movement_queue = []
 
 
-    def __init__(self, _can_id = None, can_auto_detect = True, verbose = False) -> None:
+    def __init__(self, _can_id = None, can_auto_detect = True, verbose = False, start_movement_queue = False) -> None:
 
         self.__verbose = verbose
         
@@ -68,14 +68,45 @@ class RebelAxisController:
             self.can_id = _can_id
 
         self.start_msg_listener_thread()
-        self.start_movement_thread()
+        
+        if start_movement_queue == True:
+            self.start_movement_thread()
 
-        logger.debug("Initializing was succesfull.")
+        logger.info("Initializing was succesfull.")
     
+   
     def __log_verbose(self, msg):
         if self.__verbose == True:
             logger.debug(msg)
 
+    def find_can_id(self, timeout = 5):
+        logger.debug("find_can_id()")
+        start_time = time.time()
+
+        board_id = -1
+        # Umgebungsparameter 0x12 auf CAN-ID + 3
+        while time.time() - start_time < timeout:
+            status, msg, _ = self.pcan.Read(self.channel)
+            if status == PCAN_ERROR_QRCVEMPTY:
+                # Receive queue empty
+                ...
+            else:
+                first_2_bytes = bytes_to_int(msg.DATA[0:2])
+                board_id = msg.ID - 3
+                if board_id in [0x10, 0x20, 0x30, 0x40, 0x50, 0x60] and first_2_bytes == 0x1200:
+                    logger.debug(f"Found CAN ID: {board_id} // status = {status} // first 2 bytes = {first_2_bytes}")
+                    # return board_id
+                    break
+                else:
+                    board_id = -1
+        
+        self.can_id = board_id
+        return board_id
+
+
+
+    def shut_down(self):
+        self.pcan.Uninitialize(self.channel)
     
     def do_cycle(self):
         time.sleep(1 / self.frequency_hz)
@@ -105,15 +136,60 @@ class RebelAxisController:
         self.motor_enabled = False
         self.motor_no_err = False
 
+
+
+    ####################################################
+    # Movement directly through velocity CMDs / NO QUEUE
+    ####################################################
+    
+    def start_movement_velocity_mode(self):
+        logging.info("start_movement_velocity")
+
+        if not hasattr(self, "thread_movement_velo_mode"):
+            self.thread_movement_velo_mode = Thread(target=None)
+        
+        if self.thread_movement_velo_mode.is_alive() == False:
+            self.thread_movement_velo_mode = Thread(target=self.__movement_velocity_mode, args=(), daemon=True)
+            self.thread_movement_velo_mode.start()
+
+    
+    def stop_movement_velocity_mode(self):
+        logging.info("stop_movement_velocity")
+        self.thread_movement_velo_mode.done = True
+        self.stop_movement()
+    
+
+    def __movement_velocity_mode(self):
+        if not self.can_move():
+            self.cmd_reset_errors()
+            self.do_cycle()
+            self.cmd_enable_motor()
+            self.do_cycle()
+        
+        while getattr(self.thread_movement_velo_mode, "done", False) == False:
+            self.cmd_velocity_mode(10)
+            self.do_cycle()
+
+    
+    
+
+    
+
+
+
+
+    ################################
+    # MOVEMENT THROUGH MOVEMENT QUEUE
+    ################################
+    
     def start_movement_thread(self):
-        self.thread_movement = Thread(target=self.__move, args=(), daemon=True)
+        self.thread_movement = Thread(target=self.__move_queue, args=(), daemon=True)
         self.thread_movement.start()
 
-
-    def __move_velo_mode(self, action:MovementVelocityMode):
+    def __move_queue_handle_velo_mode(self, action:MovementVelocityMode):
         ...
     
-    def __move_position_mode(self, action:MovementPositionMode):
+    def __move_queue_handle_position_mode(self, action:MovementPositionMode):
         ...
         time.sleep(1)
         target_tics, velo, threshold_tics = action()
@@ -145,14 +221,19 @@ class RebelAxisController:
         time.sleep(2)
 
 
-    def __move(self):
+    def __move_queue(self):
+        """
+        On possible way to move the rebel axis.
+        If 'start_movement_queue' is set, movement cmds are sent (velocity-mode with velocity 0).
+        You can add new cmds to the movement queue; the queue is working through them.
+        """
         self.cmd_reset_position()
         self.do_cycle()
         # time.sleep(1/f_hz)
         self.cmd_reset_position()
 
         while True:
-            self.__log_verbose("STARTING __move() - LOOP again.")
+            self.__log_verbose("STARTING __move_queue() - LOOP again.")
             if len(self.movement_queue) > 0:
                 ...
                 current_action = self.movement_queue.pop(0)
@@ -161,10 +242,10 @@ class RebelAxisController:
                 self.__log_verbose("#"*15)
                 
                 if type(current_action) == MovementPositionMode:
-                    self.__move_position_mode(current_action)
+                    self.__move_queue_handle_position_mode(current_action)
                 
                 elif type(current_action) == MovementVelocityMode:
-                    self.__move_velo_mode(current_action)
+                    self.__move_queue_handle_velo_mode(current_action)
             
             else:
                 # There are no actions left in the queue
@@ -173,6 +254,13 @@ class RebelAxisController:
 
             self.do_cycle()
 
+
+
+
+
+    ##################################
+    ### Read CAN Messages in a thread.
+    ##################################
 
 
     def start_msg_listener_thread(self):
@@ -197,7 +285,7 @@ class RebelAxisController:
                     # Movement cmd answer
                     
                     error_descriptions_list, error_codes_list = response_error_codes(msg.DATA[0])
-                    logger.info(f"Current Error Codes: {error_descriptions_list}")
+                    logger.debug(f"Current Error Codes: {error_descriptions_list}")
 
                     _tics_current = bytes_to_int(msg.DATA[1:5], signed=True)
                     pos = round(pos_from_tics(_tics_current),2)
@@ -347,36 +435,16 @@ class RebelAxisController:
             time.sleep(1/100)
         
 
-    def find_can_id(self, timeout = 5):
-        logger.info("find_can_id()")
-        start_time = time.time()
-
-        board_id = -1
-        # Umgebungsparameter 0x12 auf CAN-ID + 3
-        while time.time() - start_time < timeout:
-            status, msg, _ = self.pcan.Read(self.channel)
-            if status == PCAN_ERROR_QRCVEMPTY:
-                # Receive queue empty
-                ...
-            else:
-                first_2_bytes = bytes_to_int(msg.DATA[0:2])
-                board_id = msg.ID - 3
-                if board_id in [0x10, 0x20, 0x30, 0x40, 0x50, 0x60] and first_2_bytes == 0x1200:
-                    logger.info(f"Found CAN ID: {board_id} // status = {status} // first 2 bytes = {first_2_bytes}")
-                    # return board_id
-                    break
-                else:
-                    board_id = -1
-        
-        self.can_id = board_id
-        return board_id
-
-
-
-    def shut_down(self):
-        self.pcan.Uninitialize(self.channel)
 
     
+
+
+
+    ######################
+    ### Send CAN Messages
+    ######################
+
+
     def write_cmd(self, msg, cmd_description):
         status = self.pcan.Write(self.channel, msg)
         if status == PCAN_ERROR_OK:

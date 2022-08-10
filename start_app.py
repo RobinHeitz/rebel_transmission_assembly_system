@@ -94,11 +94,14 @@ def connect_can(event, values,controller: RebelAxisController):
 
 
 def connect_can_thread(window, controller:RebelAxisController):
-    board_id = controller.find_can_id(timeout=2)
-    if board_id != -1:
+    if controller.can_id != -1:
         update_connect_btn_status(status="FOUND_CAN_ID")
     else:
-        update_connect_btn_status(status="ERROR_NO_CAN_ID_FOUND")
+        board_id = controller.find_can_id(timeout=2)
+        if board_id != -1:
+            update_connect_btn_status(status="FOUND_CAN_ID")
+        else:
+            update_connect_btn_status(status="ERROR_NO_CAN_ID_FOUND")
 
 
 
@@ -128,31 +131,35 @@ def start_velocity_mode(event, values, controller):
 
 def start_velocity_mode_thread(window, controller:RebelAxisController):
     """Thread-run method for resetting/ enabling motor and loop over velocity-cmds afterwards."""
-    
-    duration = 10
-    current_thread = threading.currentThread()
 
-    if not controller.can_move():
-        controller.cmd_reset_errors()
-        controller.do_cycle()
-        controller.cmd_enable_motor()
-        controller.do_cycle()
+    controller.start_movement_velocity_mode()
 
-    start_time = time.time()
-    while time.time() - start_time < duration and getattr(current_thread, 'do_move', True):
-        controller.cmd_velocity_mode(10)
-        controller.do_cycle()
+
+    # duration = 10
+    # current_thread = threading.currentThread()
+
+    # if not controller.can_move():
+    #     controller.cmd_reset_errors()
+    #     controller.do_cycle()
+    #     controller.cmd_enable_motor()
+    #     controller.do_cycle()
+
+    # start_time = time.time()
+    # while time.time() - start_time < duration and getattr(current_thread, 'do_move', True):
+    #     controller.cmd_velocity_mode(10)
+    #     controller.do_cycle()
     
-    controller.stop_movement()
-    global thread_graph_updater
-    thread_graph_updater.do_plot = False
+    # controller.stop_movement()
+    # global thread_graph_updater
+    # thread_graph_updater.do_plot = False
 
 
 def stop_velocity_mode(event, values, controller:RebelAxisController):
-    logger.warning("BTN CLICKED: Stop Motor movement")
-    controller.stop_movement()
-    global thread_velocity, thread_graph_updater
-    thread_velocity.do_move = False
+    # logger.warning("BTN CLICKED: Stop Motor movement")
+    # controller.stop_movement()
+    # global thread_velocity, thread_graph_updater
+    # thread_velocity.do_move = False
+    controller.stop_movement_velocity_mode()
     thread_graph_updater.do_plot = False
 
 
@@ -166,7 +173,11 @@ def graph_update_cycle(window:sg.Window, controller:RebelAxisController):
 
         logger.warning("graph_update_cycle()")
 
-        sorted_data = sorted(controller.movement_cmd_reply_list)
+        # sorted_data = sorted(controller.movement_cmd_reply_list)
+        # sortiert über position
+
+        sorted_data = controller.movement_cmd_reply_list[-200:]
+
         x_data = [i.position for i in sorted_data]
         y_data = [i.current for i in sorted_data]
         window.write_event_value(K_UPDATE_GRAPH, dict(x=x_data, y=y_data))
@@ -246,9 +257,8 @@ if __name__ == "__main__":
     controller = None
     try:
         controller = RebelAxisController()
-        controller.start_msg_listener_thread()
     except Exception_PCAN_Connection_Failed as e:
-        print(e)
+        print("Exception PCAN Connection Failed:", e)
         update_connect_btn_status(status="PCAN_HW_ERROR")
     except Exception_Controller_No_CAN_ID:
         ...
@@ -305,5 +315,9 @@ if __name__ == "__main__":
             logger.error(e.__traceback__)
             logger.error(f"WARNING: Missing event in 'key_functin_map': Event = {event} // values = {values.get(event)}")
         
+        except KeyboardInterrupt:
+            controller.stop_movement()
+            controller.shut_down()
+            break
 
     window.close()
