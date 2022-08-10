@@ -28,6 +28,7 @@ logger.addHandler(fileHandler)
 # Class: Controller
 ####################
 class RebelAxisController:
+    frequency_hz = 20 # ms
     cycle_time  = 1/20
 
     tics_current = 0
@@ -75,15 +76,22 @@ class RebelAxisController:
 
     
     def do_cycle(self):
-        time.sleep(self.cycle_time)
+        time.sleep(1 / self.frequency_hz)
 
     
-    def get_tics_step(self, output_velocity):
-        """Returns delta tics for position movement cmd to reach gear-output velocity.
-        Params:
-        - output_velocity: Gear output velocity in [°/s]."""
-        return output_velocity * self.cycle_time * GEAR_SCALE
+    def get_delta_tics_for_output_velo(self, output_velocity):
+        """
+        Returns delta tics (int) based on wanted output velocity (and cycle time / Frequency)
 
+        output_velocity = frequency[Hz] * delta_tics[Tics] / GearScale
+        <=> delta_Tics = output_velocity * GearScale / frequency
+        
+        Params:
+        - output_velocity: Wanted velo of gear output in [° / sec]
+
+        Return: delta tics (int)
+        """
+        return int(output_velocity * GEAR_SCALE / self.frequency_hz)
 
 
     def can_move(self):
@@ -118,20 +126,12 @@ class RebelAxisController:
                 self.__log_verbose("#"*15)
                 if type(current_action) == MovementPositionMode:
                     ...
-                    # target_tics, velo, threshold_tics = current_action()
-                    target_tics = current_action.target_tics
-                    velo = current_action.velo
-                    threshold_tics = current_action.threshold_tics
+                    target_tics, velo, threshold_tics = current_action()
 
                     current_tics = self.tics_current
                     err_reset_counter = 0
 
-                    """
-                    output_velocity = frequency * delta_tics / GearScale
-                    <=> delta_Tics = output_velocity * GearScale / frequency
-                    """
-                    
-                    delta_tics = int(velo * GEAR_SCALE / f_hz)
+                    delta_tics = self.get_delta_tics_for_output_velo(velo)
 
                     if current_tics > target_tics:
                         delta_tics = delta_tics *-1
