@@ -6,7 +6,7 @@ import time, logging
 
 from ctypes import *
 
-from .helper_functions import get_cmd_msg, bytes_to_int, int_to_bytes, sleep
+from .helper_functions import get_cmd_msg, bytes_to_int, int_to_bytes
 from .helper_functions import pos_from_tics, tics_from_pos, response_error_codes
 
 from .definitions import GEAR_SCALE, RESPONSE_ERROR_CODES, MessageMovementCommandReply, MessageEnvironmentStatus, MovementPositionMode, MovementVelocityMode
