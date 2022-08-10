@@ -29,13 +29,12 @@ if __name__ == "__main__":
     verbose = args.verbose
 
     c = RebelAxisController(verbose=verbose)
-    c.start_msg_listener_thread()
-    c.start_movement_thread()
+    # c.start_msg_listener_thread()
+    # c.start_movement_thread()
 
 
 
     try:
-        
         for i in range(5):
             m = generate_random_action()
             # m = MovementPositionMode(15000*i, 10, 1000)

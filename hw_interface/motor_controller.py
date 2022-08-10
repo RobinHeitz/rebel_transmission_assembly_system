@@ -28,8 +28,7 @@ logger.addHandler(fileHandler)
 # Class: Controller
 ####################
 class RebelAxisController:
-    frequency_hz = 20 # ms
-    cycle_time  = 1/20
+    frequency_hz = 20 # Hz --> 50ms intervall time
 
     tics_current = 0
     tics_setpoint = 0
@@ -67,6 +66,9 @@ class RebelAxisController:
             self.can_id = id if id != -1 else None
         else:
             self.can_id = _can_id
+
+        self.start_msg_listener_thread()
+        self.start_movement_thread()
 
         logger.debug("Initializing was succesfull.")
     
@@ -167,6 +169,7 @@ class RebelAxisController:
             else:
                 # There are no actions left in the queue
                 ...
+                self.cmd_velocity_mode(0)
 
             self.do_cycle()
 
