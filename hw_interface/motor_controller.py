@@ -409,15 +409,15 @@ class RebelAxisController:
                 ##############################
                 elif msg.ID == self.can_id + 3:
                     # Umgebungsparameter, ca. 1 mal pro Sekunde
-                    if self.__verbose == True:
-                        voltage = bytes_to_int(msg.DATA[2:4], signed=True) #mV
-                        temp_motor = bytes_to_int(msg.DATA[4:6], signed=True) #m°C
-                        temp_board = bytes_to_int(msg.DATA[6:8], signed=True) #m°C
+                    voltage = bytes_to_int(msg.DATA[2:4], signed=True) #mV
+                    temp_motor = bytes_to_int(msg.DATA[4:6], signed=True) #m°C
+                    temp_board = bytes_to_int(msg.DATA[6:8], signed=True) #m°C
 
-                        m = MessageEnvironmentStatus(voltage, temp_motor, temp_board, timestamp.millis)
+                    m = MessageEnvironmentStatus(voltage, temp_motor, temp_board, timestamp.millis)
+                    with self.lock:
+                        self.motor_env_status_list.append(m)
+                    if self.__verbose == True:
                         logger.warning(m)
-                        with self.lock:
-                            self.motor_env_status_list.append(m)
 
               
             
