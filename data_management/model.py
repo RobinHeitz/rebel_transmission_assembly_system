@@ -85,7 +85,10 @@ class Measurement(Base):
     title = Column(String)
     assembly_id = Column(Integer, ForeignKey("assembly.assembly_id"))
 
-    datapoints = relationship("DataPoint", backref=backref("datapoint"))
+    datapoints = relationship("DataPoint", backref=backref("measurement"))
+
+    def __repr__(self):
+        return f"Measurement-Instance."
 
 
 

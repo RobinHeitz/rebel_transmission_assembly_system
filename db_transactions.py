@@ -36,14 +36,8 @@ def create_assembly_step(session:Session, transmission, assembly_step:AssemblySt
 
 
 def create_assemblies(session:Session, transmission:Transmission):
-    assembly_steps = AssemblyStep.get_all_steps()
-
-    for step in assembly_steps:
+    for step in AssemblyStep.get_all_steps():
         create_assembly_step(session, transmission, step)
-
-    
-    
-
 
 
 
