@@ -1,17 +1,68 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, Table
+from sqlalchemy import Column, Integer, String, ForeignKey, Table, Enum, DateTime
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.ext.declarative import declarative_base
+import enum
+from datetime import datetime
+
+
+class TransmissionConfiguration(enum.Enum):
+    config_80 = 1
+    config_80_encoder = 2
+
+    config_105 = 3
+    config_105_break = 4
+    config_105_encoder = 5
+    config_105_break_encoder = 6
+
+
+class AssemblyStep(enum.Enum):
+    step_1_no_flexring = 1
+    step_2_with_flexring = 2
+    step_3_gearoutput_not_screwed = 3
+    step_4_gearoutput_screwed = 4
 
 Base = declarative_base()
 
-class AssemblyStep(Base):
-    ...
-    # Beschreibung
-    # id
-    # Bild??
+class Transmission(Base):
+    __tablename__ = "transmission"
+    transmission_id = Column(Integer, primary_key=True)
+    created_at = Column(DateTime, default=datetime.now)
+    updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
+    
+    transmission_configuration = Column(Enum(TransmissionConfiguration))
+    
+    finished_date = Column(DateTime)
+    assemblies = relationship("Assembly", backref=backref("transmission"))
 
-class ErrorDescription(Base):
-    ...
+
+class Assembly(Base):
+    __tablename__ = "assembly"
+    assembly_id = Column(Integer, primary_key=True)
+    created_at = Column(DateTime, default=datetime.now)
+
+    assembly_step = Column(Enum(AssemblyStep))
+    transmission_id = Column(Integer, ForeignKey("transmission.transmission_id"))
+    
+    measurements = relationship("Measurement", backref=backref("assembly"))
+
+
+class Measurement(Base):
+    __tablename__ = "measurement"
+    measurement_id = Column(Integer, primary_key=True)
+    title = Column(String)
+    assembly_id = Column(Integer, ForeignKey("assembly.assembly_id"))
+
+
+
+
+# class AssemblyStep(Base):
+#     ...
+#     # Beschreibung
+#     # id
+#     # Bild??
+
+# class ErrorDescription(Base):
+#     ...
 
 
 

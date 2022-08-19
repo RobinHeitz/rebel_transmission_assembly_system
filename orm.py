@@ -3,59 +3,56 @@
 from numpy import delete
 import sqlalchemy as db
 
-from data_management.model import Author, Book, Publisher
+from data_management.model import Transmission, TransmissionConfiguration
+from data_management.model import Measurement, Assembly, AssemblyStep
+
 
 from sqlalchemy.orm import sessionmaker
 
 
 
-if __name__ == "__main__":
-    ...
 
-    engine = db.create_engine('sqlite:///rebel.sqlite')
-    connection = engine.connect()
-    metadata = db.MetaData()
-
-    author = db.Table('Author', metadata, autoload=True, autoload_with=engine)
-    print(author.columns.keys())
-
-
-    # Session = sessionmaker(bind = engine)
-    # session = Session()
-
-    book = db.Table('book', metadata, autoload=True, autoload_with=engine)
-    print(book.columns.keys())
-
-    session = sessionmaker(bind = engine)()
+engine = db.create_engine('sqlite:///rebel.sqlite')
+connection = engine.connect()
+metadata = db.MetaData()
+session = sessionmaker(bind = engine)()
 
 # %%
 
-    newBook = Book(title="My new book!")
-    session.add(newBook)
-    session.commit()
+new_transmission = Transmission(
+    transmission_configuration = TransmissionConfiguration.config_105_break_encoder,
+)
+
+session.add(new_transmission)
+session.commit()
+
+
+    # author = db.Table('Author', metadata, autoload=True, autoload_with=engine)
+    # print(author.columns.keys())
+
+
+    # # Session = sessionmaker(bind = engine)
+    # # session = Session()
+
+    # book = db.Table('book', metadata, autoload=True, autoload_with=engine)
+    # print(book.columns.keys())
+
 
 # %%
 
-result = session.query(Book).all()
-for b in result:
-    print(b)
+assembly = Assembly(assembly_step = AssemblyStep.step_1_no_flexring, transmission = new_transmission)
 
-# %%
-
-newAuthor = Author(first_name="Heinz", last_name="Peter",)
-session.add(newAuthor)
+session.add(assembly)
 session.commit()
 
 # %%
-
-authors = session.query(Author).all()
-for a in authors:
-
-    print(a.first_name)
-    if a.first_name == "Robin":
-        session.delete(a)
-
+measurement = Measurement(title="Test", assembly = assembly)
+session.add(measurement)
 session.commit()
+
 
 # %%
 
+
+get_trans = db.Table("Transmission", metadata, autoload=True, autoload_with=engine)
+print(get_trans.columns.keys())
