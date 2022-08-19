@@ -120,18 +120,13 @@ def perform_software_update_thread(window, controller):
 
 # VELOCITY MODE
 
-def start_velocity_mode(event, values, controller):
+def start_velocity_mode(event, values, controller:RebelAxisController):
+
     global thread_velocity, thread_graph_updater
-    thread_velocity = threading.Thread(target=start_velocity_mode_thread, args=(window, controller), daemon=True)
     thread_graph_updater = threading.Thread(target=graph_update_cycle, args=(window, controller, ), daemon=True)
-    
-    thread_velocity.start()
     thread_graph_updater.start()
-
-
-def start_velocity_mode_thread(window, controller:RebelAxisController):
-    """Thread-run method for resetting/ enabling motor and loop over velocity-cmds afterwards."""
-    controller.start_movement_velocity_mode()
+    
+    controller.start_movement_velocity_mode(duration=5)
 
 
 def stop_velocity_mode(event, values, controller:RebelAxisController):
@@ -139,11 +134,9 @@ def stop_velocity_mode(event, values, controller:RebelAxisController):
     thread_graph_updater.do_plot = False
 
 
-
-
 def graph_update_cycle(window:sg.Window, controller:RebelAxisController):
     """Runs in a thread, ever few seconds it's raising an event for the graphical main queue to trigger graph updating."""
-    cur_thread = threading.currentThread()
+    cur_thread = threading.current_thread()
     while getattr(cur_thread, 'do_plot', True):
         time.sleep(1)
         logger.warning("graph_update_cycle()")
@@ -231,7 +224,7 @@ if __name__ == "__main__":
     window = sg.Window("ReBeL Getriebe Montage & Kalibrierung", layout, size=(800,500), finalize=True)
     controller = None
     try:
-        controller = RebelAxisController()
+        controller = RebelAxisController(verbose=True)
     except Exception_PCAN_Connection_Failed as e:
         print("Exception PCAN Connection Failed:", e)
         update_connect_btn_status(status="PCAN_HW_ERROR")
@@ -245,17 +238,8 @@ if __name__ == "__main__":
     page_keys = [K_PAGE_1, K_PAGE_2, K_PAGE_3]
     current_page_index = 0
 
-
-
-
     graph_plotter = GraphPlotter(window[K_CANVAS_GRAPH_PLOTTING])
-
-
     graph_plotter.plot_data([], [])
-
-    
-
-
 
     key_function_map = {
         K_BTN_NAV_NEXT_PAGE: (_nav_next_page, dict()),
@@ -281,6 +265,8 @@ if __name__ == "__main__":
     while True:
         event, values = window.read()
         if event in (sg.WIN_CLOSED, 'Exit'):
+            controller.stop_movement()
+            controller.shut_down()
             break
 
         try:

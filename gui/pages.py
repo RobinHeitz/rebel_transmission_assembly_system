@@ -28,8 +28,8 @@ layout_page_1 = [
 
 layout_page_2 = [
     [
-        sg.Button("Starte Motor",enable_events=True, k=K_BTN_START_VELO_MODE),
-        sg.Button("Stoppe Motor",enable_events=True, k=K_BTN_STOP_VELO_MODE),
+        sg.Button("Messung starten",enable_events=True, k=K_BTN_START_VELO_MODE),
+        sg.Button("Abbrechen",enable_events=True, k=K_BTN_STOP_VELO_MODE),
     ],
     [sg.Canvas(key=K_CANVAS_GRAPH_PLOTTING, )],
 ]

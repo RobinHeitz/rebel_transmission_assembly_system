@@ -1,3 +1,4 @@
+from datetime import date, datetime
 from can.interfaces.pcan.basic import PCAN_USBBUS1
 from can.interfaces.pcan.basic import PCANBasic, PCAN_DICT_STATUS, PCAN_BAUD_500K
 from can.interfaces.pcan.basic import PCAN_ERROR_OK,PCAN_ERROR_BUSHEAVY, PCAN_ERROR_QRCVEMPTY
@@ -142,40 +143,34 @@ class RebelAxisController:
     # Movement directly through velocity CMDs / NO QUEUE
     ####################################################
     
-    def start_movement_velocity_mode(self):
-        logging.info("start_movement_velocity")
+    def start_movement_velocity_mode(self, duration = 0):
 
         if not hasattr(self, "thread_movement_velo_mode"):
-            self.thread_movement_velo_mode = Thread(target=None)
+            self.thread_movement_velo_mode = Thread(target=self.__movement_velocity_mode, args=(duration, ), daemon=True)
         
         if self.thread_movement_velo_mode.is_alive() == False:
-            self.thread_movement_velo_mode = Thread(target=self.__movement_velocity_mode, args=(), daemon=True)
             self.thread_movement_velo_mode.start()
 
     
     def stop_movement_velocity_mode(self):
         logging.info("stop_movement_velocity")
-        self.thread_movement_velo_mode.done = True
+        self.thread_movement_velo_mode.abort = True
         self.stop_movement()
     
 
-    def __movement_velocity_mode(self):
+    def __movement_velocity_mode(self, duration):
+        logging.info(f"__move_velocity_mode(), duration = {duration}")
         if not self.can_move():
             self.cmd_reset_errors()
             self.do_cycle()
             self.cmd_enable_motor()
             self.do_cycle()
         
-        while getattr(self.thread_movement_velo_mode, "done", False) == False:
+        start_time = datetime.now()
+        
+        while getattr(self.thread_movement_velo_mode, "abort", False) == False and (datetime.now() - start_time).total_seconds() < duration:
             self.cmd_velocity_mode(10)
             self.do_cycle()
-
-    
-    
-
-    
-
-
 
 
     ################################
