@@ -6,6 +6,9 @@ from datetime import datetime
 
 Base = declarative_base()
 
+####################
+### ENUM CLASSES ###
+####################
 
 class TransmissionConfiguration(enum.Enum):
     config_80 = 1
@@ -33,17 +36,26 @@ class AssemblyStep(enum.Enum):
 
 
 
+#####################
+### MODEL CLASSES ###
+#####################
+
+# TODOS:
+# - ERROR/ FAILURE CLS
+# - CORRECTIVE ACTION (Behebungsmaßnahme)
+
+
 
 class Transmission(Base):
     """
     Transmission model cls (SQLAlchemy).
     Params:
-    - transmission_id (read-only): Integer
-    - created_at (read-only): DateTime
-    - updated_at (read-only): DateTime
+    - transmission_id (auto generated): Integer
+    - created_at (auto generated): DateTime
+    - updated_at (auto generated): DateTime
     - transmission_configuration: TransmissionConfiguration
     - finished_date: DateTime
-    - assemblies (read-only): List of Assembly-Objects (backref relation)"""
+    - assemblies (auto generated): List of Assembly-Objects (backref relation)"""
 
     __tablename__ = "transmission"
     transmission_id = Column(Integer, primary_key=True)
@@ -62,10 +74,10 @@ class Assembly(Base):
     """
     Assembly model cls (SQLAlchemy).
     Params:
-    - assmebly_id (read-only): Integer
-    - created_at (read-only): DateTime
+    - assmebly_id (auto generated): Integer
+    - created_at (auto generated): DateTime
     - assembly_step: AssemblyStep
-    - transmission_id (read-only): Integer(Transmission Object)
+    - transmission_id (auto generated): Integer(Transmission Object)
     - measurements: List of Measurement-Objects (backref relation)"""
 
     __tablename__ = "assembly"
@@ -88,12 +100,14 @@ class Measurement(Base):
     """
     Measurement model cls (SQLAlchemy).
     Params:
-    - measurement_id (read-only): Integer
+    - measurement_id (auto generated): Integer
     - title: String
     - assembly_id: Assembly Object (ForeignKey)
     - datapoints: List of DataPoint-Objects (backref relation)"""
     
     __tablename__ = "measurement"
+
+    # ToDO: Add meta data about measure: Duration, Which speed, was measurement ok?
     measurement_id = Column(Integer, primary_key=True)
     created_at = Column(DateTime, default=datetime.now)
     
@@ -111,7 +125,7 @@ class DataPoint(Base):
     """
     DataPoint model cls (SQLAlchemy).
     Params:
-    - datapoint_id (read-only): Integer
+    - datapoint_id (auto generated): Integer
     - current: Integer
     - timestamp: Integer
     - measurement_id: Integer(Measurement Object)"""
@@ -127,3 +141,45 @@ class DataPoint(Base):
 
 
 
+class Failure(Base):
+    """Failure model cls (SQLAlchemy). Every occuring error/ failure at each assembly step is represented by this instance. 
+    
+    """
+    __tablename__ = "failure"
+    failure_id = Column(Integer, primary_key = True)
+    failure_type = Column(Integer, ForeignKey("failuretype.failuretype_id"))
+    
+    
+    # transmission = None
+    # Failure_ID =  None
+    # Failure_Descripion = None
+
+    # Image = None
+
+
+class FailureType(Base):
+    """Failure type model cls (SQLAlchemy). Needed for dynamically add failure kinds/ types to the application. Every occuring failure is linked to a failure type, 
+    thus its possible to query for all failures for a given failure type.
+
+    Params:
+    - failure_type_id (auto generated): Integer
+    - description: String
+    - assembly_step: 
+    
+    """
+
+    __tablename__ = "failuretype"
+    failuretype_id = Column(Integer, primary_key = True)
+    description = Column(String)
+    
+    assembly_step = Column(Enum(AssemblyStep))
+
+    failures = relationship("Failure", backref=backref("failuretype"))
+
+
+class CorrectiveAction(Base):
+    """CorrectiveAction model cls (SQLAlchemy).
+    
+    """
+    __tablename__ = "correctiveaction"
+    corrective_action_id = Column(Integer, primary_key = True)
