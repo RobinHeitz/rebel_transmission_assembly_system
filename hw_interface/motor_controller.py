@@ -1,7 +1,7 @@
 from datetime import date, datetime
 from can.interfaces.pcan.basic import PCAN_USBBUS1
 from can.interfaces.pcan.basic import PCANBasic, PCAN_DICT_STATUS, PCAN_BAUD_500K
-from can.interfaces.pcan.basic import PCAN_ERROR_OK,PCAN_ERROR_BUSHEAVY, PCAN_ERROR_QRCVEMPTY
+from can.interfaces.pcan.basic import PCAN_ERROR_OK,PCAN_ERROR_BUSHEAVY, PCAN_ERROR_QRCVEMPTY, PCAN_ERROR_ILLHW
 
 import time, logging
 
@@ -52,6 +52,14 @@ class RebelAxisController:
 
 
     def __init__(self, _can_id = None, can_auto_detect = True, verbose = False, start_movement_queue = False) -> None:
+        """Init of RebelAxisController cls. Automatically starts 'CAN Message listener thread'.
+        
+        Params:
+        - _can_id: CAN ID of axis.
+        - can_auto_detect (default True): Autmatically seeks for CAN ID of connected axis.
+        - verbose (default False): Logs additional information.
+        - start_movement_queue (default False): Automatically start Thread which sends movement cmds the axis (with velocity 0). Once queue gets a new action command, they get processed.
+        """
 
         self.__verbose = verbose
         
