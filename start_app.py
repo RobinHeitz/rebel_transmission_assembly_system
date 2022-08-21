@@ -7,6 +7,8 @@ from gui.definitions import *
 from gui.pages import layout_page_1, layout_page_2, layout_page_3
 from gui.plotting import GraphPlotter
 
+from data_management import data_transformation
+
 import logging, time, threading
 
 logFormatter = logging.Formatter("'%(asctime)s - %(message)s")
@@ -140,6 +142,10 @@ def graph_update_cycle(window:sg.Window, controller:RebelAxisController):
     while getattr(cur_thread, 'do_plot', True):
         time.sleep(1)
         logger.warning("graph_update_cycle()")
+
+        batch = controller.get_movement_cmd_reply_batch(batchsize=controller.frequency_hz)
+        mean_current, pos, millis = data_transformation.sample_data(batch)
+
 
         # sorted_data = sorted(controller.movement_cmd_reply_list)
         # sortiert über position

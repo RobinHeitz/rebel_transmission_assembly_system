@@ -98,7 +98,7 @@ class MessageMovementCommandReply:
     def __gt__(self, other):
         return self.position > other.position
     def __call__(self):
-        """Returns the attributes of the instance: current, position, millis"""
+        """Returns the attributes of the instance: current, position, tics, millis"""
         return self.current, self.position, self.tics, self.millis
     
 @dataclass

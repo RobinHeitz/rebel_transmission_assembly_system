@@ -146,6 +146,14 @@ class RebelAxisController:
         self.motor_no_err = False
 
 
+    def get_movement_cmd_reply_batch(self, batchsize:int=20):
+        """Returns a batch of movement cmd replies with a given batchsize.
+        Params:
+        - batchsize (default:20): int"""
+        batch = self.movement_cmd_reply_list[:batchsize]
+        self.movement_cmd_reply_list = self.movement_cmd_reply_list[batchsize:]
+        return batch
+
 
     ####################################################
     # Movement directly through velocity CMDs / NO QUEUE
