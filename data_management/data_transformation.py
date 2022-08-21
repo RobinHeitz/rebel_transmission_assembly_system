@@ -17,11 +17,11 @@ def sample_data(samples:List[MessageMovementCommandReply]):
         lower_index = int( len(samples) / 2 -1 )
         item_lower, item_upper = samples[lower_index: lower_index + 2]
 
-        pos = (item_lower.pos + item_upper.pos) / 2
+        pos = (item_lower.position + item_upper.position) / 2
         millis = (item_lower.millis + item_upper.millis) / 2
     else:
         #uneven
         index = int(len(samples) / 2)
-        pos, millis = samples[index].pos, samples[index].millis
+        pos, millis = samples[index].position, samples[index].millis
 
     return current_mean, pos, millis

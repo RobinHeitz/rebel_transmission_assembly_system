@@ -146,23 +146,21 @@ def graph_update_cycle(window:sg.Window, controller:RebelAxisController):
         batch = controller.get_movement_cmd_reply_batch(batchsize=controller.frequency_hz)
         mean_current, pos, millis = data_transformation.sample_data(batch)
 
+        # send value to data controller for adding them into data base :)
 
-        # sorted_data = sorted(controller.movement_cmd_reply_list)
-        # sortiert über position
+        window.write_event_value(K_UPDATE_GRAPH, dict(x=mean_current, y=pos))
 
-        sorted_data = controller.movement_cmd_reply_list[-200:]
 
-        x_data = [i.position for i in sorted_data]
-        y_data = [i.current for i in sorted_data]
-        window.write_event_value(K_UPDATE_GRAPH, dict(x=x_data, y=y_data))
 
 def update_graph(event, values, plotter:GraphPlotter):
     """Updates graph. Gets called from a thread running graph_update_cycle()."""
     d = values[event]
     x, y = d.get('x'), d.get('y')
-    if len(x) == 0:
-        return
-    plotter.plot_data(x, y)
+    
+    x_data.append(x)
+    y_data.append(y)
+
+    plotter.plot_data(x_data, y_data)
 
 
 ######################################################
@@ -246,6 +244,8 @@ if __name__ == "__main__":
 
     graph_plotter = GraphPlotter(window[K_CANVAS_GRAPH_PLOTTING])
     graph_plotter.plot_data([], [])
+
+    x_data, y_data = [],[]
 
     key_function_map = {
         K_BTN_NAV_NEXT_PAGE: (_nav_next_page, dict()),
