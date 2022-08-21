@@ -66,6 +66,7 @@ class Transmission(Base):
     finished_date = Column(DateTime)
     
     assemblies = relationship("Assembly", backref=backref("transmission"))
+    failures = relationship("Failure", backref=backref("transmission"))
     
 
 
@@ -147,15 +148,10 @@ class Failure(Base):
     """
     __tablename__ = "failure"
     failure_id = Column(Integer, primary_key = True)
+    
     failure_type = Column(Integer, ForeignKey("failuretype.failuretype_id"))
+    transmission_id = Column(Integer, ForeignKey("transmission.transmission_id"))
     
-    
-    # transmission = None
-    # Failure_ID =  None
-    # Failure_Descripion = None
-
-    # Image = None
-
 
 class FailureType(Base):
     """Failure type model cls (SQLAlchemy). Needed for dynamically add failure kinds/ types to the application. Every occuring failure is linked to a failure type, 
