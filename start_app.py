@@ -23,6 +23,12 @@ consolerHandler = logging.StreamHandler()
 consolerHandler.setFormatter(logFormatter)
 logger.addHandler(consolerHandler)
 
+transmission_config = dict(
+    size = "80",
+    has_encoder = False, 
+    has_brake = False
+)
+
 
 layout = [
 
@@ -53,15 +59,26 @@ layout = [
 
 
 def radio_80_clicked(event, values):
-    checkbox = window[("checkbox", "break_existing")]
+    transmission_config["size"] = "80" 
+    
+    checkbox = window[K_CHECKBOX_HAS_BRAKE]
     checkbox.update(disabled=True)
     # checkbox.hide_row()
 
 def radio_105_clicked(event, values):
-    checkbox = window[("checkbox", "break_existing")]
+    transmission_config["size"] = "105" 
+    checkbox = window[K_CHECKBOX_HAS_BRAKE]
     checkbox.update(disabled=False)
     # checkbox.unhide_row()
 
+def checkbox_has_brake_clicked(event, values):
+    checked = values[event]
+    transmission_config["has_brake"] = checked
+
+
+def checkbox_has_encoder_clicked(event, values):
+    checked = values[event]
+    transmission_config["has_encoder"] = checked
 
 # CONNECT BUTTON
 def update_connect_btn_status(status):
@@ -167,6 +184,12 @@ def update_graph(event, values, plotter:GraphPlotter):
     plotter.plot_data(x_data, y_data)
 
 
+def create_transmission():
+    logger.info(f"create_transmission() config: {transmission_config}")
+
+    # data_controller.create_transmission()
+
+
 ######################################################
 # FUNCTIONS FOR ENABLING / DISABLING NAVIGATION BUTTONS
 ######################################################
@@ -176,6 +199,9 @@ def _nav_next_page(event, values):
 
     global current_page_index
     global page_keys
+
+    if current_page_index == 0:
+        create_transmission()
 
     current_page_index += 1
     _show_next_page()
@@ -240,7 +266,7 @@ if __name__ == "__main__":
         ...
         update_connect_btn_status(status="ERROR_NO_CAN_ID_FOUND")
 
-    data_controller = data_controller.DataController()
+    # data_controller = data_controller.DataController()
 
     thread_velocity = None
     thread_graph_updater = None
@@ -266,6 +292,8 @@ if __name__ == "__main__":
         K_SOFTWARE_UPDATE_FEEDBACK: (lambda event, values: window[K_PROGRESSBAR_SOFTWARE_UPDATE].update_bar(values.get(event)), dict()),
         K_SOFTWARE_UPDATE_DONE : (lambda event, values: window[K_TEXT_SOFTWARE_UPDATE_STATUS_TEXT].update("Software upgedated") , dict()),
 
+        K_CHECKBOX_HAS_BRAKE: (checkbox_has_brake_clicked, dict()), 
+        K_CHECKBOX_HAS_ENCODER: (checkbox_has_encoder_clicked, dict()),
         K_BTN_START_VELO_MODE: (start_velocity_mode, dict(controller=controller)),
         K_BTN_STOP_VELO_MODE: (stop_velocity_mode, dict(controller=controller)),
         K_UPDATE_GRAPH: (update_graph, dict(plotter=graph_plotter))

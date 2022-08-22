@@ -14,25 +14,43 @@ from sqlalchemy.orm import sessionmaker
 
 from typing import List
 
-from ..hw_interface.definitions import MessageMovementCommandReply
+
+engine = db.create_engine('sqlite:///rebel.sqlite')
+connection = engine.connect()
+metadata = db.MetaData()
+session = sessionmaker(bind = engine)()
+
+current_transmission = None
+
+
+def get_current_transmission_instance():
+    global current_transmission
+    return current_transmission
 
 
 
-class DataController:
+def create_transmission(config:TransmissionConfiguration):
+    global current_transmission
+    
+    new_transmission = Transmission(transmission_configuration = config)
+    session.add(new_transmission)
+    session.commit()
+
+    current_transmission = new_transmission
     
 
-    def __init__(self):
-        engine = db.create_engine('sqlite:///rebel.sqlite')
-        # connection = engine.connect()
-        # metadata = db.MetaData()
-        self.session = sessionmaker(bind = engine)()
-    
-    
+
+def create_assembly_step():
+    new_assembly_step = ""
 
 
+def create_measurement():
+    newMeasure = ""
 
-def main():
+def create_data_point():
     ...
+
+
 
 # def sample_data(samples:List[MessageMovementCommandReply]):
 #     """Samples data from a list of MessageMovementCommandReply - objects.
@@ -60,15 +78,6 @@ def main():
 
 # def main():
 #     ...
-#     new_transmission = Transmission(
-#         transmission_configuration = TransmissionConfiguration.config_105_break_encoder,
-#     )
-
-#     session.add(new_transmission)
-#     create_assemblies(session, new_transmission)
-
-#     print("About to commit changes!")
-#     session.commit()
 
 
 # def create_assembly_step(session:Session, transmission, assembly_step:AssemblyStep):
@@ -99,6 +108,3 @@ def main():
 
 
 
-
-if __name__ == "__main__":
-    main()

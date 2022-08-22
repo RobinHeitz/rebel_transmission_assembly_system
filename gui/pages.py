@@ -11,10 +11,10 @@ layout_page_1 = [
             sg.Radio("105", default=False, group_id="-radio_transmission_size-",font=font_normal, enable_events=True, key=K_RADIO_BUTTON_105_CLICKED)
         ], 
         [
-            sg.Checkbox("Encoder vorhanden:", default=True, auto_size_text=False, font=font_normal, key=("checkbox", "encoder_existing") ) 
+            sg.Checkbox("Encoder vorhanden:", default=False, auto_size_text=False, font=font_normal, enable_events=True, key=K_CHECKBOX_HAS_ENCODER ) 
         ],
         [
-            sg.Checkbox("Bremse vorhanden:", default=False, auto_size_text=False, font=font_normal, disabled=True, key=("checkbox", "break_existing")) 
+            sg.Checkbox("Bremse vorhanden:", default=False, auto_size_text=False, font=font_normal, enable_events=True,disabled=True, key=K_CHECKBOX_HAS_BRAKE) 
         ],
     ])],
     
