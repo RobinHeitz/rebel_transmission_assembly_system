@@ -7,7 +7,7 @@ from gui.definitions import *
 from gui.pages import layout_page_1, layout_page_2, layout_page_3
 from gui.plotting import GraphPlotter
 
-from data_management import data_transformation
+from data_management import data_controller, data_transformation
 
 import logging, time, threading
 
@@ -128,7 +128,7 @@ def start_velocity_mode(event, values, controller:RebelAxisController):
     thread_graph_updater = threading.Thread(target=graph_update_cycle, args=(window, controller, ), daemon=True)
     thread_graph_updater.start()
     
-    controller.start_movement_velocity_mode(duration=5)
+    controller.start_movement_velocity_mode(duration=10)
 
 
 def stop_velocity_mode(event, values, controller:RebelAxisController):
@@ -144,11 +144,15 @@ def graph_update_cycle(window:sg.Window, controller:RebelAxisController):
         logger.warning("graph_update_cycle()")
 
         batch = controller.get_movement_cmd_reply_batch(batchsize=controller.frequency_hz)
+        logger.info(f"Batch generated: len = {len(batch)}")
+
         mean_current, pos, millis = data_transformation.sample_data(batch)
+        logger.info(f"Batch values: mean current = {mean_current} / middle position = {pos} / middle millis = {millis}")
+        
+        if mean_current > 0:
+            window.write_event_value(K_UPDATE_GRAPH, dict(x=pos, y=mean_current))
 
         # send value to data controller for adding them into data base :)
-
-        window.write_event_value(K_UPDATE_GRAPH, dict(x=mean_current, y=pos))
 
 
 
@@ -228,13 +232,15 @@ if __name__ == "__main__":
     window = sg.Window("ReBeL Getriebe Montage & Kalibrierung", layout, size=(800,500), finalize=True)
     controller = None
     try:
-        controller = RebelAxisController(verbose=True)
+        controller = RebelAxisController(verbose=False)
     except Exception_PCAN_Connection_Failed as e:
         print("Exception PCAN Connection Failed:", e)
         update_connect_btn_status(status="PCAN_HW_ERROR")
     except Exception_Controller_No_CAN_ID:
         ...
         update_connect_btn_status(status="ERROR_NO_CAN_ID_FOUND")
+
+    data_controller = data_controller.DataController()
 
     thread_velocity = None
     thread_graph_updater = None

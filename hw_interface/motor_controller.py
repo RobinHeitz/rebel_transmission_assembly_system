@@ -388,24 +388,24 @@ class RebelAxisController:
                                 self.motor_referenced = True
                     
                     elif msg.DATA[0] == 0xE0:
-                        if self.__verbose == True:
-                            logging.error("**************************")
-                            logging.error("Erweiterte Fehlernachricht!")
-                            
-                            motor_error_byte = msg.DATA[1]
-                            # bits: Motor n.C. / OC RMS / OC Single Phase / Over Temperature
-                            
-                            adc_error_byte = msg.DATA[2]
-                            # ADC Offset
-                            
-                            rebel_error = msg.DATA[3]
-                            # Com Error / Out of Range
-                            
-                            control_error = msg.DATA[4]
-                            # Velocity High / Low Allign / Parameter Fault
 
-                            logging.error(f"MotorError: {motor_error_byte} / ADC Error: {adc_error_byte} / Rebel Error: {rebel_error} / Control Error: {control_error}")
-                            logging.error("**************************")
+                        self.__log_verbose("**************************")
+                        self.__log_verbose("Erweiterte Fehlernachricht!")
+
+                        motor_error_byte = msg.DATA[1]
+                        # bits: Motor n.C. / OC RMS / OC Single Phase / Over Temperature
+                        
+                        adc_error_byte = msg.DATA[2]
+                        # ADC Offset
+                        
+                        rebel_error = msg.DATA[3]
+                        # Com Error / Out of Range
+                        
+                        control_error = msg.DATA[4]
+                        # Velocity High / Low Allign / Parameter Fault
+
+                        self.__log_verbose(f"MotorError: {motor_error_byte} / ADC Error: {adc_error_byte} / Rebel Error: {rebel_error} / Control Error: {control_error}")
+                        self.__log_verbose("**************************")
                     
                     
                     elif msg.DATA[0] == 0xEF:

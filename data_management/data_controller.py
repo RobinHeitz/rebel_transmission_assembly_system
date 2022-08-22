@@ -16,10 +16,18 @@ from typing import List
 
 from ..hw_interface.definitions import MessageMovementCommandReply
 
-engine = db.create_engine('sqlite:///rebel.sqlite')
-connection = engine.connect()
-metadata = db.MetaData()
-session = sessionmaker(bind = engine)()
+
+
+class DataController:
+    
+
+    def __init__(self):
+        engine = db.create_engine('sqlite:///rebel.sqlite')
+        # connection = engine.connect()
+        # metadata = db.MetaData()
+        self.session = sessionmaker(bind = engine)()
+    
+    
 
 
 

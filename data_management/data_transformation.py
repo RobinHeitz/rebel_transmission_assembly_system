@@ -1,6 +1,6 @@
 from typing import List
 
-from ..hw_interface.definitions import MessageMovementCommandReply
+from hw_interface.definitions import MessageMovementCommandReply
 
 
 
@@ -10,7 +10,11 @@ def sample_data(samples:List[MessageMovementCommandReply]):
     
     Params: 
     - samples: List[MessageMovementCommandReply]"""
-    current_mean = sum([i.current for i in samples]) / len(samples)
+
+    if len(samples) == 0:
+        return 0,0,0
+
+    current_mean = round(sum([i.current for i in samples]) / len(samples),2)
 
     if len(samples) % 2 == 0:
         #even number of elements
