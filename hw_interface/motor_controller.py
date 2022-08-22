@@ -140,6 +140,9 @@ class RebelAxisController:
 
 
     def can_move(self):
+        logger.error("*"*15)
+        logger.error("*"*15)
+        logger.error(f"can_move() called: motor_enabled = {self.motor_enabled} / motor_no_err = {self.motor_no_err} ")
         return (self.motor_enabled == True ) and (self.motor_no_err == True)
     
 
@@ -183,6 +186,8 @@ class RebelAxisController:
             self.do_cycle()
             self.cmd_enable_motor()
             self.do_cycle()
+            # self.cmd_enable_motor()
+            # self.do_cycle()
         
         start_time = datetime.now()
         
@@ -344,9 +349,10 @@ class RebelAxisController:
 
                         elif differentiate_msg == 0x0109:
                             # Antwort auf MotorEnable
+                            flag = bytes_to_int(msg.DATA[4:6])
                             with self.lock:
                                 self.motor_enabled = True
-                            logging.error("Motor is enabled")
+                            logging.error(f"Motor is enabled / {hex(flag)}")
                         
                         elif differentiate_msg == 0x010A:
                             # Antwort auf Motor disable
