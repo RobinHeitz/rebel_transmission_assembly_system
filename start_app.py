@@ -181,6 +181,7 @@ def graph_update_cycle(window:sg.Window, controller:RebelAxisController):
             # data_controller.create_data_point(current=mean_current, timestamp=millis)
             window.write_event_value(K_UPDATE_GRAPH, dict(x=pos, y=mean_current))
             data_controller.create_data_point_to_current_measurement(mean_current, millis)
+            data_controller.update_current_measurement_fields()
 
         # send value to data controller for adding them into data base :)
 
@@ -198,11 +199,23 @@ def update_graph(event, values, plotter:GraphPlotter):
 
 
 def stop_graph_update(event, values):
+    """
+    Gets called when the movement is finished and therefore the plotting update thread can be finished also.
+    Instance of 'window' is passed to motor_controller which then invokes event '-KEY_FINISHED_VELO_STOP_GRAPH_UPDATING-'.
+    """
     logger.info("#"*10)
     logger.info("Velocity finished; Stop graph updating thread!")
 
     global thread_graph_updater
     thread_graph_updater.do_plot = False
+
+    # Update min/ max fields in gui
+    text_field = window[K_TEXT_MIN_MAX_CURRENT_VALUES]
+    measurement = data_controller.get_current_measurement_instance()
+    min_val, max_val = measurement.min_current, measurement.max_current
+
+    text_field.update(f"Min current: {min_val} ||| Max. current: {max_val}")
+
 
 
 
@@ -318,8 +331,6 @@ if __name__ == "__main__":
     except Exception_Controller_No_CAN_ID:
         ...
         update_connect_btn_status(status="ERROR_NO_CAN_ID_FOUND")
-
-    # data_controller = data_controller.DataController()
 
     thread_velocity = None
     thread_graph_updater = None

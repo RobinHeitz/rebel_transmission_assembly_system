@@ -1,8 +1,10 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, Table, Enum, DateTime
+from sqlalchemy import Column, Integer, String, ForeignKey, Table, Enum, DateTime, Float
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import func 
 import enum
 from datetime import datetime
+from sqlalchemy.orm import session 
 
 Base = declarative_base()
 
@@ -111,11 +113,22 @@ class Measurement(Base):
     # ToDO: Add meta data about measure: Duration, Which speed, was measurement ok?
     measurement_id = Column(Integer, primary_key=True)
     created_at = Column(DateTime, default=datetime.now)
+
+    max_current = Column(Float)
+    min_current = Column(Float)
+
     
-    # title = Column(String)
 
     assembly_id = Column(Integer, ForeignKey("assembly.assembly_id"))
     datapoints = relationship("DataPoint", backref=backref("measurement"))
+
+    def update_calculated_values(session:session.Session):
+        ...
+        
+        max_current_point = session.query(func.max("datapoint.current")).first()
+        min_current_point = session.query(func.min("datapoint.current")).first()
+
+        return max_current_point, min_current_point
 
     def __repr__(self):
         return f"Measurement-Instance."
@@ -135,8 +148,8 @@ class DataPoint(Base):
     datapoint_id = Column(Integer, primary_key = True)
     created_at = Column(DateTime, default=datetime.now)
     
-    current = Column(Integer)
-    timestamp = Column(Integer)
+    current = Column(Float)
+    timestamp = Column(Float)
 
     measurement_id = Column(Integer, ForeignKey("measurement.measurement_id"))
 

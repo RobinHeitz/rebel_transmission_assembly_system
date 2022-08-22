@@ -49,6 +49,8 @@ if __name__ == "__main__":
     metadata = db.MetaData()
     session = sessionmaker(bind = engine)()
 
+    print(session, type(session))
+
     new_transmission = Transmission(
         transmission_configuration = TransmissionConfiguration.config_105_break_encoder,
     )

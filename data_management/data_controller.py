@@ -15,7 +15,7 @@ from sqlalchemy.orm import sessionmaker
 from typing import List
 
 
-engine = db.create_engine('sqlite:///rebel.sqlite')
+engine = db.create_engine("sqlite:///rebel.sqlite", connect_args={'check_same_thread':False},)
 connection = engine.connect()
 metadata = db.MetaData()
 session = sessionmaker(bind = engine)()
@@ -24,7 +24,9 @@ current_transmission = None
 current_assembly = None
 current_measurement = None
 
-
+######################
+#### helper functions
+######################
 
 def get_current_transmission_instance():
     return current_transmission
@@ -35,6 +37,23 @@ def get_current_assembly_instance():
 def get_current_measurement_instance():
     return current_measurement
 
+
+def update_current_measurement_fields():
+    m = get_current_measurement_instance()
+    update_measurement_fields(m)
+
+
+def update_measurement_fields(m:Measurement):
+    ...
+    current_values = [dp.current for dp in m.datapoints]
+    m.max_current = round(max(current_values),2)
+    m.min_current = round(min(current_values),2)
+    session.commit()
+
+
+##################
+### Create objects
+##################
 
 def create_transmission(config:TransmissionConfiguration):
     new_transmission = Transmission(transmission_configuration = config)
@@ -72,6 +91,12 @@ def create_measurement(assembly:Assembly):
 def create_data_point(current, timestamp, measurement:Measurement):
     dp = DataPoint(current = current, timestamp = timestamp, measurement = measurement)
     session.add(dp)
+
+
+    # ma, mi = measurement.update_calculated_values()
+    # print("max, min = ", ma, mi)
+
+
     session.commit()
 
     return dp
@@ -80,6 +105,7 @@ def create_data_point(current, timestamp, measurement:Measurement):
 
 def create_data_point_to_current_measurement(current, timestamp):
     return create_data_point(current, timestamp, get_current_measurement_instance())
+
 
 
 

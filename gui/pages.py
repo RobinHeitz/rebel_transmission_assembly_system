@@ -31,13 +31,14 @@ layout_page_1 = [
 layout_page_2 = [
     [
         sg.Image("gui/assembly_pictures/step_1_resize.png", size=(300,300)),
-        sg.VSeparator(),
+        sg.VSeparator(pad=(5,5,5,5,)),
         sg.Column([
             [
                 sg.Button("Messung starten",enable_events=True, k=K_BTN_START_VELO_MODE),
                 sg.Button("Abbrechen",enable_events=True, k=K_BTN_STOP_VELO_MODE),
             ],
-    [sg.Canvas(key=K_CANVAS_GRAPH_PLOTTING, )],
+            [sg.Canvas(key=K_CANVAS_GRAPH_PLOTTING, )],
+            [sg.Text("", font=font_normal, key=K_TEXT_MIN_MAX_CURRENT_VALUES)]
 ])
 
     ],
