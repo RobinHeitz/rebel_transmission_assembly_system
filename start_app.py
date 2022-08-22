@@ -1,4 +1,4 @@
-from this import d
+import traceback 
 import PySimpleGUI as sg
 from data_management.model import TransmissionConfiguration
 
@@ -15,7 +15,7 @@ import logging, time, threading
 
 logFormatter = logging.Formatter("'%(asctime)s - %(message)s")
 logger = logging.getLogger()
-logger.setLevel(logging.INFO)
+logger.setLevel(logging.DEBUG)
 
 fileHandler = logging.FileHandler("gui.log", mode="w")
 fileHandler.setFormatter(logFormatter)
@@ -142,12 +142,12 @@ def perform_software_update_thread(window, controller):
 # VELOCITY MODE
 
 def start_velocity_mode(event, values, controller:RebelAxisController):
-
     global thread_graph_updater
+
     thread_graph_updater = threading.Thread(target=graph_update_cycle, args=(window, controller, ), daemon=True)
     thread_graph_updater.start()
 
-    controller.start_movement_velocity_mode(window, duration=10)
+    controller.start_movement_velocity_mode(window, duration=5)
 
 
 def stop_velocity_mode(event, values, controller:RebelAxisController):
@@ -165,10 +165,10 @@ def graph_update_cycle(window:sg.Window, controller:RebelAxisController):
         batch = controller.get_movement_cmd_reply_batch(batchsize=controller.frequency_hz)
         logger.info(f"Batch generated: len = {len(batch)}")
 
-        mean_current, pos, millis = data_transformation.sample_data(batch)
-        logger.info(f"Batch values: mean current = {mean_current} / middle position = {pos} / middle millis = {millis}")
-        
-        if mean_current > 0:
+        if len(batch) > 10:
+            mean_current, pos, millis = data_transformation.sample_data(batch)
+            logger.info(f"Batch values: mean current = {mean_current} / middle position = {pos} / middle millis = {millis}")
+            
             window.write_event_value(K_UPDATE_GRAPH, dict(x=pos, y=mean_current))
 
         # send value to data controller for adding them into data base :)
@@ -344,13 +344,15 @@ if __name__ == "__main__":
         try:
             func, args = key_function_map.get(event)
             func(event, values, **args)
-        except Exception as e:
-            logger.error(e.__traceback__)
-            logger.error(f"WARNING: Missing event in 'key_functin_map': Event = {event} // values = {values.get(event)}")
         
         except KeyboardInterrupt:
             controller.stop_movement()
             controller.shut_down()
             break
+        
+        except Exception as e:
+            logger.error(f"WARNING: Missing event in 'key_functin_map': Event = {event} // values = {values.get(event)}")
+            logger.error(traceback.format_exc())
+        
 
     window.close()

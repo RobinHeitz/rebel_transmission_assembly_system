@@ -163,13 +163,9 @@ class RebelAxisController:
     ####################################################
     
     def start_movement_velocity_mode(self,  window:sg.Window,duration = 0,):
-
-        if not hasattr(self, "thread_movement_velo_mode"):
-            self.thread_movement_velo_mode = Thread(target=self.__movement_velocity_mode, args=(window, duration, ), daemon=True)
+        self.thread_movement_velo_mode = Thread(target=self.__movement_velocity_mode, args=(window, duration, ), daemon=True)
+        self.thread_movement_velo_mode.start()
         
-        if self.thread_movement_velo_mode.is_alive() == False:
-            self.thread_movement_velo_mode.start()
-
     
     def stop_movement_velocity_mode(self):
         logging.info("stop_movement_velocity")
@@ -194,8 +190,8 @@ class RebelAxisController:
         # while getattr(self.thread_movement_velo_mode, "abort", False) == False and (datetime.now() - start_time).total_seconds() < duration:
             self.cmd_velocity_mode(10)
             self.do_cycle()
-        
-        current_thread.abort = True
+
+        self.stop_movement()
         window.write_event_value("-KEY_FINISHED_VELO_STOP_GRAPH_UPDATING-", "DATA")
         
 
