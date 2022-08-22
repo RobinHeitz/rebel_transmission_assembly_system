@@ -30,12 +30,11 @@ def get_current_transmission_instance():
 
 
 def create_transmission(config:TransmissionConfiguration):
-    global current_transmission
-    
     new_transmission = Transmission(transmission_configuration = config)
     session.add(new_transmission)
     session.commit()
 
+    global current_transmission
     current_transmission = new_transmission
     
 

@@ -1,4 +1,6 @@
+from this import d
 import PySimpleGUI as sg
+from data_management.model import TransmissionConfiguration
 
 from hw_interface.motor_controller import RebelAxisController
 from hw_interface.definitions import Exception_Controller_No_CAN_ID, Exception_PCAN_Connection_Failed
@@ -141,11 +143,11 @@ def perform_software_update_thread(window, controller):
 
 def start_velocity_mode(event, values, controller:RebelAxisController):
 
-    global thread_velocity, thread_graph_updater
+    global thread_graph_updater
     thread_graph_updater = threading.Thread(target=graph_update_cycle, args=(window, controller, ), daemon=True)
     thread_graph_updater.start()
-    
-    controller.start_movement_velocity_mode(duration=10)
+
+    controller.start_movement_velocity_mode(window, duration=10)
 
 
 def stop_velocity_mode(event, values, controller:RebelAxisController):
@@ -184,10 +186,39 @@ def update_graph(event, values, plotter:GraphPlotter):
     plotter.plot_data(x_data, y_data)
 
 
+def stop_graph_update(event, values):
+    logger.info("#"*10)
+    logger.info("Velocity finished; Stop graph updating thread!")
+
+    global thread_graph_updater
+    thread_graph_updater.do_plot = False
+
+
+
 def create_transmission():
     logger.info(f"create_transmission() config: {transmission_config}")
 
-    # data_controller.create_transmission()
+    has_encoder = transmission_config.get('has_encoder')
+    has_brake = transmission_config.get('has_brake')
+    size = transmission_config.get("size")
+
+    if size == "80":
+        if has_encoder == True:
+            config = TransmissionConfiguration.config_80_encoder
+        else:
+            config = TransmissionConfiguration.config_80
+    else:
+        ...
+        if has_encoder == True and has_brake == True:
+            config = TransmissionConfiguration.config_105_break_encoder
+        elif has_encoder == True:
+            config = TransmissionConfiguration.config_105_encoder
+        elif has_brake == True:
+            config = TransmissionConfiguration.config_105_break
+        else:
+            config = TransmissionConfiguration.config_105
+
+    data_controller.create_transmission(config)
 
 
 ######################################################
@@ -255,7 +286,7 @@ def _disable_enable_nav_buttons():
 #################
 
 if __name__ == "__main__":
-    window = sg.Window("ReBeL Getriebe Montage & Kalibrierung", layout, size=(800,500), finalize=True)
+    window = sg.Window("ReBeL Getriebe Montage & Kalibrierung", layout, size=(1200,800), finalize=True)
     controller = None
     try:
         controller = RebelAxisController(verbose=False)
@@ -296,7 +327,8 @@ if __name__ == "__main__":
         K_CHECKBOX_HAS_ENCODER: (checkbox_has_encoder_clicked, dict()),
         K_BTN_START_VELO_MODE: (start_velocity_mode, dict(controller=controller)),
         K_BTN_STOP_VELO_MODE: (stop_velocity_mode, dict(controller=controller)),
-        K_UPDATE_GRAPH: (update_graph, dict(plotter=graph_plotter))
+        K_UPDATE_GRAPH: (update_graph, dict(plotter=graph_plotter)),
+        K_FINISHED_VELO_STOP_GRAPH_UPDATING: (stop_graph_update, dict())
 
 
 
