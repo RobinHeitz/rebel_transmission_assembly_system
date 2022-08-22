@@ -1,6 +1,8 @@
 import PySimpleGUI as sg
 from .definitions import *
 
+
+
 layout_page_1 = [
 
     [sg.Button("Verbindung herstellen", key=K_BTN_CONNECT_CAN, enable_events=True, font=font_normal, size=(25,1)), sg.Text("Nicht verbunden", key=K_TEXT_CAN_CONNECTED_STATUS, font=font_normal)],
@@ -35,5 +37,11 @@ layout_page_2 = [
 ]
 
 layout_page_3 = [
-    [sg.Text("Seite333!"), sg.Button("Do SomethingS",enable_events=True)]
+    [sg.Text("Seite333!"), sg.Button("Do SomethingS",enable_events=True)],
+    
+    [
+        sg.Image("gui/assembly_pictures/step_1_resize.png", size=(300,300)),
+        sg.Image("gui/assembly_pictures/step_2_resize.png", size=(300,300)),
+        sg.Image("gui/assembly_pictures/step_3_resize.png", size=(300,300)),
+    ],
 ]

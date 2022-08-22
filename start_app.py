@@ -31,6 +31,13 @@ transmission_config = dict(
     has_brake = False
 )
 
+headlines = {
+    K_PAGE_1: "Getriebe Konfigurieren:",
+    K_PAGE_2: "Schritt 1: Getriebe ohne Flexring testen",
+    K_PAGE_3: "Schritt 2: Getriebe mit Flexring & Lagerring testen",
+
+}
+
 
 layout = [
 
@@ -225,6 +232,12 @@ def create_transmission():
 # FUNCTIONS FOR ENABLING / DISABLING NAVIGATION BUTTONS
 ######################################################
 
+def _update_headline(key):
+    new_headline = headlines[key]
+    headline_text = window["-headline-"]
+    headline_text.update(new_headline)
+    
+
 def _nav_next_page(event, values):
     _hide_current_page()
 
@@ -262,6 +275,8 @@ def _show_next_page():
     
     next_page = window[page_keys[current_page_index]]
     next_page.update(visible=True)
+
+    _update_headline(page_keys[current_page_index])
     # next_page.unhide_row()
 
 def _disable_enable_nav_buttons():
