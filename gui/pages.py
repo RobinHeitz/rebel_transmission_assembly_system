@@ -30,16 +30,27 @@ layout_page_1 = [
 
 layout_page_2 = [
     [
-        sg.Button("Messung starten",enable_events=True, k=K_BTN_START_VELO_MODE),
-        sg.Button("Abbrechen",enable_events=True, k=K_BTN_STOP_VELO_MODE),
-    ],
+        sg.Image("gui/assembly_pictures/step_1_resize.png", size=(300,300)),
+        sg.VSeparator(),
+        sg.Column([
+            [
+                sg.Button("Messung starten",enable_events=True, k=K_BTN_START_VELO_MODE),
+                sg.Button("Abbrechen",enable_events=True, k=K_BTN_STOP_VELO_MODE),
+            ],
     [sg.Canvas(key=K_CANVAS_GRAPH_PLOTTING, )],
+])
+
+    ],
 ]
+
+
+
 
 layout_page_3 = [
     [sg.Text("Seite333!"), sg.Button("Do SomethingS",enable_events=True)],
     
-    [
+    [ 
+        # col_test,
         sg.Image("gui/assembly_pictures/step_1_resize.png", size=(300,300)),
         sg.Image("gui/assembly_pictures/step_2_resize.png", size=(300,300)),
         sg.Image("gui/assembly_pictures/step_3_resize.png", size=(300,300)),

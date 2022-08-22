@@ -32,7 +32,7 @@ class AssemblyStep(enum.Enum):
 
     @classmethod
     def get_all_steps(cls):
-        return [cls.step_1_no_flexring, cls.step_2_with_flexring]
+        return [cls.step_1_no_flexring, cls.step_2_with_flexring, cls.step_3_gearoutput_not_screwed, cls.step_4_gearoutput_screwed]
 
 
 
@@ -112,7 +112,7 @@ class Measurement(Base):
     measurement_id = Column(Integer, primary_key=True)
     created_at = Column(DateTime, default=datetime.now)
     
-    title = Column(String)
+    # title = Column(String)
 
     assembly_id = Column(Integer, ForeignKey("assembly.assembly_id"))
     datapoints = relationship("DataPoint", backref=backref("measurement"))

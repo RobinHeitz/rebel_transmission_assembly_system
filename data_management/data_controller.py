@@ -21,12 +21,19 @@ metadata = db.MetaData()
 session = sessionmaker(bind = engine)()
 
 current_transmission = None
+current_assembly = None
+current_measurement = None
+
 
 
 def get_current_transmission_instance():
-    global current_transmission
     return current_transmission
 
+def get_current_assembly_instance():
+    return current_assembly
+
+def get_current_measurement_instance():
+    return current_measurement
 
 
 def create_transmission(config:TransmissionConfiguration):
@@ -36,18 +43,96 @@ def create_transmission(config:TransmissionConfiguration):
 
     global current_transmission
     current_transmission = new_transmission
+    return current_transmission
+
+
+def create_assembly(transmission:Transmission, assembly_step: AssemblyStep):
+    a = Assembly(assembly_step = assembly_step, transmission = transmission)
+    session.add(a)
+    session.commit()
+    
+    global current_assembly
+    current_assembly = a
+    return current_assembly
+
+
+def create_measurement_to_current_assembly():
+    return create_measurement(get_current_assembly_instance())
+
+
+def create_measurement(assembly:Assembly):
+    m = Measurement(assembly = assembly)
+    session.add(m)
+    session.commit()
+
+    global current_measurement
+    current_measurement = m
+    return current_measurement
+
+def create_data_point(current, timestamp, measurement:Measurement):
+    dp = DataPoint(current = current, timestamp = timestamp, measurement = measurement)
+    session.add(dp)
+    session.commit()
+
+    return dp
+
+
+
+def create_data_point_to_current_measurement(current, timestamp):
+    return create_data_point(current, timestamp, get_current_measurement_instance())
+
+
+
+
+# def create_assemblies(transmission:Transmission):
+#     for type_ in AssemblyStep:
+#         assembly = Assembly()
+        
+#         assembly.assembly_type = AssemblyStep.step_1_no_flexring
+#         assembly.transmission = transmission
+
+
+#         session.add(assembly)
+#     session.commit()
+
     
 
+# def create_assembly(assembly_step: AssemblyStep, transmission:Transmission):
+#     global current_assembly
+#     current_assembly = Assembly(assembly_step, transmission)
+#     session.add(current_assembly)
 
-def create_assembly_step():
-    new_assembly_step = ""
+
+# def create_measurement(assembly_step: AssemblyStep):
+#     global current_assembly, current_measurement
+#     if current_assembly == None:
+#         # create_assembly(assembly_step, get_current_transmission_instance())
+
+#     # current_measurement = Measurement(
+#     #     "Title 1 - Step 1",
+#     #     # assembly = get_current_assembly_instance(),
+
+#     # )
+#     # session.add(current_measurement)
+#     # session.commit()
 
 
-def create_measurement():
-    newMeasure = ""
 
-def create_data_point():
-    ...
+
+# def create_data_point(current, timestamp):
+
+#     dp = DataPoint(
+#         current = current,
+#         timestamp = timestamp,
+#         # measurement = get_current_measurement_instance(),
+#     )
+
+#     session.add(dp)
+#     session.commit()
+
+
+# def create_data_points():
+#     ...
 
 
 

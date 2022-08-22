@@ -1,6 +1,6 @@
 import traceback 
 import PySimpleGUI as sg
-from data_management.model import TransmissionConfiguration
+from data_management.model import AssemblyStep, TransmissionConfiguration
 
 from hw_interface.motor_controller import RebelAxisController
 from hw_interface.definitions import Exception_Controller_No_CAN_ID, Exception_PCAN_Connection_Failed
@@ -149,6 +149,8 @@ def perform_software_update_thread(window, controller):
 # VELOCITY MODE
 
 def start_velocity_mode(event, values, controller:RebelAxisController):
+    data_controller.create_measurement_to_current_assembly()
+
     global thread_graph_updater
 
     thread_graph_updater = threading.Thread(target=graph_update_cycle, args=(window, controller, ), daemon=True)
@@ -176,7 +178,9 @@ def graph_update_cycle(window:sg.Window, controller:RebelAxisController):
             mean_current, pos, millis = data_transformation.sample_data(batch)
             logger.info(f"Batch values: mean current = {mean_current} / middle position = {pos} / middle millis = {millis}")
             
+            # data_controller.create_data_point(current=mean_current, timestamp=millis)
             window.write_event_value(K_UPDATE_GRAPH, dict(x=pos, y=mean_current))
+            data_controller.create_data_point_to_current_measurement(mean_current, millis)
 
         # send value to data controller for adding them into data base :)
 
@@ -225,7 +229,10 @@ def create_transmission():
         else:
             config = TransmissionConfiguration.config_105
 
-    data_controller.create_transmission(config)
+    
+    transmission = data_controller.create_transmission(config)
+    assembly = data_controller.create_assembly(transmission, AssemblyStep.step_1_no_flexring)
+
 
 
 ######################################################
