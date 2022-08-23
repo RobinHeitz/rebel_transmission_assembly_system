@@ -1,4 +1,6 @@
 import PySimpleGUI as sg
+
+from data_management.model import AssemblyStep
 from .definitions import KeyDefs, font_headline, font_normal, font_small, LayoutPageKeys
 
 
@@ -96,6 +98,7 @@ pages_config = [
         layout=layout_assembly_step_1, 
         layout_key=LayoutPageKeys.layout_assembly_step_1_page,
         visible=False,
+        assembly_step = AssemblyStep.step_1_no_flexring,
         ),
 
     dict(
@@ -103,6 +106,7 @@ pages_config = [
         layout=layout_assembly_step_2,
         layout_key=LayoutPageKeys.layout_assembly_step_2_page,
         visible=False,
+        assembly_step = AssemblyStep.step_2_with_flexring, 
         ),
     
     dict(
@@ -110,6 +114,7 @@ pages_config = [
         layout=layout_assembly_step_3,
         layout_key=LayoutPageKeys.layout_assembly_step_3_page,
         visible=False,
+        assembly_step = AssemblyStep.step_3_gearoutput_not_screwed, 
         ),
 ]
 
@@ -136,6 +141,9 @@ def get_page_keys():
 
 def get_page_key_for_index(index:int):
     return pages_config[index].get("layout_key")
+
+def get_assembly_step_for_page_index(index:int) -> AssemblyStep:
+    return pages_config[index].get("assembly_step")
 
 
 

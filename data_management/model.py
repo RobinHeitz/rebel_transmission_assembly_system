@@ -116,19 +116,20 @@ class Measurement(Base):
 
     max_current = Column(Float)
     min_current = Column(Float)
+    mean_current = Column(Float)
 
     
 
     assembly_id = Column(Integer, ForeignKey("assembly.assembly_id"))
     datapoints = relationship("DataPoint", backref=backref("measurement"))
 
-    def update_calculated_values(session:session.Session):
-        ...
+    # def update_calculated_values(session:session.Session):
+    #     ...
         
-        max_current_point = session.query(func.max("datapoint.current")).first()
-        min_current_point = session.query(func.min("datapoint.current")).first()
+    #     max_current_point = session.query(func.max("datapoint.current")).first()
+    #     min_current_point = session.query(func.min("datapoint.current")).first()
 
-        return max_current_point, min_current_point
+    #     return max_current_point, min_current_point
 
     def __repr__(self):
         return f"Measurement-Instance."

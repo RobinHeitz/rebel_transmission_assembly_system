@@ -12,7 +12,7 @@ from gui.definitions import KeyDefs, LayoutPageKeys
 from gui.definitions import TransmissionConfigHelper, TransmissionSize
 from gui.helper_functions import can_connection_functions
 from gui.pages import main_layout
-from gui.pages import get_headline_for_index, get_page_keys, get_page_key_for_index
+from gui.pages import get_headline_for_index, get_page_keys, get_page_key_for_index,get_assembly_step_for_page_index
 from gui.plotting import GraphPlotter
 
 
@@ -66,7 +66,9 @@ def perform_software_update_thread(window, controller):
 # VELOCITY MODE
 
 def start_velocity_mode(event, values, controller:RebelAxisController):
-    data_controller.create_measurement_to_current_assembly()
+    step = get_assembly_step_for_page_index(current_page_index)
+    assembly = data_controller.get_or_create_assembly_for_assembly_step(step)
+    data_controller.create_measurement(assembly)
 
     global thread_graph_updater
 
@@ -164,13 +166,13 @@ def _nav_next_page(event, values):
 
 
     if page_key == LayoutPageKeys.layout_assembly_step_1_page:
-        data_controller.get_or_create_assembly_for_assembly_step(transmission, AssemblyStep.step_1_no_flexring)
+        data_controller.get_or_create_assembly_for_assembly_step(AssemblyStep.step_1_no_flexring, transmission)
         
     elif page_key == LayoutPageKeys.layout_assembly_step_2_page:
-        data_controller.get_or_create_assembly_for_assembly_step(transmission, AssemblyStep.step_2_with_flexring)
+        data_controller.get_or_create_assembly_for_assembly_step(AssemblyStep.step_2_with_flexring, transmission)
     
     elif page_key == LayoutPageKeys.layout_assembly_step_3_page:
-        data_controller.get_or_create_assembly_for_assembly_step(transmission, AssemblyStep.step_3_gearoutput_not_screwed)
+        data_controller.get_or_create_assembly_for_assembly_step(AssemblyStep.step_3_gearoutput_not_screwed, transmission)
         
         
 

@@ -1,3 +1,4 @@
+from multiprocessing.sharedctypes import Value
 from sqlalchemy.orm.session import Session
 import sqlalchemy as db
 
@@ -45,6 +46,8 @@ def update_measurement_fields(m:Measurement):
     current_values = [dp.current for dp in m.datapoints]
     m.max_current = round(max(current_values),2)
     m.min_current = round(min(current_values),2)
+    m.mean_current = round(sum(current_values) / len(current_values) ,2)
+
     session.commit()
 
 
@@ -52,23 +55,30 @@ def update_measurement_fields(m:Measurement):
 ### Create objects
 ##################
 
-def get_or_create_transmission(config:TransmissionConfiguration):
+def get_or_create_transmission(config:TransmissionConfiguration) -> Transmission:
     global current_transmission
     
     if current_transmission != None:
         return current_transmission
     
+    if config == None:
+        raise ValueError("Config shouldn't be None if Transmission gets created.")
+
     current_transmission = Transmission(transmission_configuration = config)
     session.add(current_transmission)
     session.commit()
     return current_transmission
 
 
-def get_or_create_assembly_for_assembly_step(transmission:Transmission, assembly_step:AssemblyStep):
+def get_or_create_assembly_for_assembly_step(assembly_step:AssemblyStep, transmission:Transmission = None) -> Assembly:
+
     global current_assemblies
 
     if assembly_step in current_assemblies:
         return current_assemblies[assembly_step]
+    
+    if transmission == None:
+        raise ValueError("Transmission shouldn't be None if Assembly gets created.")
     
     a = Assembly(assembly_step = assembly_step, transmission = transmission)
     session.add(a)
@@ -76,11 +86,13 @@ def get_or_create_assembly_for_assembly_step(transmission:Transmission, assembly
 
     current_assemblies[assembly_step] = a
     return a
+
+
     
     
 
 
-def create_measurement(assembly:Assembly):
+def create_measurement(assembly:Assembly) -> Measurement:
     m = Measurement(assembly = assembly)
     session.add(m)
     session.commit()
