@@ -5,7 +5,7 @@ from data_management.model import AssemblyStep, Transmission, TransmissionConfig
 from hw_interface.motor_controller import RebelAxisController
 from hw_interface.definitions import Exception_Controller_No_CAN_ID, Exception_PCAN_Connection_Failed
 
-from gui.definitions import *
+from gui.definitions import KeyDefs
 from gui.definitions import TransmissionConfigHelper, TransmissionSize
 from gui.pages import main_layout
 from gui.pages import get_headline_for_index, get_page_keys, get_navigation_methods_for_index
@@ -36,12 +36,12 @@ logger.addHandler(consolerHandler)
 
 def radio_80_clicked(event, values):
     transmission_config.set_size(TransmissionSize.size_80)
-    window[K_CHECKBOX_HAS_BRAKE].update(disabled=True)
+    window[KeyDefs.CHECKBOX_HAS_BRAKE].update(disabled=True)
     
 
 def radio_105_clicked(event, values):
     transmission_config.set_size(TransmissionSize.size_105)
-    window[K_CHECKBOX_HAS_BRAKE].update(disabled=False)
+    window[KeyDefs.CHECKBOX_HAS_BRAKE].update(disabled=False)
 
 def checkbox_has_brake_clicked(event, values):
     transmission_config.set_brake_flag(values[event])
@@ -55,8 +55,8 @@ def checkbox_has_encoder_clicked(event, values):
 def update_connect_btn_status(status):
     global window
     global controller
-    btn = window[K_BTN_CONNECT_CAN]
-    txt = window[K_TEXT_CAN_CONNECTED_STATUS]
+    btn = window[KeyDefs.BTN_CONNECT_CAN]
+    txt = window[KeyDefs.TEXT_CAN_CONNECTED_STATUS]
     
     if status == "PCAN_HW_ERROR":
         btn.update("Verbindung fehlgeschlagen", disabled = True)
@@ -97,15 +97,15 @@ def connect_can_thread(window, controller:RebelAxisController):
 
 # Software update dummy
 def perform_software_update(event, values):
-    btn = window[K_BTN_SOFTWARE_UPDATE]
+    btn = window[KeyDefs.BTN_SOFTWARE_UPDATE]
     btn.update(disabled=True)
     threading.Thread(target=perform_software_update_thread, args=(window, controller), daemon=True ).start()
 
 def perform_software_update_thread(window, controller):
     for i in range(1,101):
         time.sleep(.1)
-        window.write_event_value(K_SOFTWARE_UPDATE_FEEDBACK, i/10)
-    window.write_event_value(K_SOFTWARE_UPDATE_DONE, None)
+        window.write_event_value(KeyDefs.SOFTWARE_UPDATE_FEEDBACK, i/10)
+    window.write_event_value(KeyDefs.SOFTWARE_UPDATE_DONE, None)
     
 
 # VELOCITY MODE
@@ -141,7 +141,7 @@ def graph_update_cycle(window:sg.Window, controller:RebelAxisController):
             logger.info(f"Batch values: mean current = {mean_current} / middle position = {pos} / middle millis = {millis}")
             
             # data_controller.create_data_point(current=mean_current, timestamp=millis)
-            window.write_event_value(K_UPDATE_GRAPH, dict(x=pos, y=mean_current))
+            window.write_event_value(KeyDefs.UPDATE_GRAPH, dict(x=pos, y=mean_current))
             data_controller.create_data_point_to_current_measurement(mean_current, millis)
             data_controller.update_current_measurement_fields()
 
@@ -172,7 +172,7 @@ def stop_graph_update(event, values):
     thread_graph_updater.do_plot = False
 
     # Update min/ max fields in gui
-    text_field = window[K_TEXT_MIN_MAX_CURRENT_VALUES]
+    text_field = window[KeyDefs.TEXT_MIN_MAX_CURRENT_VALUES]
     measurement = data_controller.get_current_measurement_instance()
     min_val, max_val = measurement.min_current, measurement.max_current
 
@@ -247,8 +247,8 @@ def _show_next_page():
 
 def _disable_enable_nav_buttons():
     
-    btn_next = window[K_BTN_NAV_NEXT_PAGE]
-    btn_prev = window[K_BTN_NAV_PREVIOUS_PAGE]
+    btn_next = window[KeyDefs.BTN_NAV_NEXT_PAGE]
+    btn_prev = window[KeyDefs.BTN_NAV_PREVIOUS_PAGE]
 
     btn_prev.update(disabled=False)
     btn_next.update(disabled=False)
@@ -285,30 +285,30 @@ if __name__ == "__main__":
 
     current_page_index = 0
 
-    graph_plotter = GraphPlotter(window[K_CANVAS_GRAPH_PLOTTING])
+    graph_plotter = GraphPlotter(window[KeyDefs.CANVAS_GRAPH_PLOTTING])
     graph_plotter.plot_data([], [])
 
     x_data, y_data = [],[]
 
     key_function_map = {
-        K_BTN_NAV_NEXT_PAGE: (_nav_next_page, dict()),
-        K_BTN_NAV_PREVIOUS_PAGE: (_nav_previous_page, dict()),
+        KeyDefs.BTN_NAV_NEXT_PAGE: (_nav_next_page, dict()),
+        KeyDefs.BTN_NAV_PREVIOUS_PAGE: (_nav_previous_page, dict()),
 
-        K_RADIO_BUTTON_80_CLICKED: (radio_80_clicked, dict()),
-        K_RADIO_BUTTON_105_CLICKED:( radio_105_clicked, dict()),
+        KeyDefs.RADIO_BUTTON_80_CLICKED: (radio_80_clicked, dict()),
+        KeyDefs.RADIO_BUTTON_105_CLICKED:( radio_105_clicked, dict()),
 
-        K_BTN_CONNECT_CAN: (connect_can, dict(controller=controller)),
-        K_BTN_SOFTWARE_UPDATE: (perform_software_update, dict()),
+        KeyDefs.BTN_CONNECT_CAN: (connect_can, dict(controller=controller)),
+        KeyDefs.BTN_SOFTWARE_UPDATE: (perform_software_update, dict()),
 
-        K_SOFTWARE_UPDATE_FEEDBACK: (lambda event, values: window[K_PROGRESSBAR_SOFTWARE_UPDATE].update_bar(values.get(event)), dict()),
-        K_SOFTWARE_UPDATE_DONE : (lambda event, values: window[K_TEXT_SOFTWARE_UPDATE_STATUS_TEXT].update("Software upgedated") , dict()),
+        KeyDefs.SOFTWARE_UPDATE_FEEDBACK: (lambda event, values: window[KeyDefs.PROGRESSBAR_SOFTWARE_UPDATE].update_bar(values.get(event)), dict()),
+        KeyDefs.SOFTWARE_UPDATE_DONE : (lambda event, values: window[KeyDefs.TEXT_SOFTWARE_UPDATE_STATUS_TEXT].update("Software upgedated") , dict()),
 
-        K_CHECKBOX_HAS_BRAKE: (checkbox_has_brake_clicked, dict()), 
-        K_CHECKBOX_HAS_ENCODER: (checkbox_has_encoder_clicked, dict()),
-        K_BTN_START_VELO_MODE: (start_velocity_mode, dict(controller=controller)),
-        K_BTN_STOP_VELO_MODE: (stop_velocity_mode, dict(controller=controller)),
-        K_UPDATE_GRAPH: (update_graph, dict(plotter=graph_plotter)),
-        K_FINISHED_VELO_STOP_GRAPH_UPDATING: (stop_graph_update, dict())
+        KeyDefs.CHECKBOX_HAS_BRAKE: (checkbox_has_brake_clicked, dict()), 
+        KeyDefs.CHECKBOX_HAS_ENCODER: (checkbox_has_encoder_clicked, dict()),
+        KeyDefs.BTN_START_VELO_MODE: (start_velocity_mode, dict(controller=controller)),
+        KeyDefs.BTN_STOP_VELO_MODE: (stop_velocity_mode, dict(controller=controller)),
+        KeyDefs.UPDATE_GRAPH: (update_graph, dict(plotter=graph_plotter)),
+        KeyDefs.FINISHED_VELO_STOP_GRAPH_UPDATING: (stop_graph_update, dict())
 
 
 

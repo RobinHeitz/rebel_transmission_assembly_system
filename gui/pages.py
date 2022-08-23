@@ -1,7 +1,5 @@
 import PySimpleGUI as sg
-from .definitions import *
-
-
+from .definitions import KeyDefs, font_headline, font_normal, font_small
 
 
 #####################################################
@@ -10,25 +8,25 @@ from .definitions import *
 
 layout_config_page = [
 
-    [sg.Button("Verbindung herstellen", key=K_BTN_CONNECT_CAN, enable_events=True, font=font_normal, size=(25,1)), sg.Text("Nicht verbunden", key=K_TEXT_CAN_CONNECTED_STATUS, font=font_normal)],
+    [sg.Button("Verbindung herstellen", key=KeyDefs.BTN_CONNECT_CAN, enable_events=True, font=font_normal, size=(25,1)), sg.Text("Nicht verbunden", key=KeyDefs.TEXT_CAN_CONNECTED_STATUS, font=font_normal)],
     [sg.Frame("", layout=[
         [
             sg.Text("Getriebegröße", font=font_normal),
-            sg.Radio("80", default=True, group_id="-radio_transmission_size-", font=font_normal, enable_events=True, key=K_RADIO_BUTTON_80_CLICKED), 
-            sg.Radio("105", default=False, group_id="-radio_transmission_size-",font=font_normal, enable_events=True, key=K_RADIO_BUTTON_105_CLICKED)
+            sg.Radio("80", default=True, group_id="-radio_transmission_size-", font=font_normal, enable_events=True, key=KeyDefs.RADIO_BUTTON_80_CLICKED), 
+            sg.Radio("105", default=False, group_id="-radio_transmission_size-",font=font_normal, enable_events=True, key=KeyDefs.RADIO_BUTTON_105_CLICKED)
         ], 
         [
-            sg.Checkbox("Encoder vorhanden:", default=False, auto_size_text=False, font=font_normal, enable_events=True, key=K_CHECKBOX_HAS_ENCODER ) 
+            sg.Checkbox("Encoder vorhanden:", default=False, auto_size_text=False, font=font_normal, enable_events=True, key=KeyDefs.CHECKBOX_HAS_ENCODER ) 
         ],
         [
-            sg.Checkbox("Bremse vorhanden:", default=False, auto_size_text=False, font=font_normal, enable_events=True,disabled=True, key=K_CHECKBOX_HAS_BRAKE) 
+            sg.Checkbox("Bremse vorhanden:", default=False, auto_size_text=False, font=font_normal, enable_events=True,disabled=True, key=KeyDefs.CHECKBOX_HAS_BRAKE) 
         ],
     ])],
     
     [
-        sg.Button("Software updaten", key=K_BTN_SOFTWARE_UPDATE, enable_events=True, font=font_normal, size=(20,1)), 
-        sg.ProgressBar(max_value=10, size=(20,20), k=K_PROGRESSBAR_SOFTWARE_UPDATE),
-        sg.Text("", k=K_TEXT_SOFTWARE_UPDATE_STATUS_TEXT, font=font_normal),
+        sg.Button("Software updaten", key=KeyDefs.BTN_SOFTWARE_UPDATE, enable_events=True, font=font_normal, size=(20,1)), 
+        sg.ProgressBar(max_value=10, size=(20,20), k=KeyDefs.PROGRESSBAR_SOFTWARE_UPDATE),
+        sg.Text("", k=KeyDefs.TEXT_SOFTWARE_UPDATE_STATUS_TEXT, font=font_normal),
         ],
     ]
 
@@ -39,11 +37,11 @@ layout_assembly_step_1 = [
         sg.VSeparator(pad=(5,5,5,5,)),
         sg.Column([
             [
-                sg.Button("Messung starten",enable_events=True, k=K_BTN_START_VELO_MODE),
-                sg.Button("Abbrechen",enable_events=True, k=K_BTN_STOP_VELO_MODE),
+                sg.Button("Messung starten",enable_events=True, k=KeyDefs.BTN_START_VELO_MODE),
+                sg.Button("Abbrechen",enable_events=True, k=KeyDefs.BTN_STOP_VELO_MODE),
             ],
-            [sg.Canvas(key=K_CANVAS_GRAPH_PLOTTING, )],
-            [sg.Text("", font=font_normal, key=K_TEXT_MIN_MAX_CURRENT_VALUES)]
+            [sg.Canvas(key=KeyDefs.CANVAS_GRAPH_PLOTTING, )],
+            [sg.Text("", font=font_normal, key=KeyDefs.TEXT_MIN_MAX_CURRENT_VALUES)]
 ])
 
     ],
@@ -129,11 +127,11 @@ main_layout = [
     [
         sg.Column(expand_x=True, element_justification="center",layout=[
         [
-            sg.Button("Zurück", k=K_BTN_NAV_PREVIOUS_PAGE,enable_events=True,font=font_normal, disabled=True),
+            sg.Button("Zurück", k=KeyDefs.BTN_NAV_PREVIOUS_PAGE,enable_events=True,font=font_normal, disabled=True),
             sg.Push(),
             sg.Text("Getriebe konfigurieren:", key="-headline-", font=font_headline),
             sg.Push(),
-            sg.Button("Weiter", key=K_BTN_NAV_NEXT_PAGE, enable_events=True,  font=font_normal),
+            sg.Button("Weiter", key=KeyDefs.BTN_NAV_NEXT_PAGE, enable_events=True,  font=font_normal),
             ],
         ]),
     ],
