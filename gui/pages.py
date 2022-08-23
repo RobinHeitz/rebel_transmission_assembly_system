@@ -71,6 +71,7 @@ pages_config = [
         layout=layout_config_page, 
         layout_key="-LAYOUT_CONFIG_PAGE-",
         visible=True,
+        next_btn_clicked = "Test 1A", 
         ),
     
     dict(
@@ -78,6 +79,7 @@ pages_config = [
         layout=layout_assembly_step_1, 
         layout_key="-LAYOUT_ASSEMBLY_STEP_1_PAGE-",
         visible=False,
+        next_btn_clicked = "Test 2A", 
         ),
 
     dict(
@@ -85,6 +87,7 @@ pages_config = [
         layout=layout_assembly_step_2,
         layout_key="-LAYOUT_ASSEMBLY_STEP_2_PAGE-",
         visible=False,
+        next_btn_clicked = "Test 3A", 
         ),
 ]
 
@@ -111,6 +114,9 @@ def render_sub_layouts():
 def get_page_keys():
     return [i.get("layout_key") for i in pages_config]
 
+
+def get_navigation_methods_for_index(index:int):
+    return pages_config[index].get("next_btn_clicked")
 
 
 

@@ -1,13 +1,14 @@
 import traceback 
 import PySimpleGUI as sg
-from data_management.model import AssemblyStep, TransmissionConfiguration
+from data_management.model import AssemblyStep, Transmission, TransmissionConfiguration
 
 from hw_interface.motor_controller import RebelAxisController
 from hw_interface.definitions import Exception_Controller_No_CAN_ID, Exception_PCAN_Connection_Failed
 
 from gui.definitions import *
+from gui.definitions import TransmissionConfigHelper, TransmissionSize
 from gui.pages import main_layout
-from gui.pages import get_headline_for_index, get_page_keys
+from gui.pages import get_headline_for_index, get_page_keys, get_navigation_methods_for_index
 
 from gui.plotting import GraphPlotter
 
@@ -27,13 +28,6 @@ consolerHandler = logging.StreamHandler()
 consolerHandler.setFormatter(logFormatter)
 logger.addHandler(consolerHandler)
 
-transmission_config = dict(
-    size = "80",
-    has_encoder = False, 
-    has_brake = False
-)
-
-
 
 #######################
 ### FUNCTIONS  ########
@@ -41,24 +35,21 @@ transmission_config = dict(
 
 
 def radio_80_clicked(event, values):
-    transmission_config["size"] = "80" 
+    transmission_config.set_size(TransmissionSize.size_80)
+    window[K_CHECKBOX_HAS_BRAKE].update(disabled=True)
     
-    checkbox = window[K_CHECKBOX_HAS_BRAKE]
-    checkbox.update(disabled=True)
 
 def radio_105_clicked(event, values):
-    transmission_config["size"] = "105" 
-    checkbox = window[K_CHECKBOX_HAS_BRAKE]
-    checkbox.update(disabled=False)
+    transmission_config.set_size(TransmissionSize.size_105)
+    window[K_CHECKBOX_HAS_BRAKE].update(disabled=False)
 
 def checkbox_has_brake_clicked(event, values):
-    checked = values[event]
-    transmission_config["has_brake"] = checked
+    transmission_config.set_brake_flag(values[event])
 
 
 def checkbox_has_encoder_clicked(event, values):
-    checked = values[event]
-    transmission_config["has_encoder"] = checked
+    transmission_config.set_encoder_flag(values[event])
+ 
 
 # CONNECT BUTTON
 def update_connect_btn_status(status):
@@ -192,28 +183,7 @@ def stop_graph_update(event, values):
 
 def create_transmission():
     logger.info(f"create_transmission() config: {transmission_config}")
-
-    has_encoder = transmission_config.get('has_encoder')
-    has_brake = transmission_config.get('has_brake')
-    size = transmission_config.get("size")
-
-    if size == "80":
-        if has_encoder == True:
-            config = TransmissionConfiguration.config_80_encoder
-        else:
-            config = TransmissionConfiguration.config_80
-    else:
-        ...
-        if has_encoder == True and has_brake == True:
-            config = TransmissionConfiguration.config_105_break_encoder
-        elif has_encoder == True:
-            config = TransmissionConfiguration.config_105_encoder
-        elif has_brake == True:
-            config = TransmissionConfiguration.config_105_break
-        else:
-            config = TransmissionConfiguration.config_105
-
-    
+    config = transmission_config.get_transmission_config()
     transmission = data_controller.create_transmission(config)
     assembly = data_controller.create_assembly(transmission, AssemblyStep.step_1_no_flexring)
 
@@ -230,9 +200,17 @@ def _update_headline(index):
 
 def _nav_next_page(event, values):
     """Called when user clicks on "Next"-Button. Manages hide/show of layouts etc."""
+    global current_page_index
+    
+    a= get_navigation_methods_for_index(current_page_index)
+    logger.info("#"*15)
+    logger.info(f"A = {a}")
+    logger.info("#"*15)
+    
+    
+    
     _hide_current_page()
 
-    global current_page_index
 
     if current_page_index == 0:
         create_transmission()
@@ -300,6 +278,8 @@ if __name__ == "__main__":
         ...
         update_connect_btn_status(status="ERROR_NO_CAN_ID_FOUND")
 
+    transmission_config = TransmissionConfigHelper()
+    
     thread_velocity = None
     thread_graph_updater = None
 
