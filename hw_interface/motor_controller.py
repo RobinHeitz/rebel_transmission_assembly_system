@@ -4,6 +4,8 @@ from can.interfaces.pcan.basic import PCAN_USBBUS1
 from can.interfaces.pcan.basic import PCANBasic, PCAN_DICT_STATUS, PCAN_BAUD_500K
 from can.interfaces.pcan.basic import PCAN_ERROR_OK,PCAN_ERROR_BUSHEAVY, PCAN_ERROR_QRCVEMPTY, PCAN_ERROR_ILLHW
 
+from gui.definitions import KeyDefs
+
 import PySimpleGUI as sg
 
 import time, logging
@@ -165,8 +167,12 @@ class RebelAxisController:
     # Movement directly through velocity CMDs / NO QUEUE
     ####################################################
     
-    def start_movement_velocity_mode(self,  window:sg.Window,duration = 0,):
-        self.thread_movement_velo_mode = Thread(target=self.__movement_velocity_mode, args=(window, duration, ), daemon=True)
+    def start_movement_velocity_mode(self,  duration, invoke_stop_function):
+        """Starts sending movement cmds with velocity-type. After duration [sec], the invoke_stop_function is called.
+        Params:
+        - duration:(int) in seconds
+        - invoke_stop_function: (function) function that is invoked afer movement has finished."""
+        self.thread_movement_velo_mode = Thread(target=self.__movement_velocity_mode, args=(duration, invoke_stop_function), daemon=True)
         self.thread_movement_velo_mode.start()
         
     
@@ -176,9 +182,8 @@ class RebelAxisController:
         self.stop_movement()
     
 
-    def __movement_velocity_mode(self, window:sg.Window,  duration):
+    def __movement_velocity_mode(self, duration, invoke_stop_function):
         logging.info(f"__move_velocity_mode(), duration = {duration}")
-        
         current_thread = threading.current_thread()
         
         if not self.can_move():
@@ -186,19 +191,16 @@ class RebelAxisController:
             self.do_cycle()
             self.cmd_enable_motor()
             self.do_cycle()
-            # self.cmd_enable_motor()
-            # self.do_cycle()
         
         start_time = datetime.now()
         
         while getattr(current_thread, "abort", False) == False and (datetime.now() - start_time).total_seconds() < duration:
-        # while getattr(self.thread_movement_velo_mode, "abort", False) == False and (datetime.now() - start_time).total_seconds() < duration:
             self.cmd_velocity_mode(10)
             self.do_cycle()
 
         self.stop_movement()
-        window.write_event_value("-KEY_FINISHED_VELO_STOP_GRAPH_UPDATING-", "DATA")
-        
+        invoke_stop_function()
+
 
 
     ################################
