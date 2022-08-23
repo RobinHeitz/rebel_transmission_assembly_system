@@ -6,7 +6,9 @@ from hw_interface.motor_controller import RebelAxisController
 from hw_interface.definitions import Exception_Controller_No_CAN_ID, Exception_PCAN_Connection_Failed
 
 from gui.definitions import *
-from gui.pages import layout_page_1, layout_page_2, layout_page_3
+from gui.pages import layout_config_page, layout_assembly_step_1, layout_assembly_step_2
+from gui.pages import get_headline_for_index
+
 from gui.plotting import GraphPlotter
 
 from data_management import data_controller, data_transformation
@@ -31,13 +33,6 @@ transmission_config = dict(
     has_brake = False
 )
 
-headlines = {
-    K_PAGE_1: "Getriebe Konfigurieren:",
-    K_PAGE_2: "Schritt 1: Getriebe ohne Flexring testen",
-    K_PAGE_3: "Schritt 2: Getriebe mit Flexring & Lagerring testen",
-
-}
-
 
 layout = [
 
@@ -55,9 +50,9 @@ layout = [
     [sg.HorizontalSeparator(pad=(5,5,5,5,))],
 
 
-    [sg.pin(sg.Column(layout_page_1, expand_x=True, expand_y=True, visible=True, key=K_PAGE_1))],
-    [sg.pin(sg.Column(layout_page_2, expand_x=True, expand_y=True, visible=False, key=K_PAGE_2))],
-    [sg.pin(sg.Column(layout_page_3, expand_x=True, expand_y=True, visible=False, key=K_PAGE_3))],
+    [sg.pin(sg.Column(layout_config_page, expand_x=True, expand_y=True, visible=True, key=K_PAGE_1))],
+    [sg.pin(sg.Column(layout_assembly_step_1, expand_x=True, expand_y=True, visible=False, key=K_PAGE_2))],
+    [sg.pin(sg.Column(layout_assembly_step_2, expand_x=True, expand_y=True, visible=False, key=K_PAGE_3))],
     
 ]
 
@@ -252,13 +247,13 @@ def create_transmission():
 # FUNCTIONS FOR ENABLING / DISABLING NAVIGATION BUTTONS
 ######################################################
 
-def _update_headline(key):
-    new_headline = headlines[key]
-    headline_text = window["-headline-"]
-    headline_text.update(new_headline)
+def _update_headline(index):
+    new_headline = get_headline_for_index(index)
+    window["-headline-"].update(new_headline)
     
 
 def _nav_next_page(event, values):
+    """Called when user clicks on "Next"-Button. Manages hide/show of layouts etc."""
     _hide_current_page()
 
     global current_page_index
@@ -273,6 +268,7 @@ def _nav_next_page(event, values):
 
 
 def _nav_previous_page(event, values):
+    """Called when user clicks on "Previous"-Button. Manages hide/show of layouts etc."""
     global current_page_index
     global page_keys
     _hide_current_page()
@@ -296,7 +292,7 @@ def _show_next_page():
     next_page = window[page_keys[current_page_index]]
     next_page.update(visible=True)
 
-    _update_headline(page_keys[current_page_index])
+    _update_headline(current_page_index)
     # next_page.unhide_row()
 
 def _disable_enable_nav_buttons():

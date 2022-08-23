@@ -3,7 +3,10 @@ from .definitions import *
 
 
 
-layout_page_1 = [
+
+
+
+layout_config_page = [
 
     [sg.Button("Verbindung herstellen", key=K_BTN_CONNECT_CAN, enable_events=True, font=font_normal, size=(25,1)), sg.Text("Nicht verbunden", key=K_TEXT_CAN_CONNECTED_STATUS, font=font_normal)],
     [sg.Frame("", layout=[
@@ -28,7 +31,7 @@ layout_page_1 = [
     ]
 
 
-layout_page_2 = [
+layout_assembly_step_1 = [
     [
         sg.Image("gui/assembly_pictures/step_1_resize.png", size=(300,300)),
         sg.VSeparator(pad=(5,5,5,5,)),
@@ -47,7 +50,7 @@ layout_page_2 = [
 
 
 
-layout_page_3 = [
+layout_assembly_step_2 = [
     [sg.Text("Seite333!"), sg.Button("Do SomethingS",enable_events=True)],
     
     [ 
@@ -57,3 +60,14 @@ layout_page_3 = [
         sg.Image("gui/assembly_pictures/step_3_resize.png", size=(300,300)),
     ],
 ]
+
+
+
+pages_config = [
+    dict(headline="Getriebe Konfigurieren:", layout=layout_config_page, layout_key=K_PAGE_1),
+    dict(headline="Schritt 1: Getriebe ohne Flexring testen", layout=layout_config_page, layout_key=K_PAGE_2),
+    dict(headline="Schritt 2: Getriebe mit Flexring & Lagerring testen", layout=layout_config_page, layout_key=K_PAGE_3),
+]
+
+def get_headline_for_index(index: int):
+    return pages_config[index].get("headline", f"Es ist leider ein Fehler aufgetreten: Page-index = {index}")
