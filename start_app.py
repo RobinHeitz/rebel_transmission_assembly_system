@@ -6,7 +6,7 @@ from hw_interface.motor_controller import RebelAxisController
 from hw_interface.definitions import Exception_Controller_No_CAN_ID, Exception_PCAN_Connection_Failed
 
 from gui.definitions import *
-from gui.pages import layout
+from gui.pages import main_layout
 from gui.pages import get_headline_for_index, get_page_keys
 
 from gui.plotting import GraphPlotter
@@ -289,7 +289,7 @@ def _disable_enable_nav_buttons():
 #################
 
 if __name__ == "__main__":
-    window = sg.Window("ReBeL Getriebe Montage & Kalibrierung", layout, size=(1200,800), finalize=True)
+    window = sg.Window("ReBeL Getriebe Montage & Kalibrierung", main_layout, size=(1200,800), finalize=True)
     controller = None
     try:
         controller = RebelAxisController(verbose=False)

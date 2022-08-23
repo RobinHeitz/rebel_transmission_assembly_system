@@ -118,7 +118,7 @@ def get_page_keys():
 ############################################
 # Main Layout with navigatin bar at the top
 ############################################
-layout = [
+main_layout = [
 
     [
         sg.Column(expand_x=True, element_justification="center",layout=[
