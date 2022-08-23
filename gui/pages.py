@@ -1,5 +1,5 @@
 import PySimpleGUI as sg
-from .definitions import KeyDefs, font_headline, font_normal, font_small
+from .definitions import KeyDefs, font_headline, font_normal, font_small, LayoutPageKeys
 
 
 #####################################################
@@ -67,25 +67,25 @@ pages_config = [
     dict(
         headline="Getriebe Konfigurieren:", 
         layout=layout_config_page, 
-        layout_key="-LAYOUT_CONFIG_PAGE-",
+        layout_key=LayoutPageKeys.layout_config_page,
         visible=True,
-        next_btn_clicked = "Test 1A", 
+        # invoke_function_next_btn_clicked = "Test 1A", 
         ),
     
     dict(
         headline="Schritt 1: Getriebe ohne Flexring testen", 
         layout=layout_assembly_step_1, 
-        layout_key="-LAYOUT_ASSEMBLY_STEP_1_PAGE-",
+        layout_key=LayoutPageKeys.layout_assembly_step_1_page,
         visible=False,
-        next_btn_clicked = "Test 2A", 
+        # invoke_function_next_btn_clicked = "Test 2A", 
         ),
 
     dict(
         headline="Schritt 2: Getriebe mit Flexring & Lagerring testen",
         layout=layout_assembly_step_2,
-        layout_key="-LAYOUT_ASSEMBLY_STEP_2_PAGE-",
+        layout_key=LayoutPageKeys.layout_assembly_step_2_page,
         visible=False,
-        next_btn_clicked = "Test 3A", 
+        # invoke_function_next_btn_clicked = "Test 3A", 
         ),
 ]
 
@@ -112,9 +112,11 @@ def render_sub_layouts():
 def get_page_keys():
     return [i.get("layout_key") for i in pages_config]
 
+def get_page_key_for_index(index:int):
+    return pages_config[index].get("layout_key")
 
-def get_navigation_methods_for_index(index:int):
-    return pages_config[index].get("next_btn_clicked")
+# def get_navigation_methods_for_index(index:int):
+#     return pages_config[index].get("invoke_function_next_btn_clicked")
 
 
 

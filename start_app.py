@@ -7,10 +7,10 @@ from gui.helper_functions.can_connection_functions import connect_can, update_co
 from hw_interface.motor_controller import RebelAxisController
 from hw_interface.definitions import Exception_Controller_No_CAN_ID, Exception_PCAN_Connection_Failed
 
-from gui.definitions import KeyDefs
+from gui.definitions import KeyDefs, LayoutPageKeys
 from gui.definitions import TransmissionConfigHelper, TransmissionSize
 from gui.pages import main_layout
-from gui.pages import get_headline_for_index, get_page_keys, get_navigation_methods_for_index
+from gui.pages import get_headline_for_index, get_page_keys, get_page_key_for_index
 
 from gui.plotting import GraphPlotter
 
@@ -100,12 +100,12 @@ def graph_update_cycle(window:sg.Window, controller:RebelAxisController):
             mean_current, pos, millis = data_transformation.sample_data(batch)
             logger.info(f"Batch values: mean current = {mean_current} / middle position = {pos} / middle millis = {millis}")
             
-            # data_controller.create_data_point(current=mean_current, timestamp=millis)
             window.write_event_value(KeyDefs.UPDATE_GRAPH, dict(x=pos, y=mean_current))
+
+            # send value to data controller for adding them into data base :)
             data_controller.create_data_point_to_current_measurement(mean_current, millis)
             data_controller.update_current_measurement_fields()
 
-        # send value to data controller for adding them into data base :)
 
 
 
@@ -161,19 +161,18 @@ def _update_headline(index):
 def _nav_next_page(event, values):
     """Called when user clicks on "Next"-Button. Manages hide/show of layouts etc."""
     global current_page_index
-    
-    a= get_navigation_methods_for_index(current_page_index)
-    logger.info("#"*15)
-    logger.info(f"A = {a}")
-    logger.info("#"*15)
-    
-    
+
+    page_key = get_page_key_for_index(current_page_index)
+    if page_key == LayoutPageKeys.layout_config_page:
+        #invoke method on btn-next-click for config page
+        ...
+        create_transmission()
+
+    elif page_key == LayoutPageKeys.layout_assembly_step_1_page:
+        #invoke method on btn-next-click for assembly-step1-page
+        ...
     
     _hide_current_page()
-
-
-    if current_page_index == 0:
-        create_transmission()
 
     current_page_index += 1
     _show_next_page()

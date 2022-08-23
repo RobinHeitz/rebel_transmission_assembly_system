@@ -49,6 +49,11 @@ class KeyDefs(enum.Enum):
 # CLASS DEFINITION
 ##################
 
+class LayoutPageKeys(enum.Enum):
+    layout_config_page = "-LAYOUT_CONFIG_PAGE-"
+    layout_assembly_step_1_page = "-LAYOUT_ASSEMBLY_STEP_1_PAGE-"
+    layout_assembly_step_2_page = "-LAYOUT_ASSEMBLY_STEP_2_PAGE-"
+
 class TransmissionSize(enum.Enum):
     size_80 = 1
     size_105 = 2
