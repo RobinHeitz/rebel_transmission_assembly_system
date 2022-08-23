@@ -17,7 +17,7 @@ from gui.plotting import GraphPlotter
 
 
 logFormatter = logging.Formatter("'%(asctime)s - %(message)s")
-logger = logging.getLogger()
+logger = logging.getLogger("start_app")
 logger.setLevel(logging.DEBUG)
 
 fileHandler = logging.FileHandler("gui.log", mode="w")
@@ -130,20 +130,11 @@ def stop_graph_update(event, values):
     thread_graph_updater.do_plot = False
 
     # Update min/ max fields in gui
-    text_field = window[KeyDefs.TEXT_MIN_MAX_CURRENT_VALUES]
+    text_field = window[(KeyDefs.TEXT_MIN_MAX_CURRENT_VALUES, LayoutPageKeys.layout_assembly_step_1_page)]
     measurement = data_controller.get_current_measurement_instance()
     min_val, max_val = measurement.min_current, measurement.max_current
 
     text_field.update(f"Min current: {min_val} ||| Max. current: {max_val}")
-
-
-
-
-def create_transmission():
-    logger.info(f"create_transmission() config: {transmission_config}")
-    config = transmission_config.get_transmission_config()
-    transmission = data_controller.create_transmission(config)
-    assembly = data_controller.create_assembly(transmission, AssemblyStep.step_1_no_flexring)
 
 
 
@@ -160,23 +151,28 @@ def _nav_next_page(event, values):
     """Called when user clicks on "Next"-Button. Manages hide/show of layouts etc."""
     global current_page_index
 
-    page_key = get_page_key_for_index(current_page_index)
-
-    if page_key == LayoutPageKeys.layout_config_page:
-        #invoke method on btn-next-click for config page
-        ...
-        create_transmission()
-
-    elif page_key == LayoutPageKeys.layout_assembly_step_1_page:
-        #invoke method on btn-next-click for assembly-step1-page
-        ...
-    
     _hide_current_page()
 
     current_page_index += 1
     _show_next_page()
     _disable_enable_nav_buttons()
+   
+   
+    page_key = get_page_key_for_index(current_page_index)
+    config = transmission_config.get_transmission_config()
+    transmission = data_controller.get_or_create_transmission(config)
 
+
+    if page_key == LayoutPageKeys.layout_assembly_step_1_page:
+        data_controller.get_or_create_assembly_for_assembly_step(transmission, AssemblyStep.step_1_no_flexring)
+        
+    elif page_key == LayoutPageKeys.layout_assembly_step_2_page:
+        data_controller.get_or_create_assembly_for_assembly_step(transmission, AssemblyStep.step_2_with_flexring)
+    
+    elif page_key == LayoutPageKeys.layout_assembly_step_3_page:
+        data_controller.get_or_create_assembly_for_assembly_step(transmission, AssemblyStep.step_3_gearoutput_not_screwed)
+        
+        
 
 def _nav_previous_page(event, values):
     """Called when user clicks on "Previous"-Button. Manages hide/show of layouts etc."""
@@ -243,10 +239,12 @@ if __name__ == "__main__":
 
     current_page_index = 0
 
-    graph_plotter = GraphPlotter(window[KeyDefs.CANVAS_GRAPH_PLOTTING])
+    graph_plotter = GraphPlotter(window[(KeyDefs.CANVAS_GRAPH_PLOTTING, LayoutPageKeys.layout_assembly_step_1_page)])
     graph_plotter.plot_data([], [])
 
     x_data, y_data = [],[]
+
+
 
     key_function_map = {
         KeyDefs.BTN_NAV_NEXT_PAGE: (_nav_next_page, dict()),
@@ -264,8 +262,20 @@ if __name__ == "__main__":
         KeyDefs.CHECKBOX_HAS_ENCODER: (lambda event, values: transmission_config.set_encoder_flag(values[event]), dict()),
         KeyDefs.CHECKBOX_HAS_BRAKE: (lambda event, values: transmission_config.set_brake_flag(values[event]), dict()),
         
-        KeyDefs.BTN_START_VELO_MODE: (start_velocity_mode, dict(controller=controller)),
-        KeyDefs.BTN_STOP_VELO_MODE: (stop_velocity_mode, dict(controller=controller)),
+        # KeyDefs.BTN_START_VELO_MODE: (start_velocity_mode, dict(controller=controller)),
+        # KeyDefs.BTN_STOP_VELO_MODE: (stop_velocity_mode, dict(controller=controller)),
+        
+        (KeyDefs.BTN_START_VELO_MODE, LayoutPageKeys.layout_assembly_step_1_page): (start_velocity_mode, dict(controller=controller)),
+        (KeyDefs.BTN_STOP_VELO_MODE, LayoutPageKeys.layout_assembly_step_1_page): (stop_velocity_mode, dict(controller=controller)),
+        
+        (KeyDefs.BTN_START_VELO_MODE, LayoutPageKeys.layout_assembly_step_2_page): (start_velocity_mode, dict(controller=controller)),
+        (KeyDefs.BTN_STOP_VELO_MODE, LayoutPageKeys.layout_assembly_step_2_page): (stop_velocity_mode, dict(controller=controller)),
+        
+        (KeyDefs.BTN_START_VELO_MODE, LayoutPageKeys.layout_assembly_step_3_page): (start_velocity_mode, dict(controller=controller)),
+        (KeyDefs.BTN_STOP_VELO_MODE, LayoutPageKeys.layout_assembly_step_3_page): (stop_velocity_mode, dict(controller=controller)),
+        
+        
+        
         KeyDefs.UPDATE_GRAPH: (update_graph, dict(plotter=graph_plotter)),
         KeyDefs.FINISHED_VELO_STOP_GRAPH_UPDATING: (stop_graph_update, dict())
 

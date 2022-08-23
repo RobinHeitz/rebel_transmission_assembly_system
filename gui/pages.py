@@ -37,27 +37,47 @@ layout_assembly_step_1 = [
         sg.VSeparator(pad=(5,5,5,5,)),
         sg.Column([
             [
-                sg.Button("Messung starten",enable_events=True, k=KeyDefs.BTN_START_VELO_MODE),
-                sg.Button("Abbrechen",enable_events=True, k=KeyDefs.BTN_STOP_VELO_MODE),
+                sg.Button("Messung starten",enable_events=True, k=(KeyDefs.BTN_START_VELO_MODE, LayoutPageKeys.layout_assembly_step_1_page) ),
+                sg.Button("Abbrechen",enable_events=True, k=(KeyDefs.BTN_STOP_VELO_MODE, LayoutPageKeys.layout_assembly_step_1_page) ),
             ],
-            [sg.Canvas(key=KeyDefs.CANVAS_GRAPH_PLOTTING, )],
-            [sg.Text("", font=font_normal, key=KeyDefs.TEXT_MIN_MAX_CURRENT_VALUES)]
+            [sg.Canvas(key=(KeyDefs.CANVAS_GRAPH_PLOTTING, LayoutPageKeys.layout_assembly_step_1_page), )],
+            [sg.Text("", font=font_normal, key=(KeyDefs.TEXT_MIN_MAX_CURRENT_VALUES, LayoutPageKeys.layout_assembly_step_1_page))]
 ])
 
     ],
 ]
 
 
-
-
 layout_assembly_step_2 = [
-    [sg.Text("Seite333!"), sg.Button("Do SomethingS",enable_events=True)],
-    
-    [ 
-        # col_test,
-        sg.Image("gui/assembly_pictures/step_1_resize.png", size=(300,300)),
+    [
         sg.Image("gui/assembly_pictures/step_2_resize.png", size=(300,300)),
+        sg.VSeparator(pad=(5,5,5,5,)),
+        sg.Column([
+            [
+                sg.Button("Messung starten",enable_events=True, k=(KeyDefs.BTN_START_VELO_MODE, LayoutPageKeys.layout_assembly_step_2_page) ),
+                sg.Button("Abbrechen",enable_events=True, k=(KeyDefs.BTN_STOP_VELO_MODE, LayoutPageKeys.layout_assembly_step_2_page) ),
+            ],
+            [sg.Canvas(key=(KeyDefs.CANVAS_GRAPH_PLOTTING, LayoutPageKeys.layout_assembly_step_2_page), )],
+            [sg.Text("", font=font_normal, key=(KeyDefs.TEXT_MIN_MAX_CURRENT_VALUES, LayoutPageKeys.layout_assembly_step_2_page))]
+])
+
+    ],
+]
+
+
+layout_assembly_step_3 = [
+    [
         sg.Image("gui/assembly_pictures/step_3_resize.png", size=(300,300)),
+        sg.VSeparator(pad=(5,5,5,5,)),
+        sg.Column([
+            [
+                sg.Button("Messung starten",enable_events=True, k=(KeyDefs.BTN_START_VELO_MODE, LayoutPageKeys.layout_assembly_step_3_page) ),
+                sg.Button("Abbrechen",enable_events=True, k=(KeyDefs.BTN_STOP_VELO_MODE, LayoutPageKeys.layout_assembly_step_3_page) ),
+            ],
+            [sg.Canvas(key=(KeyDefs.CANVAS_GRAPH_PLOTTING, LayoutPageKeys.layout_assembly_step_3_page), )],
+            [sg.Text("", font=font_normal, key=(KeyDefs.TEXT_MIN_MAX_CURRENT_VALUES, LayoutPageKeys.layout_assembly_step_3_page))]
+])
+
     ],
 ]
 
@@ -69,7 +89,6 @@ pages_config = [
         layout=layout_config_page, 
         layout_key=LayoutPageKeys.layout_config_page,
         visible=True,
-        # invoke_function_next_btn_clicked = "Test 1A", 
         ),
     
     dict(
@@ -77,7 +96,6 @@ pages_config = [
         layout=layout_assembly_step_1, 
         layout_key=LayoutPageKeys.layout_assembly_step_1_page,
         visible=False,
-        # invoke_function_next_btn_clicked = "Test 2A", 
         ),
 
     dict(
@@ -85,11 +103,15 @@ pages_config = [
         layout=layout_assembly_step_2,
         layout_key=LayoutPageKeys.layout_assembly_step_2_page,
         visible=False,
-        # invoke_function_next_btn_clicked = "Test 3A", 
+        ),
+    
+    dict(
+        headline="Schritt 3: Getriebe mit Abtrieb testen",
+        layout=layout_assembly_step_3,
+        layout_key=LayoutPageKeys.layout_assembly_step_3_page,
+        visible=False,
         ),
 ]
-
-
 
 
 
@@ -114,9 +136,6 @@ def get_page_keys():
 
 def get_page_key_for_index(index:int):
     return pages_config[index].get("layout_key")
-
-# def get_navigation_methods_for_index(index:int):
-#     return pages_config[index].get("invoke_function_next_btn_clicked")
 
 
 

@@ -21,18 +21,15 @@ metadata = db.MetaData()
 session = sessionmaker(bind = engine)()
 
 current_transmission = None
-current_assembly = None
+# current_assembly = None
+current_assemblies = dict()
 current_measurement = None
 
 ######################
 #### helper functions
 ######################
 
-def get_current_transmission_instance():
-    return current_transmission
 
-def get_current_assembly_instance():
-    return current_assembly
 
 def get_current_measurement_instance():
     return current_measurement
@@ -55,28 +52,32 @@ def update_measurement_fields(m:Measurement):
 ### Create objects
 ##################
 
-def create_transmission(config:TransmissionConfiguration):
-    new_transmission = Transmission(transmission_configuration = config)
-    session.add(new_transmission)
-    session.commit()
-
+def get_or_create_transmission(config:TransmissionConfiguration):
     global current_transmission
-    current_transmission = new_transmission
+    
+    if current_transmission != None:
+        return current_transmission
+    
+    current_transmission = Transmission(transmission_configuration = config)
+    session.add(current_transmission)
+    session.commit()
     return current_transmission
 
 
-def create_assembly(transmission:Transmission, assembly_step: AssemblyStep):
+def get_or_create_assembly_for_assembly_step(transmission:Transmission, assembly_step:AssemblyStep):
+    global current_assemblies
+
+    if assembly_step in current_assemblies:
+        return current_assemblies[assembly_step]
+    
     a = Assembly(assembly_step = assembly_step, transmission = transmission)
     session.add(a)
     session.commit()
+
+    current_assemblies[assembly_step] = a
+    return a
     
-    global current_assembly
-    current_assembly = a
-    return current_assembly
-
-
-def create_measurement_to_current_assembly():
-    return create_measurement(get_current_assembly_instance())
+    
 
 
 def create_measurement(assembly:Assembly):

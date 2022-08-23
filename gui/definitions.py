@@ -53,16 +53,20 @@ class LayoutPageKeys(enum.Enum):
     layout_config_page = "-LAYOUT_CONFIG_PAGE-"
     layout_assembly_step_1_page = "-LAYOUT_ASSEMBLY_STEP_1_PAGE-"
     layout_assembly_step_2_page = "-LAYOUT_ASSEMBLY_STEP_2_PAGE-"
+    layout_assembly_step_3_page = "-LAYOUT_ASSEMBLY_STEP_3_PAGE-"
 
 class TransmissionSize(enum.Enum):
-    size_80 = 1
-    size_105 = 2
+    size_80 = "80"
+    size_105 = "105"
 
 
 class TransmissionConfigHelper:
     size = TransmissionSize.size_80
     has_encoder = False, 
     has_brake = False
+
+    def __str__(self):
+        return f"Transmission configuration: Size = {self.size.value} / has encoder = {self.has_encoder} / has brake = {self.has_brake}"
 
     def set_size(self, size:TransmissionSize):
         self.size = size
