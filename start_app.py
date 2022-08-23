@@ -2,6 +2,8 @@ import traceback
 import PySimpleGUI as sg
 from data_management.model import AssemblyStep, Transmission, TransmissionConfiguration
 
+from gui.helper_functions.can_connection_functions import connect_can
+
 from hw_interface.motor_controller import RebelAxisController
 from hw_interface.definitions import Exception_Controller_No_CAN_ID, Exception_PCAN_Connection_Failed
 
@@ -48,49 +50,6 @@ def checkbox_has_brake_clicked(event, values):
 def checkbox_has_encoder_clicked(event, values):
     transmission_config.set_encoder_flag(values[event])
  
-
-# CONNECT BUTTON
-def update_connect_btn_status(status):
-    global window
-    global controller
-    btn = window[KeyDefs.BTN_CONNECT_CAN]
-    txt = window[KeyDefs.TEXT_CAN_CONNECTED_STATUS]
-    
-    if status == "PCAN_HW_ERROR":
-        btn.update("Verbindung fehlgeschlagen", disabled = True)
-        txt.update("Ist der PCAN-Adapter eingesteckt?")
-    
-    elif status == "FOUND_CAN_ID":
-        btn.update("Verbindung herstellen", disabled=True)
-        txt.update(f"Verbindung hergestellt: CAN-ID = {hex(controller.can_id)}", text_color="white")
-
-    elif status == "TRY_FIND_CAN_ID":
-        btn.update("... Verbinden", disabled=True)
-        threading.Thread(target=connect_can_thread, args=(window, controller), daemon=True).start()
-
-    elif status == "ERROR_NO_CAN_ID_FOUND":
-        txt.update("Verbindung fehlgeschlagen", text_color="red")
-        btn.update("Erneut versuchen", disabled=False)
-
-
-def connect_can(event, values,controller: RebelAxisController):
-    if controller.can_id != None and controller.can_id != -1:
-        update_connect_btn_status(status="FOUND_CAN_ID")
-    else:
-        update_connect_btn_status(status="TRY_FIND_CAN_ID")
-    threading.Thread(target=connect_can_thread, args=(window, controller), daemon=True).start()
-
-
-def connect_can_thread(window, controller:RebelAxisController):
-    if controller.can_id != -1:
-        update_connect_btn_status(status="FOUND_CAN_ID")
-    else:
-        board_id = controller.find_can_id(timeout=2)
-        if board_id != -1:
-            update_connect_btn_status(status="FOUND_CAN_ID")
-        else:
-            update_connect_btn_status(status="ERROR_NO_CAN_ID_FOUND")
-
 
 
 # Software update dummy
@@ -298,11 +257,11 @@ if __name__ == "__main__":
         KeyDefs.RADIO_BUTTON_80_CLICKED: (radio_size_is_clicked, dict(size=TransmissionSize.size_80)),
         KeyDefs.RADIO_BUTTON_105_CLICKED:( radio_size_is_clicked, dict(size=TransmissionSize.size_105)),
 
-        KeyDefs.BTN_CONNECT_CAN: (connect_can, dict(controller=controller)),
+        KeyDefs.BTN_CONNECT_CAN: (lambda *args, **kwargs: connect_can(**kwargs),dict(controller=controller, window=window)),
         KeyDefs.BTN_SOFTWARE_UPDATE: (perform_software_update, dict()),
 
         KeyDefs.SOFTWARE_UPDATE_FEEDBACK: (lambda event, values: window[KeyDefs.PROGRESSBAR_SOFTWARE_UPDATE].update_bar(values.get(event)), dict()),
-        KeyDefs.SOFTWARE_UPDATE_DONE : (lambda event, values: window[KeyDefs.TEXT_SOFTWARE_UPDATE_STATUS_TEXT].update("Software upgedated") , dict()),
+        KeyDefs.SOFTWARE_UPDATE_DONE : (lambda *args: window[KeyDefs.TEXT_SOFTWARE_UPDATE_STATUS_TEXT].update("Software upgedated") , dict()),
 
         KeyDefs.CHECKBOX_HAS_ENCODER: (lambda event, values: transmission_config.set_encoder_flag(values[event]), dict()),
         KeyDefs.CHECKBOX_HAS_BRAKE: (lambda event, values: transmission_config.set_brake_flag(values[event]), dict()),
