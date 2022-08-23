@@ -118,6 +118,8 @@ def start_velocity_mode(event, values, controller:RebelAxisController):
     thread_graph_updater = threading.Thread(target=graph_update_cycle, args=(window, controller, ), daemon=True)
     thread_graph_updater.start()
 
+
+    # definition of stop-function that is invoked after the movement has stopped (e.g. duration is reached)
     stop_func = lambda: window.write_event_value(KeyDefs.FINISHED_VELO_STOP_GRAPH_UPDATING, "Data")
     controller.start_movement_velocity_mode(duration=5, invoke_stop_function = stop_func)
 
