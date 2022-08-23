@@ -33,15 +33,13 @@ logger.addHandler(consolerHandler)
 ### FUNCTIONS  ########
 #######################
 
+def radio_size_is_clicked(event, values, size:TransmissionSize):
+    transmission_config.set_size(size)
+    if size == TransmissionSize.size_80:
+        window[KeyDefs.CHECKBOX_HAS_BRAKE].update(disabled=True)
+    else:
+        window[KeyDefs.CHECKBOX_HAS_BRAKE].update(disabled=False)
 
-def radio_80_clicked(event, values):
-    transmission_config.set_size(TransmissionSize.size_80)
-    window[KeyDefs.CHECKBOX_HAS_BRAKE].update(disabled=True)
-    
-
-def radio_105_clicked(event, values):
-    transmission_config.set_size(TransmissionSize.size_105)
-    window[KeyDefs.CHECKBOX_HAS_BRAKE].update(disabled=False)
 
 def checkbox_has_brake_clicked(event, values):
     transmission_config.set_brake_flag(values[event])
@@ -297,8 +295,8 @@ if __name__ == "__main__":
         KeyDefs.BTN_NAV_NEXT_PAGE: (_nav_next_page, dict()),
         KeyDefs.BTN_NAV_PREVIOUS_PAGE: (_nav_previous_page, dict()),
 
-        KeyDefs.RADIO_BUTTON_80_CLICKED: (radio_80_clicked, dict()),
-        KeyDefs.RADIO_BUTTON_105_CLICKED:( radio_105_clicked, dict()),
+        KeyDefs.RADIO_BUTTON_80_CLICKED: (radio_size_is_clicked, dict(size=TransmissionSize.size_80)),
+        KeyDefs.RADIO_BUTTON_105_CLICKED:( radio_size_is_clicked, dict(size=TransmissionSize.size_105)),
 
         KeyDefs.BTN_CONNECT_CAN: (connect_can, dict(controller=controller)),
         KeyDefs.BTN_SOFTWARE_UPDATE: (perform_software_update, dict()),
@@ -306,8 +304,9 @@ if __name__ == "__main__":
         KeyDefs.SOFTWARE_UPDATE_FEEDBACK: (lambda event, values: window[KeyDefs.PROGRESSBAR_SOFTWARE_UPDATE].update_bar(values.get(event)), dict()),
         KeyDefs.SOFTWARE_UPDATE_DONE : (lambda event, values: window[KeyDefs.TEXT_SOFTWARE_UPDATE_STATUS_TEXT].update("Software upgedated") , dict()),
 
-        KeyDefs.CHECKBOX_HAS_BRAKE: (checkbox_has_brake_clicked, dict()), 
-        KeyDefs.CHECKBOX_HAS_ENCODER: (checkbox_has_encoder_clicked, dict()),
+        KeyDefs.CHECKBOX_HAS_ENCODER: (lambda event, values: transmission_config.set_encoder_flag(values[event]), dict()),
+        KeyDefs.CHECKBOX_HAS_BRAKE: (lambda event, values: transmission_config.set_brake_flag(values[event]), dict()),
+        
         KeyDefs.BTN_START_VELO_MODE: (start_velocity_mode, dict(controller=controller)),
         KeyDefs.BTN_STOP_VELO_MODE: (stop_velocity_mode, dict(controller=controller)),
         KeyDefs.UPDATE_GRAPH: (update_graph, dict(plotter=graph_plotter)),
