@@ -2,7 +2,7 @@ import traceback
 import PySimpleGUI as sg
 from data_management.model import AssemblyStep, Transmission, TransmissionConfiguration
 
-from gui.helper_functions.can_connection_functions import connect_can
+from gui.helper_functions.can_connection_functions import connect_can, update_connect_btn_status
 
 from hw_interface.motor_controller import RebelAxisController
 from hw_interface.definitions import Exception_Controller_No_CAN_ID, Exception_PCAN_Connection_Failed
