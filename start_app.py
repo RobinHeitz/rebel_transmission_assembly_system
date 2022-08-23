@@ -1,22 +1,20 @@
 import traceback 
 import PySimpleGUI as sg
-from data_management.model import AssemblyStep, Transmission, TransmissionConfiguration
+import logging, time, threading
 
-from gui.helper_functions.can_connection_functions import connect_can, update_connect_btn_status
+from data_management.model import AssemblyStep
+from data_management import data_controller, data_transformation
 
 from hw_interface.motor_controller import RebelAxisController
 from hw_interface.definitions import Exception_Controller_No_CAN_ID, Exception_PCAN_Connection_Failed
 
 from gui.definitions import KeyDefs, LayoutPageKeys
 from gui.definitions import TransmissionConfigHelper, TransmissionSize
+from gui.helper_functions import can_connection_functions
 from gui.pages import main_layout
 from gui.pages import get_headline_for_index, get_page_keys, get_page_key_for_index
-
 from gui.plotting import GraphPlotter
 
-from data_management import data_controller, data_transformation
-
-import logging, time, threading
 
 logFormatter = logging.Formatter("'%(asctime)s - %(message)s")
 logger = logging.getLogger()
@@ -163,6 +161,7 @@ def _nav_next_page(event, values):
     global current_page_index
 
     page_key = get_page_key_for_index(current_page_index)
+
     if page_key == LayoutPageKeys.layout_config_page:
         #invoke method on btn-next-click for config page
         ...
@@ -232,10 +231,10 @@ if __name__ == "__main__":
         controller = RebelAxisController(verbose=False)
     except Exception_PCAN_Connection_Failed as e:
         print("Exception PCAN Connection Failed:", e)
-        update_connect_btn_status(status="PCAN_HW_ERROR")
+        can_connection_functions.update_connect_btn_status(status="PCAN_HW_ERROR")
     except Exception_Controller_No_CAN_ID:
         ...
-        update_connect_btn_status(status="ERROR_NO_CAN_ID_FOUND")
+        can_connection_functions.update_connect_btn_status(status="ERROR_NO_CAN_ID_FOUND")
 
     transmission_config = TransmissionConfigHelper()
     
@@ -256,7 +255,7 @@ if __name__ == "__main__":
         KeyDefs.RADIO_BUTTON_80_CLICKED: (radio_size_is_clicked, dict(size=TransmissionSize.size_80)),
         KeyDefs.RADIO_BUTTON_105_CLICKED:( radio_size_is_clicked, dict(size=TransmissionSize.size_105)),
 
-        KeyDefs.BTN_CONNECT_CAN: (lambda *args, **kwargs: connect_can(**kwargs),dict(controller=controller, window=window)),
+        KeyDefs.BTN_CONNECT_CAN: (lambda *args, **kwargs: can_connection_functions.connect_can(**kwargs),dict(controller=controller, window=window)),
         KeyDefs.BTN_SOFTWARE_UPDATE: (perform_software_update, dict()),
 
         KeyDefs.SOFTWARE_UPDATE_FEEDBACK: (lambda event, values: window[KeyDefs.PROGRESSBAR_SOFTWARE_UPDATE].update_bar(values.get(event)), dict()),
