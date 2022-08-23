@@ -4,7 +4,9 @@ from .definitions import *
 
 
 
-
+#####################################################
+# LAYOUTS of different 'pages' within the application
+#####################################################
 
 layout_config_page = [
 
@@ -64,10 +66,73 @@ layout_assembly_step_2 = [
 
 
 pages_config = [
-    dict(headline="Getriebe Konfigurieren:", layout=layout_config_page, layout_key=K_PAGE_1),
-    dict(headline="Schritt 1: Getriebe ohne Flexring testen", layout=layout_config_page, layout_key=K_PAGE_2),
-    dict(headline="Schritt 2: Getriebe mit Flexring & Lagerring testen", layout=layout_config_page, layout_key=K_PAGE_3),
+    dict(
+        headline="Getriebe Konfigurieren:", 
+        layout=layout_config_page, 
+        layout_key="-LAYOUT_CONFIG_PAGE-",
+        visible=True,
+        ),
+    
+    dict(
+        headline="Schritt 1: Getriebe ohne Flexring testen", 
+        layout=layout_assembly_step_1, 
+        layout_key="-LAYOUT_ASSEMBLY_STEP_1_PAGE-",
+        visible=False,
+        ),
+
+    dict(
+        headline="Schritt 2: Getriebe mit Flexring & Lagerring testen",
+        layout=layout_assembly_step_2,
+        layout_key="-LAYOUT_ASSEMBLY_STEP_2_PAGE-",
+        visible=False,
+        ),
 ]
+
+
+
+
+
+
+#######################################################
+# HELPER Functions for returning data from pages_config
+#######################################################
+
 
 def get_headline_for_index(index: int):
     return pages_config[index].get("headline", f"Es ist leider ein Fehler aufgetreten: Page-index = {index}")
+
+
+def render_sub_layouts():
+    """Returns a list with each sub-layout (also called page)."""
+    return [
+        [sg.pin(sg.Column(i.get("layout"), expand_x=True, expand_y=True, visible=i.get("visible"), key=i.get("layout_key")))] for i in pages_config
+    ]
+
+def get_page_keys():
+    return [i.get("layout_key") for i in pages_config]
+
+
+
+
+
+############################################
+# Main Layout with navigatin bar at the top
+############################################
+layout = [
+
+    [
+        sg.Column(expand_x=True, element_justification="center",layout=[
+        [
+            sg.Button("Zurück", k=K_BTN_NAV_PREVIOUS_PAGE,enable_events=True,font=font_normal, disabled=True),
+            sg.Push(),
+            sg.Text("Getriebe konfigurieren:", key="-headline-", font=font_headline),
+            sg.Push(),
+            sg.Button("Weiter", key=K_BTN_NAV_NEXT_PAGE, enable_events=True,  font=font_normal),
+            ],
+        ]),
+    ],
+    [sg.HorizontalSeparator(pad=(5,5,5,5,))],
+
+    *render_sub_layouts(),
+
+]

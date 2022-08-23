@@ -10,10 +10,6 @@ font_small = "Helvetica 13"
 #################
 # KEY DEFINITIONS
 #################
-# Layout keys
-K_PAGE_1 = "-LAYOUT_PAGE_1-"
-K_PAGE_2 = "-LAYOUT_PAGE_2-"
-K_PAGE_3 = "-LAYOUT_PAGE_3-"
 
 # Button keys
 K_BTN_NAV_PREVIOUS_PAGE = "-K_BTN_NAV_PREVIOUS_PAGE-"

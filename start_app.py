@@ -6,8 +6,8 @@ from hw_interface.motor_controller import RebelAxisController
 from hw_interface.definitions import Exception_Controller_No_CAN_ID, Exception_PCAN_Connection_Failed
 
 from gui.definitions import *
-from gui.pages import layout_config_page, layout_assembly_step_1, layout_assembly_step_2
-from gui.pages import get_headline_for_index
+from gui.pages import layout
+from gui.pages import get_headline_for_index, get_page_keys
 
 from gui.plotting import GraphPlotter
 
@@ -34,28 +34,6 @@ transmission_config = dict(
 )
 
 
-layout = [
-
-    [
-        sg.Column(expand_x=True, element_justification="center",layout=[
-        [
-            sg.Button("Zurück", k=K_BTN_NAV_PREVIOUS_PAGE,enable_events=True,font=font_normal, disabled=True),
-            sg.Push(),
-            sg.Text("Getriebe konfigurieren:", key="-headline-", font=font_headline),
-            sg.Push(),
-            sg.Button("Weiter", key=K_BTN_NAV_NEXT_PAGE, enable_events=True,  font=font_normal),
-            ],
-        ]),
-    ],
-    [sg.HorizontalSeparator(pad=(5,5,5,5,))],
-
-
-    [sg.pin(sg.Column(layout_config_page, expand_x=True, expand_y=True, visible=True, key=K_PAGE_1))],
-    [sg.pin(sg.Column(layout_assembly_step_1, expand_x=True, expand_y=True, visible=False, key=K_PAGE_2))],
-    [sg.pin(sg.Column(layout_assembly_step_2, expand_x=True, expand_y=True, visible=False, key=K_PAGE_3))],
-    
-]
-
 
 #######################
 ### FUNCTIONS  ########
@@ -67,13 +45,11 @@ def radio_80_clicked(event, values):
     
     checkbox = window[K_CHECKBOX_HAS_BRAKE]
     checkbox.update(disabled=True)
-    # checkbox.hide_row()
 
 def radio_105_clicked(event, values):
     transmission_config["size"] = "105" 
     checkbox = window[K_CHECKBOX_HAS_BRAKE]
     checkbox.update(disabled=False)
-    # checkbox.unhide_row()
 
 def checkbox_has_brake_clicked(event, values):
     checked = values[event]
@@ -257,7 +233,6 @@ def _nav_next_page(event, values):
     _hide_current_page()
 
     global current_page_index
-    global page_keys
 
     if current_page_index == 0:
         create_transmission()
@@ -270,7 +245,6 @@ def _nav_next_page(event, values):
 def _nav_previous_page(event, values):
     """Called when user clicks on "Previous"-Button. Manages hide/show of layouts etc."""
     global current_page_index
-    global page_keys
     _hide_current_page()
 
     current_page_index -= 1
@@ -280,16 +254,14 @@ def _nav_previous_page(event, values):
 
 def _hide_current_page():
     global current_page_index
-    global page_keys
-    current_page = window[page_keys[current_page_index]]
+    current_page = window[get_page_keys()[current_page_index]]
     current_page.update(visible=False)
     # current_page.hide_row()
 
 def _show_next_page():
     global current_page_index
-    global page_keys
     
-    next_page = window[page_keys[current_page_index]]
+    next_page = window[get_page_keys()[current_page_index]]
     next_page.update(visible=True)
 
     _update_headline(current_page_index)
@@ -306,7 +278,7 @@ def _disable_enable_nav_buttons():
     if current_page_index == 0:
         btn_prev.update(disabled=True)
     
-    elif current_page_index == len(page_keys) -1:
+    elif current_page_index == len(get_page_keys()) -1:
         btn_next(disabled=True)
  
 
@@ -331,7 +303,6 @@ if __name__ == "__main__":
     thread_velocity = None
     thread_graph_updater = None
 
-    page_keys = [K_PAGE_1, K_PAGE_2, K_PAGE_3]
     current_page_index = 0
 
     graph_plotter = GraphPlotter(window[K_CANVAS_GRAPH_PLOTTING])
