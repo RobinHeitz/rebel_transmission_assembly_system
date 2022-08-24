@@ -167,12 +167,12 @@ class RebelAxisController:
     # Movement directly through velocity CMDs / NO QUEUE
     ####################################################
     
-    def start_movement_velocity_mode(self,  duration, invoke_stop_function):
+    def start_movement_velocity_mode(self, velocity, duration, invoke_stop_function):
         """Starts sending movement cmds with velocity-type. After duration [sec], the invoke_stop_function is called.
         Params:
         - duration:(int) in seconds
         - invoke_stop_function: (function) function that is invoked afer movement has finished."""
-        self.thread_movement_velo_mode = Thread(target=self.__movement_velocity_mode, args=(duration, invoke_stop_function), daemon=True)
+        self.thread_movement_velo_mode = Thread(target=self.__movement_velocity_mode, args=(velocity, duration, invoke_stop_function), daemon=True)
         self.thread_movement_velo_mode.start()
         
     
@@ -182,7 +182,7 @@ class RebelAxisController:
         self.stop_movement()
     
 
-    def __movement_velocity_mode(self, duration, invoke_stop_function):
+    def __movement_velocity_mode(self, velocity, duration, invoke_stop_function):
         logging.info(f"__move_velocity_mode(), duration = {duration}")
         current_thread = threading.current_thread()
         
@@ -195,7 +195,7 @@ class RebelAxisController:
         start_time = datetime.now()
         
         while getattr(current_thread, "abort", False) == False and (datetime.now() - start_time).total_seconds() < duration:
-            self.cmd_velocity_mode(10)
+            self.cmd_velocity_mode(velocity)
             self.do_cycle()
 
         self.stop_movement()

@@ -22,9 +22,10 @@ metadata = db.MetaData()
 session = sessionmaker(bind = engine)()
 
 current_transmission = None
-# current_assembly = None
-current_assemblies = dict()
+current_assembly = None
 current_measurement = None
+
+current_assemblies = dict()
 
 ######################
 #### helper functions
@@ -33,8 +34,10 @@ current_measurement = None
 
 
 def get_current_measurement_instance():
-    return current_measurement
-
+    if current_measurement != None:
+        return current_measurement
+    else:
+        raise ValueError("DataController's current_measurement is None. If this method gets called, current_measurement shouldn't be None!")
 
 def update_current_measurement_fields():
     m = get_current_measurement_instance()
@@ -88,32 +91,19 @@ def get_or_create_assembly_for_assembly_step(assembly_step:AssemblyStep, transmi
     return a
 
 
-    
-    
-
-
 def create_measurement(assembly:Assembly) -> Measurement:
-    m = Measurement(assembly = assembly)
-    session.add(m)
-    session.commit()
-
     global current_measurement
-    current_measurement = m
+    current_measurement = Measurement(assembly = assembly)
+    session.add(current_measurement)
+    session.commit()
     return current_measurement
+
 
 def create_data_point(current, timestamp, measurement:Measurement):
     dp = DataPoint(current = current, timestamp = timestamp, measurement = measurement)
     session.add(dp)
-
-
-    # ma, mi = measurement.update_calculated_values()
-    # print("max, min = ", ma, mi)
-
-
     session.commit()
-
     return dp
-
 
 
 def create_data_point_to_current_measurement(current, timestamp):

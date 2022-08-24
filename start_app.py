@@ -66,19 +66,18 @@ def perform_software_update_thread(window, controller):
 # VELOCITY MODE
 
 def start_velocity_mode(event, values, controller:RebelAxisController):
+
     step = get_assembly_step_for_page_index(current_page_index)
     assembly = data_controller.get_or_create_assembly_for_assembly_step(step)
     data_controller.create_measurement(assembly)
 
     global thread_graph_updater
-
     thread_graph_updater = threading.Thread(target=graph_update_cycle, args=(window, controller, ), daemon=True)
     thread_graph_updater.start()
 
-
     # definition of stop-function that is invoked after the movement has stopped (e.g. duration is reached)
     stop_func = lambda: window.write_event_value(KeyDefs.FINISHED_VELO_STOP_GRAPH_UPDATING, "Data")
-    controller.start_movement_velocity_mode(duration=5, invoke_stop_function = stop_func)
+    controller.start_movement_velocity_mode(velocity=20, duration=5, invoke_stop_function = stop_func)
 
 
 def stop_velocity_mode(event, values, controller:RebelAxisController):
@@ -132,6 +131,9 @@ def stop_graph_update(event, values):
     thread_graph_updater.do_plot = False
 
     # Update min/ max fields in gui
+
+    # import pdb
+    # pdb.set_trace()
     text_field = window[(KeyDefs.TEXT_MIN_MAX_CURRENT_VALUES, LayoutPageKeys.layout_assembly_step_1_page)]
     measurement = data_controller.get_current_measurement_instance()
     min_val, max_val, mean_val = measurement.min_current, measurement.max_current, measurement.mean_current
@@ -162,17 +164,17 @@ def _nav_next_page(event, values):
    
     page_key = get_page_key_for_index(current_page_index)
     config = transmission_config.get_transmission_config()
-    transmission = data_controller.get_or_create_transmission(config)
+    current_transmission = data_controller.get_or_create_transmission(config)
 
 
     if page_key == LayoutPageKeys.layout_assembly_step_1_page:
-        data_controller.get_or_create_assembly_for_assembly_step(AssemblyStep.step_1_no_flexring, transmission)
+        data_controller.get_or_create_assembly_for_assembly_step(AssemblyStep.step_1_no_flexring, current_transmission)
         
     elif page_key == LayoutPageKeys.layout_assembly_step_2_page:
-        data_controller.get_or_create_assembly_for_assembly_step(AssemblyStep.step_2_with_flexring, transmission)
+        data_controller.get_or_create_assembly_for_assembly_step(AssemblyStep.step_2_with_flexring, current_transmission)
     
     elif page_key == LayoutPageKeys.layout_assembly_step_3_page:
-        data_controller.get_or_create_assembly_for_assembly_step(AssemblyStep.step_3_gearoutput_not_screwed, transmission)
+        data_controller.get_or_create_assembly_for_assembly_step(AssemblyStep.step_3_gearoutput_not_screwed, current_transmission)
         
         
 
