@@ -134,9 +134,9 @@ def stop_graph_update(event, values):
     # Update min/ max fields in gui
     text_field = window[(KeyDefs.TEXT_MIN_MAX_CURRENT_VALUES, LayoutPageKeys.layout_assembly_step_1_page)]
     measurement = data_controller.get_current_measurement_instance()
-    min_val, max_val = measurement.min_current, measurement.max_current
+    min_val, max_val, mean_val = measurement.min_current, measurement.max_current, measurement.mean_current
 
-    text_field.update(f"Min current: {min_val} ||| Max. current: {max_val}")
+    text_field.update(f"Min current: {min_val} ||| Max. current: {max_val} || Mean current: {mean_val}")
 
 
 
@@ -229,10 +229,10 @@ if __name__ == "__main__":
         controller = RebelAxisController(verbose=False)
     except Exception_PCAN_Connection_Failed as e:
         print("Exception PCAN Connection Failed:", e)
-        can_connection_functions.update_connect_btn_status(status="PCAN_HW_ERROR")
+        can_connection_functions.update_connect_btn_status("PCAN_HW_ERROR", window, controller)
     except Exception_Controller_No_CAN_ID:
         ...
-        can_connection_functions.update_connect_btn_status(status="ERROR_NO_CAN_ID_FOUND")
+        can_connection_functions.update_connect_btn_status("ERROR_NO_CAN_ID_FOUND", window, controller)
 
     transmission_config = TransmissionConfigHelper()
     
@@ -263,9 +263,6 @@ if __name__ == "__main__":
 
         KeyDefs.CHECKBOX_HAS_ENCODER: (lambda event, values: transmission_config.set_encoder_flag(values[event]), dict()),
         KeyDefs.CHECKBOX_HAS_BRAKE: (lambda event, values: transmission_config.set_brake_flag(values[event]), dict()),
-        
-        # KeyDefs.BTN_START_VELO_MODE: (start_velocity_mode, dict(controller=controller)),
-        # KeyDefs.BTN_STOP_VELO_MODE: (stop_velocity_mode, dict(controller=controller)),
         
         (KeyDefs.BTN_START_VELO_MODE, LayoutPageKeys.layout_assembly_step_1_page): (start_velocity_mode, dict(controller=controller)),
         (KeyDefs.BTN_STOP_VELO_MODE, LayoutPageKeys.layout_assembly_step_1_page): (stop_velocity_mode, dict(controller=controller)),
