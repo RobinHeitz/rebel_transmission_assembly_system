@@ -112,9 +112,13 @@ def update_graph(event, values, plotter:GraphPlotter):
     """Updates graph. Gets called from a thread running graph_update_cycle()."""
     d = values[event]
     x, y = d.get('x'), d.get('y')
+
+    page_key = get_page_key_for_index(current_page_index)
     
-    x_data.append(x)
-    y_data.append(y)
+    graph_data[page_key]["x_data"].append(x)
+    graph_data[page_key]["y_data"].append(y)
+    
+
 
     plotter.plot_data(x_data, y_data)
 
@@ -243,13 +247,15 @@ if __name__ == "__main__":
 
     current_page_index = 0
 
-    graph_plotter = GraphPlotter(window[(KeyDefs.CANVAS_GRAPH_PLOTTING, LayoutPageKeys.layout_assembly_step_1_page)])
-    graph_plotter.plot_data([], [])
+    graph_plotters = [
+        GraphPlotter(window[(KeyDefs.CANVAS_GRAPH_PLOTTING, l)]) for l in get_page_keys()[1:]
+    ]
+    for plot in graph_plotters: plot.plot_data([],[])
 
-    x_data, y_data = [],[]
-
-
-
+    graph_data = {
+        key:dict(x_data=[], y_data=[]) for key in get_page_keys()[1:]
+    }
+    
     key_function_map = {
         KeyDefs.BTN_NAV_NEXT_PAGE: (_nav_next_page, dict()),
         KeyDefs.BTN_NAV_PREVIOUS_PAGE: (_nav_previous_page, dict()),
@@ -275,9 +281,7 @@ if __name__ == "__main__":
         (KeyDefs.BTN_START_VELO_MODE, LayoutPageKeys.layout_assembly_step_3_page): (start_velocity_mode, dict(controller=controller)),
         (KeyDefs.BTN_STOP_VELO_MODE, LayoutPageKeys.layout_assembly_step_3_page): (stop_velocity_mode, dict(controller=controller)),
         
-        
-        
-        KeyDefs.UPDATE_GRAPH: (update_graph, dict(plotter=graph_plotter)),
+        KeyDefs.UPDATE_GRAPH: (update_graph, dict()),
         KeyDefs.FINISHED_VELO_STOP_GRAPH_UPDATING: (stop_graph_update, dict())
 
 
