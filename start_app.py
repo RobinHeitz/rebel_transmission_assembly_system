@@ -154,9 +154,11 @@ def predict_failure():
     import random
     rand_fail = failure_types[random.randint(0,1)]
 
-
     window[KeyDefs.FRAME_FAILURE].update(visible=True)
-    window[KeyDefs.TXT_FAILURE_DESCRIPTION].update(rand_fail.description)
+
+    combo = window[KeyDefs.COMBO_FAILURE_SELECT]
+
+    combo.update(values=[f.description for f in failure_types], value=rand_fail.description)
 
 
 ######################################################
@@ -237,7 +239,7 @@ def _disable_enable_nav_buttons():
 #################
 
 if __name__ == "__main__":
-    window = sg.Window("ReBeL Getriebe Montage & Kalibrierung", main_layout, size=(1200,800), finalize=True)
+    window = sg.Window("ReBeL Getriebe Montage & Kalibrierung", main_layout, size=(1200,1000), finalize=True)
     controller = None
     try:
         controller = RebelAxisController(verbose=False)
@@ -289,7 +291,10 @@ if __name__ == "__main__":
         (KeyDefs.BTN_STOP_VELO_MODE, LayoutPageKeys.layout_assembly_step_3_page): (stop_velocity_mode, dict(controller=controller)),
         
         KeyDefs.UPDATE_GRAPH: (update_graph, dict()),
-        KeyDefs.FINISHED_VELO_STOP_GRAPH_UPDATING: (stop_graph_update, dict())
+        KeyDefs.FINISHED_VELO_STOP_GRAPH_UPDATING: (stop_graph_update, dict()),
+
+        #Failure Detection
+        KeyDefs.BTN_FAILURE_DETECTION: (lambda *args: print("Test"), dict()),
 
 
 

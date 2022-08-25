@@ -28,8 +28,8 @@ class KeyDefs(enum.Enum):
     BTN_STOP_VELO_MODE = "-BTN_STOP_VELO_MODE-"
 
     BTN_FAILURE_DETECTION = "-BTN_FAILURE_DETECTION-"
-    TXT_FAILURE_DESCRIPTION = "-TEXT_FAILURE_DESCRIPTION-"
     FRAME_FAILURE = "-FRAME_FAILURE-"
+    COMBO_FAILURE_SELECT = "-COMBO_FAILURE_SELECT"
 
 
     # Event key from threading (updates, finished etc.)

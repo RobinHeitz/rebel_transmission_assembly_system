@@ -45,8 +45,12 @@ layout_assembly_step_1 = [
             [sg.Canvas(key=(KeyDefs.CANVAS_GRAPH_PLOTTING, LayoutPageKeys.layout_assembly_step_1_page), )],
             [sg.Text("", font=font_normal, key=(KeyDefs.TEXT_MIN_MAX_CURRENT_VALUES, LayoutPageKeys.layout_assembly_step_1_page))],
             [sg.Frame("Es wurde ein Fehler erkannt!",layout=[
-                [sg.T("Fehler: ", k=KeyDefs.TXT_FAILURE_DESCRIPTION)],
-                [sg.B("Fehler behebung starten", k=KeyDefs.BTN_FAILURE_DETECTION)]
+                [
+                    sg.T("Fehler: "), 
+                    sg.Combo(["A", "B", "C"], default_value="B", s=(50,25), enable_events=False, readonly=True, k=KeyDefs.COMBO_FAILURE_SELECT),
+                    sg.B("Fehlerbehebung starten", k=KeyDefs.BTN_FAILURE_DETECTION),
+                    ],
+                
             ], visible=False, k=KeyDefs.FRAME_FAILURE) ],
         ])
 
