@@ -27,41 +27,29 @@ current_assemblies = dict()
 #### helper functions
 ######################
 
-def get_session_thread_safe():
-    """Returns a Session constuctor. Get session-obj with Session(). After using the session, remove it with Session.remove()"""
-    session_factory = sessionmaker(bind=engine)
-    Session = scoped_session(session_factory)
-    return Session
+def create_session(f):
+    def wrap(*args, **kwargs):
+        session_factory = sessionmaker(bind=engine)
+        Session = scoped_session(session_factory)
+        session = Session()
+        
+        return_val = f(session, *args, **kwargs)
+        Session.remove()
+        return return_val
+    return wrap
 
 
-
-
-
-def get_current_measurement_instance():
-    # if current_measurement != None:
-    #     return current_measurement
-    # else:
-    #     raise ValueError("DataController's current_measurement is None. If this method gets called, current_measurement shouldn't be None!")
-
-    Session = get_session_thread_safe()
-    session = Session()
-
-    obj =  session.query(Measurement).order_by(Measurement.measurement_id.desc()).first()
-
-
-    Session.remove()
-    return obj
+@create_session
+def get_current_measurement_instance(session:Session):
+    return session.query(Measurement).order_by(Measurement.measurement_id.desc()).first()
 
 
 def update_current_measurement_fields():
     m = get_current_measurement_instance()
     update_measurement_fields(m)
 
-
-def update_measurement_fields(m:Measurement):
-    ...
-    Session = get_session_thread_safe()
-    session = Session()
+@create_session
+def update_measurement_fields(session:Session, m:Measurement):
 
     datapoints_ = session.query(DataPoint).filter_by(measurement=m)
     
@@ -69,16 +57,15 @@ def update_measurement_fields(m:Measurement):
     m.max_current = round(max(current_values),2)
     m.min_current = round(min(current_values),2)
     m.mean_current = round(sum(current_values) / len(current_values) ,2)
-
     session.commit()
 
-    Session.remove()
 
 ##################
 ### Create objects
 ##################
 
-def get_or_create_transmission(config:TransmissionConfiguration) -> Transmission:
+@create_session
+def get_or_create_transmission(session:Session, config:TransmissionConfiguration) -> Transmission:
     global current_transmission
     
     if current_transmission != None:
@@ -87,17 +74,13 @@ def get_or_create_transmission(config:TransmissionConfiguration) -> Transmission
     if config == None:
         raise ValueError("Config shouldn't be None if Transmission gets created.")
 
-    Session = get_session_thread_safe()
-    session = Session()
-    
     current_transmission = Transmission(transmission_configuration = config)
     session.add(current_transmission)
     session.commit()
-    Session.remove()
     return current_transmission
 
-
-def get_or_create_assembly_for_assembly_step(assembly_step:AssemblyStep, transmission:Transmission = None) -> Assembly:
+@create_session
+def get_or_create_assembly_for_assembly_step(session:Session, assembly_step:AssemblyStep, transmission:Transmission = None) -> Assembly:
 
     global current_assemblies
 
@@ -107,41 +90,32 @@ def get_or_create_assembly_for_assembly_step(assembly_step:AssemblyStep, transmi
     if transmission == None:
         raise ValueError("Transmission shouldn't be None if Assembly gets created.")
     
-    Session = get_session_thread_safe()
-    session = Session()
-    
     a = Assembly(assembly_step = assembly_step, transmission = transmission)
     session.add(a)
     session.commit()
 
     current_assemblies[assembly_step] = a
-    Session.remove()
     return a
 
 
-def create_measurement(assembly:Assembly) -> Measurement:
+@create_session
+def create_measurement(session:Session, assembly:Assembly) -> Measurement:
     global current_measurement
     current_measurement = Measurement(assembly = assembly)
     
-    Session = get_session_thread_safe()
-    session = Session()
- 
     session.add(current_measurement)
     session.commit()
 
-    Session.remove()
     return current_measurement
 
 
-def create_data_point(current, timestamp, measurement:Measurement):
-    Session = get_session_thread_safe()
-    session = Session()
+@create_session
+def create_data_point(session:Session, current, timestamp, measurement:Measurement):
    
     dp = DataPoint(current = current, timestamp = timestamp, measurement = measurement)
     session.add(dp)
     session.commit()
 
-    Session.remove()
     return dp
 
 
