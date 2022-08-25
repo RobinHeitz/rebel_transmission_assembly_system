@@ -110,9 +110,11 @@ def graph_update_cycle(window:sg.Window, controller:RebelAxisController):
 
 def update_graph(event, values):
     """Updates graph. Gets called from a thread running graph_update_cycle()."""
-    plotter = graph_plotters[0]
+    # plotter = graph_plotters[0]
     page_key = get_page_key_for_index(current_page_index)
     
+    plotter = plotters[page_key]
+
     data = data_controller.get_plot_data_for_current_measurement()
     x_data, y_data = zip(*data)
     plotter.plot_data(x_data, y_data)
@@ -234,10 +236,12 @@ if __name__ == "__main__":
 
     current_page_index = 0
 
-    graph_plotters = [
-        GraphPlotter(window[(KeyDefs.CANVAS_GRAPH_PLOTTING, l)]) for l in get_page_keys()[1:]
-    ]
-    for plot in graph_plotters: plot.plot_data([],[])
+    plotters = {
+        l:GraphPlotter(window[(KeyDefs.CANVAS_GRAPH_PLOTTING, l)]) for l in get_page_keys()[1:]
+    }
+
+    for p in plotters.values():
+        p.plot_data([],[])
 
 
     key_function_map = {
