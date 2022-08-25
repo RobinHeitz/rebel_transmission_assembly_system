@@ -99,12 +99,12 @@ def graph_update_cycle(window:sg.Window, controller:RebelAxisController):
             mean_current, pos, millis = data_transformation.sample_data(batch)
             logger.info(f"Batch values: mean current = {mean_current} / middle position = {pos} / middle millis = {millis}")
             
-            window.write_event_value(KeyDefs.UPDATE_GRAPH, dict(x=pos, y=mean_current))
 
             # send value to data controller for adding them into data base :)
             data_controller.create_data_point_to_current_measurement(mean_current, millis)
             data_controller.update_current_measurement_fields()
 
+            window.write_event_value(KeyDefs.UPDATE_GRAPH, dict(x=pos, y=mean_current))
 
 
 

@@ -1,25 +1,21 @@
 from multiprocessing.sharedctypes import Value
 from sqlalchemy.orm.session import Session
+from sqlalchemy.orm import sessionmaker, scoped_session
 import sqlalchemy as db
-
-from datetime import datetime
-from random import randint
-import time
-
 
 from data_management.model import Transmission, TransmissionConfiguration
 from data_management.model import Measurement, Assembly, AssemblyStep, DataPoint
 
-
-from sqlalchemy.orm import sessionmaker
-
 from typing import List
+
+
 
 
 engine = db.create_engine("sqlite:///rebel.sqlite", connect_args={'check_same_thread':False},)
 connection = engine.connect()
 metadata = db.MetaData()
-session = sessionmaker(bind = engine)()
+
+# session = sessionmaker(bind = engine)()
 
 current_transmission = None
 current_assembly = None
@@ -31,13 +27,31 @@ current_assemblies = dict()
 #### helper functions
 ######################
 
+def get_session_thread_safe():
+    """Returns a Session constuctor. Get session-obj with Session(). After using the session, remove it with Session.remove()"""
+    session_factory = sessionmaker(bind=engine)
+    Session = scoped_session(session_factory)
+    return Session
+
+
+
 
 
 def get_current_measurement_instance():
-    if current_measurement != None:
-        return current_measurement
-    else:
-        raise ValueError("DataController's current_measurement is None. If this method gets called, current_measurement shouldn't be None!")
+    # if current_measurement != None:
+    #     return current_measurement
+    # else:
+    #     raise ValueError("DataController's current_measurement is None. If this method gets called, current_measurement shouldn't be None!")
+
+    Session = get_session_thread_safe()
+    session = Session()
+
+    obj =  session.query(Measurement).order_by(Measurement.measurement_id.desc()).first()
+
+
+    Session.remove()
+    return obj
+
 
 def update_current_measurement_fields():
     m = get_current_measurement_instance()
@@ -46,13 +60,19 @@ def update_current_measurement_fields():
 
 def update_measurement_fields(m:Measurement):
     ...
-    current_values = [dp.current for dp in m.datapoints]
+    Session = get_session_thread_safe()
+    session = Session()
+
+    datapoints_ = session.query(DataPoint).filter_by(measurement=m)
+    
+    current_values = [dp.current for dp in datapoints_]
     m.max_current = round(max(current_values),2)
     m.min_current = round(min(current_values),2)
     m.mean_current = round(sum(current_values) / len(current_values) ,2)
 
     session.commit()
 
+    Session.remove()
 
 ##################
 ### Create objects
@@ -67,9 +87,13 @@ def get_or_create_transmission(config:TransmissionConfiguration) -> Transmission
     if config == None:
         raise ValueError("Config shouldn't be None if Transmission gets created.")
 
+    Session = get_session_thread_safe()
+    session = Session()
+    
     current_transmission = Transmission(transmission_configuration = config)
     session.add(current_transmission)
     session.commit()
+    Session.remove()
     return current_transmission
 
 
@@ -83,26 +107,41 @@ def get_or_create_assembly_for_assembly_step(assembly_step:AssemblyStep, transmi
     if transmission == None:
         raise ValueError("Transmission shouldn't be None if Assembly gets created.")
     
+    Session = get_session_thread_safe()
+    session = Session()
+    
     a = Assembly(assembly_step = assembly_step, transmission = transmission)
     session.add(a)
     session.commit()
 
     current_assemblies[assembly_step] = a
+    Session.remove()
     return a
 
 
 def create_measurement(assembly:Assembly) -> Measurement:
     global current_measurement
     current_measurement = Measurement(assembly = assembly)
+    
+    Session = get_session_thread_safe()
+    session = Session()
+ 
     session.add(current_measurement)
     session.commit()
+
+    Session.remove()
     return current_measurement
 
 
 def create_data_point(current, timestamp, measurement:Measurement):
+    Session = get_session_thread_safe()
+    session = Session()
+   
     dp = DataPoint(current = current, timestamp = timestamp, measurement = measurement)
     session.add(dp)
     session.commit()
+
+    Session.remove()
     return dp
 
 
