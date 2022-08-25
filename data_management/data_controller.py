@@ -1,3 +1,4 @@
+from msilib.text import tables
 from multiprocessing.sharedctypes import Value
 from sqlalchemy.orm.session import Session
 from sqlalchemy.orm import sessionmaker, scoped_session
@@ -15,11 +16,8 @@ engine = db.create_engine("sqlite:///rebel.sqlite", connect_args={'check_same_th
 connection = engine.connect()
 metadata = db.MetaData()
 
-# session = sessionmaker(bind = engine)()
 
 current_transmission = None
-current_assembly = None
-current_measurement = None
 
 current_assemblies = dict()
 
@@ -61,22 +59,47 @@ def update_current_measurement_fields(session:Session):
 ##################
 
 @create_session
-def get_or_create_transmission(session:Session, config:TransmissionConfiguration) -> Transmission:
-    global current_transmission
-    
-    if current_transmission != None:
-        return current_transmission
-    
+def create_transmission(session:Session, config:TransmissionConfiguration) -> Transmission:
     if config == None:
         raise ValueError("Config shouldn't be None if Transmission gets created.")
 
-    current_transmission = Transmission(transmission_configuration = config)
-    session.add(current_transmission)
+    t = Transmission(transmission_configuration = config)
+    session.add(t)
+
+    for step in AssemblyStep:
+        a = Assembly(transmission = t, assembly_step = step)
+        session.add(a)
+
     session.commit()
-    return current_transmission
+    return t
+
+
+def get_current_transmission(session:Session):
+    return session.query(Transmission).order_by(Transmission.transmission_id.desc()).first()
+
+
+@create_session
+def get_assembly_from_current_transmission(session:Session, step:AssemblyStep) -> Assembly:
+    """Returns assembly (filtered by param: Step) from current transmission."""
+    t = session.query(Transmission).order_by(Transmission.transmission_id.desc()).first()
+    return session.query(Assembly).filter_by(transmission=t, assembly_step=step).first()
+
+
 
 @create_session
 def get_or_create_assembly_for_assembly_step(session:Session, assembly_step:AssemblyStep, transmission:Transmission = None) -> Assembly:
+    """If current transmission has already assembly with given assembly_step, this assembly is returned. Otherwise it gets created."""
+
+    assemblies_list = session.query(Assembly).filter_by(transmission = transmission, assembly_step = assembly_step).all()
+    print("********")
+    print("********")
+    print("********")
+    print("LEN Of assemblies =", len(assemblies_list))
+    print("********")
+    print("********")
+    print("********")
+
+
 
     global current_assemblies
 
@@ -96,13 +119,12 @@ def get_or_create_assembly_for_assembly_step(session:Session, assembly_step:Asse
 
 @create_session
 def create_measurement(session:Session, assembly:Assembly) -> Measurement:
-    global current_measurement
-    current_measurement = Measurement(assembly = assembly)
+    new_measure = Measurement(assembly = assembly)
     
-    session.add(current_measurement)
+    session.add(new_measure)
     session.commit()
 
-    return current_measurement
+    return new_measure
 
 
 @create_session

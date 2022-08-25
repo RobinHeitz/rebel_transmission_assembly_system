@@ -68,7 +68,8 @@ def perform_software_update_thread(window, controller):
 def start_velocity_mode(event, values, controller:RebelAxisController):
 
     step = get_assembly_step_for_page_index(current_page_index)
-    assembly = data_controller.get_or_create_assembly_for_assembly_step(step)
+    # assembly = data_controller.get_or_create_assembly_for_assembly_step(step)
+    assembly = data_controller.get_assembly_from_current_transmission(step)
     data_controller.create_measurement(assembly)
 
     global thread_graph_updater
@@ -156,21 +157,16 @@ def _nav_next_page(event, values):
     _show_next_page()
     _disable_enable_nav_buttons()
    
-   
     page_key = get_page_key_for_index(current_page_index)
-    config = transmission_config.get_transmission_config()
-    current_transmission = data_controller.get_or_create_transmission(config)
-
-
+   
     if page_key == LayoutPageKeys.layout_assembly_step_1_page:
-        data_controller.get_or_create_assembly_for_assembly_step(AssemblyStep.step_1_no_flexring, current_transmission)
-        
+        config = transmission_config.get_transmission_config()
+        data_controller.create_transmission(config)
+            
     elif page_key == LayoutPageKeys.layout_assembly_step_2_page:
-        data_controller.get_or_create_assembly_for_assembly_step(AssemblyStep.step_2_with_flexring, current_transmission)
-    
+        ...
     elif page_key == LayoutPageKeys.layout_assembly_step_3_page:
-        data_controller.get_or_create_assembly_for_assembly_step(AssemblyStep.step_3_gearoutput_not_screwed, current_transmission)
-        
+        ...
         
 
 def _nav_previous_page(event, values):
