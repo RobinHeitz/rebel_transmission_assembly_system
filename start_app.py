@@ -99,33 +99,21 @@ def graph_update_cycle(window:sg.Window, controller:RebelAxisController):
             mean_current, pos, millis = data_transformation.sample_data(batch)
             logger.info(f"Batch values: mean current = {mean_current} / middle position = {pos} / middle millis = {millis}")
             
-
             # send value to data controller for adding them into data base :)
             data_controller.create_data_point_to_current_measurement(mean_current, millis)
             data_controller.update_current_measurement_fields()
 
-            window.write_event_value(KeyDefs.UPDATE_GRAPH, dict(x=pos, y=mean_current))
+            window.write_event_value(KeyDefs.UPDATE_GRAPH, "DATA")
 
 
 
 def update_graph(event, values):
-# def update_graph(event, values, plotter:GraphPlotter):
     """Updates graph. Gets called from a thread running graph_update_cycle()."""
-    d = values[event]
-    x, y = d.get('x'), d.get('y')
-
     plotter = graph_plotters[0]
-
     page_key = get_page_key_for_index(current_page_index)
     
-    # graph_data[page_key]["x_data"].append(x)
-    # graph_data[page_key]["y_data"].append(y)
-
-    x_data.append(x)
-    y_data.append(y)
-    
-
-
+    data = data_controller.get_plot_data_for_current_measurement()
+    x_data, y_data = zip(*data)
     plotter.plot_data(x_data, y_data)
 
 
@@ -141,9 +129,6 @@ def stop_graph_update(event, values):
     thread_graph_updater.do_plot = False
 
     # Update min/ max fields in gui
-
-    # import pdb
-    # pdb.set_trace()
     text_field = window[(KeyDefs.TEXT_MIN_MAX_CURRENT_VALUES, LayoutPageKeys.layout_assembly_step_1_page)]
     measurement = data_controller.get_current_measurement_instance()
     min_val, max_val, mean_val = measurement.min_current, measurement.max_current, measurement.mean_current
@@ -258,12 +243,6 @@ if __name__ == "__main__":
     ]
     for plot in graph_plotters: plot.plot_data([],[])
 
-    graph_data = {
-        key:dict(x_data=[], y_data=[]) for key in get_page_keys()[1:]
-    }
-    
-    x_data = []
-    y_data = []
 
     key_function_map = {
         KeyDefs.BTN_NAV_NEXT_PAGE: (_nav_next_page, dict()),
