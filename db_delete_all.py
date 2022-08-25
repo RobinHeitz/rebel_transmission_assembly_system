@@ -3,16 +3,27 @@
 import sqlalchemy as db
 
 from data_management.model import Failure, Transmission, TransmissionConfiguration, AssemblyStep
-from data_management.model import Measurement, Assembly, AssemblyStep, DataPoint, FailureType
+from data_management.model import Measurement, Assembly, AssemblyStep, DataPoint, FailureType, FailureClassification
+
+engine, connection, metadata, session = None, None, None, None
+
+
+def setup_session():
+    global engine, connection, metadata, session
+
+    engine = db.create_engine('sqlite:///rebel.sqlite')
+    connection = engine.connect()
+    metadata = db.MetaData()
+    session = sessionmaker(bind = engine)()
+    
 
 
 from sqlalchemy.orm import sessionmaker
 
 if __name__ == "__main__":
-    engine = db.create_engine('sqlite:///rebel.sqlite')
-    connection = engine.connect()
-    metadata = db.MetaData()
-    session = sessionmaker(bind = engine)()
+
+    setup_session()
+
 
     model_classes = [Transmission, Assembly, Measurement, DataPoint, FailureType, Failure]
 
@@ -25,11 +36,13 @@ if __name__ == "__main__":
 
     for step in AssemblyStep:
         
-        overcurrent = FailureType(description = f"Current to high for this assembly step! {step.value}", assembly_step = step)
-        another_failure_type = FailureType(description = f"This is a failure, special to this assembly step: {step.value}", assembly_step = step)
+        overcurrent = FailureType(description = f"Current to high for this assembly step {step.value}", assembly_step = step, failure_classification = FailureClassification.failure_type_overcurrent)
+        vibrations = FailureType(description = f"To high vibrations: {step.value}", assembly_step = step)
+        squeaks = FailureType(description = f"Transmission is squeaking: {step.value}", assembly_step = step)
         
         session.add(overcurrent)
-        session.add(another_failure_type)
+        session.add(vibrations)
+        session.add(squeaks)
 
     session.commit()
 

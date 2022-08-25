@@ -1,5 +1,3 @@
-from msilib.text import tables
-from multiprocessing.sharedctypes import Value
 from sqlalchemy.orm.session import Session
 from sqlalchemy.orm import sessionmaker, scoped_session
 import sqlalchemy as db
@@ -9,13 +7,9 @@ from data_management.model import Measurement, Assembly, AssemblyStep, DataPoint
 
 from typing import List, Tuple
 
-
-
-
 engine = db.create_engine("sqlite:///rebel.sqlite", connect_args={'check_same_thread':False},)
 connection = engine.connect()
 metadata = db.MetaData()
-
 
 current_transmission = None
 
@@ -86,35 +80,35 @@ def get_assembly_from_current_transmission(session:Session, step:AssemblyStep) -
 
 
 
-@create_session
-def get_or_create_assembly_for_assembly_step(session:Session, assembly_step:AssemblyStep, transmission:Transmission = None) -> Assembly:
-    """If current transmission has already assembly with given assembly_step, this assembly is returned. Otherwise it gets created."""
+# @create_session
+# def get_or_create_assembly_for_assembly_step(session:Session, assembly_step:AssemblyStep, transmission:Transmission = None) -> Assembly:
+#     """If current transmission has already assembly with given assembly_step, this assembly is returned. Otherwise it gets created."""
 
-    assemblies_list = session.query(Assembly).filter_by(transmission = transmission, assembly_step = assembly_step).all()
-    print("********")
-    print("********")
-    print("********")
-    print("LEN Of assemblies =", len(assemblies_list))
-    print("********")
-    print("********")
-    print("********")
+#     assemblies_list = session.query(Assembly).filter_by(transmission = transmission, assembly_step = assembly_step).all()
+#     print("********")
+#     print("********")
+#     print("********")
+#     print("LEN Of assemblies =", len(assemblies_list))
+#     print("********")
+#     print("********")
+#     print("********")
 
 
 
-    global current_assemblies
+#     global current_assemblies
 
-    if assembly_step in current_assemblies:
-        return current_assemblies[assembly_step]
+#     if assembly_step in current_assemblies:
+#         return current_assemblies[assembly_step]
     
-    if transmission == None:
-        raise ValueError("Transmission shouldn't be None if Assembly gets created.")
+#     if transmission == None:
+#         raise ValueError("Transmission shouldn't be None if Assembly gets created.")
     
-    a = Assembly(assembly_step = assembly_step, transmission = transmission)
-    session.add(a)
-    session.commit()
+#     a = Assembly(assembly_step = assembly_step, transmission = transmission)
+#     session.add(a)
+#     session.commit()
 
-    current_assemblies[assembly_step] = a
-    return a
+#     current_assemblies[assembly_step] = a
+#     return a
 
 
 @create_session

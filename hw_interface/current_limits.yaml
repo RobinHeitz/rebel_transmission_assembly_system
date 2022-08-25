@@ -1,0 +1,7 @@
+
+limits:
+
+ step_1_no_flexring: 400
+ step_2_with_flexring: 500
+ step_3_gearoutput_not_screwed: 500
+ step_4_gearoutput_screwed: 700

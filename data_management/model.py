@@ -158,12 +158,20 @@ class Failure(Base):
     transmission_id = Column(Integer, ForeignKey("transmission.transmission_id"))
     
 
+class FailureClassification(enum.Enum):
+    """Is the failure_type overcurrent or another failure? This classification makes sure, failures that can be measured (by data points) are mapped to the correct failure type."""
+    failure_type_overcurrent = 1
+    failure_type_others = 2
+
+
+
 class FailureType(Base):
     """Failure type model cls (SQLAlchemy). Needed for dynamically add failure kinds/ types to the application. Every occuring failure is linked to a failure type, 
     thus its possible to query for all failures for a given failure type.
 
     Params:
     - failure_type_id (auto generated): Integer
+    - failure_classification: Enum(FailureClassification) | Detects whether this failure can be auto-detected by comparing measurement-values.
     - description: String
     - assembly_step: 
     
@@ -172,7 +180,9 @@ class FailureType(Base):
     __tablename__ = "failuretype"
     failuretype_id = Column(Integer, primary_key = True)
     description = Column(String)
-    
+
+    failure_classification = Column(Enum(FailureClassification), default = FailureClassification.failure_type_others)
+
     assembly_step = Column(Enum(AssemblyStep))
 
     failures = relationship("Failure", backref=backref("failuretype"))

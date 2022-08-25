@@ -1,13 +1,14 @@
-from random import random
+import random
 import traceback 
 import PySimpleGUI as sg
 import logging, time, threading
 
-from data_management.model import AssemblyStep
+from data_management.model import AssemblyStep, FailureClassification, Measurement
 from data_management import data_controller, data_transformation
 
 from hw_interface.motor_controller import RebelAxisController
 from hw_interface.definitions import Exception_Controller_No_CAN_ID, Exception_PCAN_Connection_Failed
+from hw_interface import current_limits
 
 from gui.definitions import KeyDefs, LayoutPageKeys
 from gui.definitions import TransmissionConfigHelper, TransmissionSize
@@ -141,24 +142,37 @@ def stop_graph_update(event, values):
 
     text_field.update(f"Min current: {min_val} ||| Max. current: {max_val} || Mean current: {mean_val}")
 
-    predict_failure()
+    predict_failure(measurement)
 
 
 
-def predict_failure():
+def predict_failure(measurement: Measurement):
     """Gets called after graph updating has stopped."""
 
     assembly_step = get_assembly_step_for_page_index(current_page_index)
     failure_types = data_controller.get_failure_types(assembly_step)
 
-    import random
-    rand_fail = failure_types[random.randint(0,1)]
+    current_limit = current_limits.get(assembly_step.name)
+    
+    if measurement.max_current  > current_limit:
+        logger.warning("Predicted_Failure: Overcurrent!!!")
+        detected_failure = list(filter(lambda item: item.failure_classification == FailureClassification.failure_type_overcurrent, failure_types))[0]
+    
+    else:
+        # select failure with highest occurrence frequency!!!
+        # For simplicity: Select a random from the other failure_types not beeing overcurrent
+        ...
+        failure_types = list(filter(lambda item: item.failure_classification == FailureClassification.failure_type_others, failure_types))
 
+        rand_index = random.randint(0,len(failure_types)-1)
+        detected_failure = failure_types[rand_index]
+        logger.warning("Predicted_Failure: Another failure, not overcurrent!!!")
+
+
+    window[KeyDefs.COMBO_FAILURE_SELECT].update(values=[f.description for f in failure_types], value=detected_failure.description)
     window[KeyDefs.FRAME_FAILURE].update(visible=True)
 
-    combo = window[KeyDefs.COMBO_FAILURE_SELECT]
 
-    combo.update(values=[f.description for f in failure_types], value=rand_fail.description)
 
 
 ######################################################
@@ -251,6 +265,7 @@ if __name__ == "__main__":
         can_connection_functions.update_connect_btn_status("ERROR_NO_CAN_ID_FOUND", window, controller)
 
     transmission_config = TransmissionConfigHelper()
+    current_limits = current_limits.load_config()
     
     thread_velocity = None
     thread_graph_updater = None
