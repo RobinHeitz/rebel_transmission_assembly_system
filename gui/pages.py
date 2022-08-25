@@ -45,9 +45,9 @@ layout_assembly_step_1 = [
             [sg.Canvas(key=(KeyDefs.CANVAS_GRAPH_PLOTTING, LayoutPageKeys.layout_assembly_step_1_page), )],
             [sg.Text("", font=font_normal, key=(KeyDefs.TEXT_MIN_MAX_CURRENT_VALUES, LayoutPageKeys.layout_assembly_step_1_page))],
             [sg.Frame("Es wurde ein Fehler erkannt!",layout=[
-                [sg.T("Fehler: ", k="-TEXT_FAILURE-")],
-                [sg.B("Fehler behebung starten", k="-BTN_FAILURE-")]
-            ], visible=False, k="-FRAME_FAILURE-") ],
+                [sg.T("Fehler: ", k=KeyDefs.TXT_FAILURE_DESCRIPTION)],
+                [sg.B("Fehler behebung starten", k=KeyDefs.BTN_FAILURE_DETECTION)]
+            ], visible=False, k=KeyDefs.FRAME_FAILURE) ],
         ])
 
     ],
@@ -143,7 +143,7 @@ def render_sub_layouts():
 def get_page_keys():
     return [i.get("layout_key") for i in pages_config]
 
-def get_page_key_for_index(index:int):
+def get_page_key_for_index(index:int) -> LayoutPageKeys:
     return pages_config[index].get("layout_key")
 
 def get_assembly_step_for_page_index(index:int) -> AssemblyStep:

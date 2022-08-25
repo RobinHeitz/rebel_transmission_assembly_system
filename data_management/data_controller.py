@@ -4,7 +4,7 @@ from sqlalchemy.orm.session import Session
 from sqlalchemy.orm import sessionmaker, scoped_session
 import sqlalchemy as db
 
-from data_management.model import Transmission, TransmissionConfiguration
+from data_management.model import FailureType, Transmission, TransmissionConfiguration
 from data_management.model import Measurement, Assembly, AssemblyStep, DataPoint
 
 from typing import List, Tuple
@@ -144,7 +144,18 @@ def create_data_point_to_current_measurement(current, timestamp):
 
 @create_session
 def get_plot_data_for_current_measurement(session:Session)-> List[Tuple]:
+    """Returns list of (timestamp, current) of current measurement for plotting."""
     m = get_current_measurement_instance()
 
     datapoints = session.query(DataPoint).filter_by(measurement=m)
     return [(d.timestamp, d.current) for d in datapoints]
+
+
+
+@create_session
+def get_failure_types(session:Session, assembly_step:AssemblyStep) -> str:
+    return session.query(FailureType).filter_by(assembly_step = assembly_step).all()
+
+
+
+

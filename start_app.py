@@ -1,3 +1,4 @@
+from random import random
 import traceback 
 import PySimpleGUI as sg
 import logging, time, threading
@@ -131,6 +132,8 @@ def stop_graph_update(event, values):
     global thread_graph_updater
     thread_graph_updater.do_plot = False
 
+    # page_key = get_page_key_for_index(current_page_index)
+
     # Update min/ max fields in gui
     text_field = window[(KeyDefs.TEXT_MIN_MAX_CURRENT_VALUES, LayoutPageKeys.layout_assembly_step_1_page)]
     measurement = data_controller.get_current_measurement_instance()
@@ -138,6 +141,22 @@ def stop_graph_update(event, values):
 
     text_field.update(f"Min current: {min_val} ||| Max. current: {max_val} || Mean current: {mean_val}")
 
+    predict_failure()
+
+
+
+def predict_failure():
+    """Gets called after graph updating has stopped."""
+
+    assembly_step = get_assembly_step_for_page_index(current_page_index)
+    failure_types = data_controller.get_failure_types(assembly_step)
+
+    import random
+    rand_fail = failure_types[random.randint(0,1)]
+
+
+    window[KeyDefs.FRAME_FAILURE].update(visible=True)
+    window[KeyDefs.TXT_FAILURE_DESCRIPTION].update(rand_fail.description)
 
 
 ######################################################
