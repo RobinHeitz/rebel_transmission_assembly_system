@@ -1,9 +1,10 @@
+from math import comb
 import random
 import traceback 
 import PySimpleGUI as sg
 import logging, time, threading
 
-from data_management.model import AssemblyStep, FailureClassification, Measurement
+from data_management.model import AssemblyStep, Failure, FailureClassification, FailureType, Measurement
 from data_management import data_controller, data_transformation
 
 from hw_interface.motor_controller import RebelAxisController
@@ -167,10 +168,28 @@ def predict_failure(measurement: Measurement):
         rand_index = random.randint(0,len(failure_types)-1)
         detected_failure = failure_types[rand_index]
         logger.warning("Predicted_Failure: Another failure, not overcurrent!!!")
+    
+    set_combo_current_selection(detected_failure)
 
 
     window[KeyDefs.COMBO_FAILURE_SELECT].update(values=[f.description for f in failure_types], value=detected_failure.description)
     window[KeyDefs.FRAME_FAILURE].update(visible=True)
+
+
+def set_combo_current_selection(failure_type):
+    global combo_selected_failure_type
+
+    if type(failure_type) == FailureType:
+        combo_selected_failure_type = failure_type
+    elif type(failure_type) == str:
+        assembly_step = get_assembly_step_for_page_index(current_page_index)
+        combo_selected_failure_type = data_controller.get_failure_type_for_description_and_assembly_step(failure_type, assembly_step)
+    
+
+def create_failure_object(event, values, *args):
+    ...
+    print("Create Failure")
+    data_controller.create_failure(combo_selected_failure_type)
 
 
 
@@ -272,6 +291,8 @@ if __name__ == "__main__":
 
     current_page_index = 0
 
+    combo_selected_failure_type = None
+
     plotters = {
         l:GraphPlotter(window[(KeyDefs.CANVAS_GRAPH_PLOTTING, l)]) for l in get_page_keys()[1:]
     }
@@ -309,7 +330,8 @@ if __name__ == "__main__":
         KeyDefs.FINISHED_VELO_STOP_GRAPH_UPDATING: (stop_graph_update, dict()),
 
         #Failure Detection
-        KeyDefs.BTN_FAILURE_DETECTION: (lambda *args: print("Test"), dict()),
+        KeyDefs.BTN_FAILURE_DETECTION: (create_failure_object, dict()),
+        KeyDefs.COMBO_FAILURE_SELECT: (lambda event, values: set_combo_current_selection(values[event]), dict())
 
 
 

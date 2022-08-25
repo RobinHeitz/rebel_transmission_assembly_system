@@ -47,7 +47,7 @@ layout_assembly_step_1 = [
             [sg.Frame("Es wurde ein Fehler erkannt!",layout=[
                 [
                     sg.T("Fehler: "), 
-                    sg.Combo(["A", "B", "C"], default_value="B", s=(50,25), enable_events=False, readonly=True, k=KeyDefs.COMBO_FAILURE_SELECT),
+                    sg.Combo(["A", "B", "C"], default_value="B", s=(50,25), enable_events=True, readonly=True, k=KeyDefs.COMBO_FAILURE_SELECT),
                     sg.B("Fehlerbehebung starten", k=KeyDefs.BTN_FAILURE_DETECTION),
                     ],
                 

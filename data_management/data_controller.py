@@ -2,7 +2,7 @@ from sqlalchemy.orm.session import Session
 from sqlalchemy.orm import sessionmaker, scoped_session
 import sqlalchemy as db
 
-from data_management.model import FailureType, Transmission, TransmissionConfiguration
+from data_management.model import Failure, FailureType, Transmission, TransmissionConfiguration
 from data_management.model import Measurement, Assembly, AssemblyStep, DataPoint
 
 from typing import List, Tuple
@@ -78,6 +78,33 @@ def get_assembly_from_current_transmission(session:Session, step:AssemblyStep) -
     t = session.query(Transmission).order_by(Transmission.transmission_id.desc()).first()
     return session.query(Assembly).filter_by(transmission=t, assembly_step=step).first()
 
+
+@create_session
+def get_failure_type_for_description_and_assembly_step(session:Session, description:str, assembly_step:AssemblyStep):
+    query_result = session.query(FailureType).filter_by(description = description, assembly_step = assembly_step)
+    if len(query_result.all()) > 1:
+        raise Exception("This should never be greater 1!")
+    return query_result.first()
+
+@create_session
+def create_failure(session:Session, failure_type:FailureType):
+
+    transmission = get_current_transmission(session)
+
+    print("TRANSMISSION = ", transmission, type(transmission))
+    print("FailureType = ", failure_type, type(failure_type))
+
+    
+    # f = Failure(transmission = transmission)
+
+    # new_ft = FailureType()
+    # session.add(new_ft)
+    # session.commit()
+
+    # f = Failure(failure_type = transmission)
+    # # f = Failure(failure_type=failure_type, transmission = transmission)
+    # session.add(f)
+    # session.commit()
 
 
 # @create_session

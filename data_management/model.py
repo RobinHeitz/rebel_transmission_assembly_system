@@ -69,7 +69,7 @@ class Transmission(Base):
     finished_date = Column(DateTime)
     
     assemblies = relationship("Assembly", backref=backref("transmission"))
-    failures = relationship("Failure", backref=backref("transmission"))
+    # failures = relationship("Failure", backref=backref("transmission"))
     
 
 
@@ -154,8 +154,8 @@ class Failure(Base):
     __tablename__ = "failure"
     failure_id = Column(Integer, primary_key = True)
     
-    failure_type = Column(Integer, ForeignKey("failuretype.failuretype_id"))
-    transmission_id = Column(Integer, ForeignKey("transmission.transmission_id"))
+    # failure_type_id = Column(Integer, ForeignKey("failuretype.failuretype_id"))
+    # transmission_id = Column(Integer, ForeignKey("transmission.transmission_id"))
     
 
 class FailureClassification(enum.Enum):
@@ -185,7 +185,7 @@ class FailureType(Base):
 
     assembly_step = Column(Enum(AssemblyStep))
 
-    failures = relationship("Failure", backref=backref("failuretype"))
+    # failures = relationship("Failure", backref=backref("failuretype"))
 
 
 class CorrectiveAction(Base):
