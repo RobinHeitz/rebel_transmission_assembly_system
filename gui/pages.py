@@ -43,8 +43,12 @@ layout_assembly_step_1 = [
                 sg.Button("Abbrechen",enable_events=True, k=(KeyDefs.BTN_STOP_VELO_MODE, LayoutPageKeys.layout_assembly_step_1_page) ),
             ],
             [sg.Canvas(key=(KeyDefs.CANVAS_GRAPH_PLOTTING, LayoutPageKeys.layout_assembly_step_1_page), )],
-            [sg.Text("", font=font_normal, key=(KeyDefs.TEXT_MIN_MAX_CURRENT_VALUES, LayoutPageKeys.layout_assembly_step_1_page))]
-])
+            [sg.Text("", font=font_normal, key=(KeyDefs.TEXT_MIN_MAX_CURRENT_VALUES, LayoutPageKeys.layout_assembly_step_1_page))],
+            [sg.Frame("Es wurde ein Fehler erkannt!",layout=[
+                [sg.T("Fehler: ", k="-TEXT_FAILURE-")],
+                [sg.B("Fehler behebung starten", k="-BTN_FAILURE-")]
+            ], visible=False, k="-FRAME_FAILURE-") ],
+        ])
 
     ],
 ]
