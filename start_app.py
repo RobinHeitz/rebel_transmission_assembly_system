@@ -108,15 +108,21 @@ def graph_update_cycle(window:sg.Window, controller:RebelAxisController):
 
 
 
-def update_graph(event, values, plotter:GraphPlotter):
+def update_graph(event, values):
+# def update_graph(event, values, plotter:GraphPlotter):
     """Updates graph. Gets called from a thread running graph_update_cycle()."""
     d = values[event]
     x, y = d.get('x'), d.get('y')
 
+    plotter = graph_plotters[0]
+
     page_key = get_page_key_for_index(current_page_index)
     
-    graph_data[page_key]["x_data"].append(x)
-    graph_data[page_key]["y_data"].append(y)
+    # graph_data[page_key]["x_data"].append(x)
+    # graph_data[page_key]["y_data"].append(y)
+
+    x_data.append(x)
+    y_data.append(y)
     
 
 
@@ -256,6 +262,9 @@ if __name__ == "__main__":
         key:dict(x_data=[], y_data=[]) for key in get_page_keys()[1:]
     }
     
+    x_data = []
+    y_data = []
+
     key_function_map = {
         KeyDefs.BTN_NAV_NEXT_PAGE: (_nav_next_page, dict()),
         KeyDefs.BTN_NAV_PREVIOUS_PAGE: (_nav_previous_page, dict()),
