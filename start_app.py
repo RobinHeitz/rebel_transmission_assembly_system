@@ -188,17 +188,16 @@ def set_combo_current_selection(indicator:Indicator):
     combo_selected_indicator = indicator
 
 
-def create_failure_object(event, values, *args):
+def display_failure_objects(event, values, *args):
     """Execited by Button-click."""
     ...
     print("Create Failure", combo_selected_indicator)
 
+    window[KeyDefs.FRAME_POSSIBLE_FAILURES].update(visible=True)
     failures = data_controller.get_failures_list_from_indicator(combo_selected_indicator)
 
     if len(failures) > 0:
-
-        listbox = window[KeyDefs.LISTBOX_POSSIBLE_FAILURES]
-        listbox.update([f.description for f in failures], visible=True)
+        window[KeyDefs.LISTBOX_POSSIBLE_FAILURES].update([f.description for f in failures])
 
 
 
@@ -343,7 +342,7 @@ if __name__ == "__main__":
         KeyDefs.FINISHED_VELO_STOP_GRAPH_UPDATING: (stop_graph_update, dict()),
 
         #Failure Detection
-        KeyDefs.BTN_INDICATOR_DETECTION: (create_failure_object, dict()),
+        KeyDefs.BTN_INDICATOR_DETECTION: (display_failure_objects, dict()),
         KeyDefs.COMBO_INDICATOR_SELECT: (lambda event, values: set_combo_current_selection(values[event]), dict()),
 
         # KeyDefs.LISTBOX_POSSIBLE_FAILURES: (lambda *args:None window[KeyDefs.LISTBOX_POSSIBLE_FAILURES].update(["Var1", "Var2", "Var3"]), dict()),

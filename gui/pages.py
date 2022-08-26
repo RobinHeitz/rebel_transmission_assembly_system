@@ -44,7 +44,7 @@ layout_assembly_step_1 = [
             ],
             [sg.Canvas(key=(KeyDefs.CANVAS_GRAPH_PLOTTING, LayoutPageKeys.layout_assembly_step_1_page), )],
             [sg.Text("", font=font_normal, key=(KeyDefs.TEXT_MIN_MAX_CURRENT_VALUES, LayoutPageKeys.layout_assembly_step_1_page))],
-            [sg.Frame("Es wurde ein Fehler erkannt!",layout=[
+            [sg.Frame("Es wurde ein Fehler erkannt:",layout=[
                 [
                     sg.T("Fehler: "), 
                     sg.Combo(["A", "B", "C"], default_value="B", s=(50,25), enable_events=True, readonly=True, k=KeyDefs.COMBO_INDICATOR_SELECT),
@@ -53,9 +53,14 @@ layout_assembly_step_1 = [
                 
             ], visible=False, k=KeyDefs.FRAME_INDICATOR) ],
 
-            
+            [sg.Frame("Fehlerursache auswählen:", layout=[
+                [
+                    sg.T("Ursache:"),
+                    sg.Listbox([], size=(50,8), enable_events=True, k=KeyDefs.LISTBOX_POSSIBLE_FAILURES, ),
+                    sg.B("Fehler beheben")
+                    ],
+            ], visible=False, k=KeyDefs.FRAME_POSSIBLE_FAILURES)],
 
-            [sg.Listbox([], size=(50,8), enable_events=True, k=KeyDefs.LISTBOX_POSSIBLE_FAILURES, visible=False),],
         ])
 
     ],
