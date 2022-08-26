@@ -31,26 +31,10 @@ def create_session(f):
     return wrap
 
 
-@create_session
-def get_current_measurement_instance(session:Session) -> Measurement:
-    return session.query(Measurement).order_by(Measurement.id.desc()).first()
 
-
-@create_session
-def update_current_measurement_fields(session:Session):
-    m = session.query(Measurement).order_by(Measurement.id.desc()).first()
-    datapoints_ = session.query(DataPoint).filter_by(measurement=m)
-    
-    current_values = [dp.current for dp in datapoints_]
-    m.max_current = round(max(current_values),2)
-    m.min_current = round(min(current_values),2)
-    m.mean_current = round(sum(current_values) / len(current_values) ,2)
-    session.commit()
-
-
-##################
-### Create objects
-##################
+#####################
+###  Transmission ###
+#####################
 
 @create_session
 def create_transmission(session:Session, config:TransmissionConfiguration) -> Transmission:
@@ -72,6 +56,11 @@ def get_current_transmission(session:Session):
     return session.query(Transmission).order_by(Transmission.id.desc()).first()
 
 
+################
+### Assembly ###
+################
+
+
 @create_session
 def get_assembly_from_current_transmission(session:Session, step:AssemblyStep) -> Assembly:
     """Returns assembly (filtered by param: Step) from current transmission."""
@@ -79,13 +68,13 @@ def get_assembly_from_current_transmission(session:Session, step:AssemblyStep) -
     return session.query(Assembly).filter_by(transmission=t, assembly_step=step).first()
 
 
-@create_session
-def get_indicator_for_description_and_assembly_step(session:Session, description:str, assembly_step:AssemblyStep):
-    query_result = session.query(Indicator).filter_by(description = description, assembly_step = assembly_step)
-    if len(query_result.all()) > 1:
-        raise Exception("This should never be greater 1!")
-    return query_result.first()
+###################
+### Measurement ###
+###################
 
+@create_session
+def get_current_measurement_instance(session:Session) -> Measurement:
+    return session.query(Measurement).order_by(Measurement.id.desc()).first()
 
 
 @create_session
@@ -96,6 +85,32 @@ def create_measurement(session:Session, assembly:Assembly) -> Measurement:
     session.commit()
 
     return new_measure
+
+
+@create_session
+def update_current_measurement_fields(session:Session):
+    m = session.query(Measurement).order_by(Measurement.id.desc()).first()
+    datapoints_ = session.query(DataPoint).filter_by(measurement=m)
+    
+    current_values = [dp.current for dp in datapoints_]
+    m.max_current = round(max(current_values),2)
+    m.min_current = round(min(current_values),2)
+    m.mean_current = round(sum(current_values) / len(current_values) ,2)
+    session.commit()
+
+
+@create_session
+def get_plot_data_for_current_measurement(session:Session)-> List[Tuple]:
+    """Returns list of (timestamp, current) of current measurement for plotting."""
+    m = get_current_measurement_instance()
+
+    datapoints = session.query(DataPoint).filter_by(measurement=m)
+    return [(d.timestamp, d.current) for d in datapoints]
+
+
+##################
+### DataPoints ###
+##################
 
 
 @create_session
@@ -113,13 +128,17 @@ def create_data_point_to_current_measurement(current, timestamp):
 
 
 
-@create_session
-def get_plot_data_for_current_measurement(session:Session)-> List[Tuple]:
-    """Returns list of (timestamp, current) of current measurement for plotting."""
-    m = get_current_measurement_instance()
 
-    datapoints = session.query(DataPoint).filter_by(measurement=m)
-    return [(d.timestamp, d.current) for d in datapoints]
+#################
+### Indicator ###
+#################
+
+@create_session
+def get_indicator_for_description_and_assembly_step(session:Session, description:str, assembly_step:AssemblyStep):
+    query_result = session.query(Indicator).filter_by(description = description, assembly_step = assembly_step)
+    if len(query_result.all()) > 1:
+        raise Exception("This should never be greater 1!")
+    return query_result.first()
 
 
 
@@ -133,10 +152,16 @@ def get_indicators_for_assembly_step_and_IndicatorType(session:Session, assembly
 
 
 
-# @create_session
-# def get_failure_types(session:Session, assembly_step:AssemblyStep) -> str:
-#     return session.query(FailureType).filter_by(assembly_step = assembly_step).all()
 
+###############
+### Failure ###
+###############
+
+@create_session
+def create_failure(session:Session, assembly_step:AssemblyStep) -> Failure:
+    ...
+
+    f = Failure()
 
 
 

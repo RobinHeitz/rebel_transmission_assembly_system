@@ -81,12 +81,28 @@ if __name__ == "__main__":
     # create failure objects
     ########################
 
+    failure_descriptions = [
+        "Wicklungsfehler", 
+        "Encoder Defekt", 
+        "Encoderkabel defekt",
+        "Abstand zwischen Encoder und Rotor zu groß",
+        "Zylinderrollenlager (Kunststoff) defekt/ Klemmt",
+        "Dicke des Flexrings zu hoch",
+        "Zahnradeinleger nicht richtig montiert",
+        "Fertigungsfehler Alugehäuse (Motorseitig)",
+        "Fertigungsfehler Alugehäuse (Abtriebsseitig)",
+        "Encoder schleift",
+        "Flexring schleift",
+    ]
 
     for ind in indicators:
-        f = Failure(transmission = t)
-        ind.failures.append(f)
+        descriptions = random.choices(failure_descriptions, k=2)
+        for d in descriptions:
 
-        session.add(f)    
+            f = Failure(transmission = t, description = random.choice(failure_descriptions))
+            ind.failures.append(f)
+
+            session.add(f)    
     
     
     session.commit()
