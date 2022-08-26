@@ -1,4 +1,5 @@
 from email.policy import default
+from xmlrpc.client import Boolean
 from sqlalchemy import Column, Integer, String, ForeignKey, Table, Enum, DateTime, Float
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.ext.declarative import declarative_base
@@ -70,6 +71,7 @@ class Transmission(Base):
     
     assemblies = relationship("Assembly", backref=backref("transmission"))
     failures = relationship("Failure", backref=backref("transmission"))
+    
 
 
 
@@ -146,52 +148,165 @@ class DataPoint(Base):
 
 
 
-class FailureClassification(enum.Enum):
-    """Is the failure_type overcurrent or another failure? This classification makes sure, failures that can be measured (by data points) are mapped to the correct failure type."""
+class IndicatorType(enum.Enum):
     overcurrent = 1
-    calibration_both_tracks_have_values = 2
+    calibration_both_tracks_values =  2
 
     not_measurable = 10
 
 
+ItemDetail = Table(
+    'ItemDetail',
+    Base.metadata,
+    Column('id', Integer, primary_key=True),
+    Column('indicatorID', Integer, ForeignKey('indicator.id')),
+    Column('failureID', Integer, ForeignKey('failure.id')),
 
+)
+class Indicator(Base):
+    __tablename__ = 'indicator'
+    id = Column(Integer, primary_key=True)
+    created_at = Column(DateTime, default=datetime.now)
+
+    description = Column(String)
+    
+    assembly_step = Column(Enum(AssemblyStep))
+    indicator_type = Column(Enum(IndicatorType), default = IndicatorType.not_measurable)
+    
+    failures = relationship('Failure', secondary=ItemDetail, back_populates="indicators")
 
 class Failure(Base):
-    """Failure model cls (SQLAlchemy). Every occuring error/ failure at each assembly step is represented by this instance. 
+    __tablename__ = 'failure'
+    id = Column(Integer, primary_key=True)
+    created_at = Column(DateTime, default=datetime.now)
     
-    """
-    __tablename__ = "failure"
-    id = Column(Integer, primary_key = True)
+    value = Column(String)
+    indicators = relationship('Indicator', secondary=ItemDetail, back_populates="failures")
+    transmission_id = Column(Integer, ForeignKey('transmission.id'))
+
+
+
+
+# IndicatorFailure = Table(
+#     "IndicatorFailure",
+#     Base.metadata, 
+#     Column("id", Integer, primary_key = True),
+#     Column("indicator_id", Integer, ForeignKey("indicator.id")),
+#     Column("failure_id", Integer, ForeignKey("failure.id")),
+# )
+
+
+# class Indicator(Base):
+#     #Beispiel: Overcurrent in Montageschritt n
+#     __tablename__ = "indicator"
+#     id = Column(Integer, primary_key = True)
+#     created_at = Column(DateTime, default=datetime.now)
+
+#     description = Column(String)
+#     assembly_step = Column(Enum(AssemblyStep))
+#     indicator_type = Column(Enum(IndicatorType), default = IndicatorType.not_measurable)
+#     failures = relationship("Failure", secondary=IndicatorFailure, backref="Indicator")
+
+
+
+
+# class Failure(Base):
+#     #Beispiel zu OC in Schritt n: Flexring falsch, Alufrästeil falsch etc.
+#     __tablename__ = "failure"
+#     id = Column(Integer, primary_key = True)
+
+#     description = Column(String)
+#     indicator = Column(Integer, ForeignKey("indicator.id"))
+#     transmission = Column(Integer, ForeignKey("transmission.id"))
+#     indicators = relationship("Indicator", secondary=IndicatorFailure, backref="Failure")
+
+
+
+# FailureImprovement = Table("FailureImprovement", 
+#     Column("id", Integer, primary_key = True),
+#         Column("failure_id", Integer, ForeignKey("failure.id")),
+#         Column("improvement_id", Integer, ForeignKey("improvement.id")),
+# )
+
+
+# class Improvement(Base):
+#     # Bsp: zu OC in Schritt n zu Fehler 'Flexring falsch' --> Flexring wechseln ODER Frästeil wechseln 
+#     __tablename__ = "improvement"
+#     id = Column(Integer, primary_key = True)
+#     created_at = Column(DateTime, default=datetime.now)
     
-    failure_type_id = Column(Integer, ForeignKey("failure_type.id"))
-    transmission_id = Column(Integer, ForeignKey("transmission.id"))
+#     description = Column(String)
+#     improvement_successfull = Column(Boolean)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# class FailureClassification(enum.Enum):
+#     """Is the failure_type overcurrent or another failure? This classification makes sure, failures that can be measured (by data points) are mapped to the correct failure type."""
+#     overcurrent = 1
+#     calibration_both_tracks_have_values = 2
+
+#     not_measurable = 10
+
+
+
+
+# class Failure(Base):
+#     """Failure model cls (SQLAlchemy). Every occuring error/ failure at each assembly step is represented by this instance. 
     
-class FailureType(Base):
-    """Failure type model cls (SQLAlchemy). Needed for dynamically add failure kinds/ types to the application. Every occuring failure is linked to a failure type, 
-    thus its possible to query for all failures for a given failure type.
-
-    Params:
-    - id (auto generated): Integer
-    - failure_classification: Enum(FailureClassification) | Detects whether this failure can be auto-detected by comparing measurement-values.
-    - description: String
-    - assembly_step: 
+#     """
+#     __tablename__ = "failure"
+#     id = Column(Integer, primary_key = True)
     
-    """
-
-    __tablename__ = "failure_type"
-    id = Column(Integer, primary_key = True)
-    description = Column(String)
-
-    failure_classification = Column(Enum(FailureClassification), default = FailureClassification.not_measurable)
-
-    assembly_step = Column(Enum(AssemblyStep))
-
-    failures = relationship("Failure", backref=backref("failure_type"))
-
-
-class CorrectiveAction(Base):
-    """CorrectiveAction model cls (SQLAlchemy).
+#     failure_type_id = Column(Integer, ForeignKey("failure_type.id"))
+#     transmission_id = Column(Integer, ForeignKey("transmission.id"))
     
-    """
-    __tablename__ = "correctiveaction"
-    id = Column(Integer, primary_key = True)
+# class FailureType(Base):
+#     """Failure type model cls (SQLAlchemy). Needed for dynamically add failure kinds/ types to the application. Every occuring failure is linked to a failure type, 
+#     thus its possible to query for all failures for a given failure type.
+
+#     Params:
+#     - id (auto generated): Integer
+#     - failure_classification: Enum(FailureClassification) | Detects whether this failure can be auto-detected by comparing measurement-values.
+#     - description: String
+#     - assembly_step: 
+    
+#     """
+
+#     __tablename__ = "failure_type"
+#     id = Column(Integer, primary_key = True)
+#     description = Column(String)
+
+#     failure_classification = Column(Enum(FailureClassification), default = FailureClassification.not_measurable)
+
+#     assembly_step = Column(Enum(AssemblyStep))
+
+#     failures = relationship("Failure", backref=backref("failure_type"))
+
+
+# class CorrectiveAction(Base):
+#     """CorrectiveAction model cls (SQLAlchemy).
+    
+#     """
+#     __tablename__ = "correctiveaction"
+#     id = Column(Integer, primary_key = True)
