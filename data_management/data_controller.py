@@ -164,4 +164,15 @@ def create_failure(session:Session, assembly_step:AssemblyStep) -> Failure:
     f = Failure()
 
 
+@create_session
+def get_failures_list_from_indicator(session:Session, indicator:Indicator):
+    indicator = session.query(Indicator).get(indicator.id)
+
+    if indicator == None:
+        return
+
+    failures = indicator.failures
+    
+    return failures
+
 

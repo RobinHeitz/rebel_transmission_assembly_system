@@ -60,20 +60,14 @@ if __name__ == "__main__":
 
 
         oc = Indicator(description = "Strom > Nennwert", assembly_step = step, indicator_type = IndicatorType.overcurrent)
-        other_indicator = Indicator(description = random.choice(indicator_descriptions), assembly_step = step, indicator_type = IndicatorType.not_measurable)
-        other_indicator2 = Indicator(description = random.choice(indicator_descriptions), assembly_step = step, indicator_type = IndicatorType.not_measurable)
-        
-        # overcurrent = FailureType(description = f"Current to high for this assembly step {step.value}", assembly_step = step, failure_classification = FailureClassification.overcurrent)
-        # vibrations = FailureType(description = f"To high vibrations: {step.value}", assembly_step = step)
-        # squeaks = FailureType(description = f"Transmission is squeaking: {step.value}", assembly_step = step)
-        
         session.add(oc)
-        session.add(other_indicator)
-        session.add(other_indicator2)
-
         indicators.append(oc)
-        indicators.append(other_indicator)
-        indicators.append(other_indicator2)
+
+        other_indicator_descriptions = random.sample(indicator_descriptions, 2)
+        for i in other_indicator_descriptions:
+            ind = Indicator(description = i, assembly_step = step, indicator_type = IndicatorType.not_measurable)
+            session.add(ind)
+            indicators.append(ind)
 
 
 
@@ -96,7 +90,7 @@ if __name__ == "__main__":
     ]
 
     for ind in indicators:
-        descriptions = random.choices(failure_descriptions, k=2)
+        descriptions = random.sample(failure_descriptions, 2)
         for d in descriptions:
 
             f = Failure(transmission = t, description = random.choice(failure_descriptions))
