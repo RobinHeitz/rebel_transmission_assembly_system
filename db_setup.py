@@ -43,7 +43,7 @@ if __name__ == "__main__":
         "Encoder-Error in Anzeige", 
         "Ruckeln bei Bewegung des Motors", 
         "Stromverlauf schwankt zu stark", 
-        "Abtrieb (Magnetring)", 
+        "Abrieb (Magnetring)", 
         "Quietschen",
     ]
 

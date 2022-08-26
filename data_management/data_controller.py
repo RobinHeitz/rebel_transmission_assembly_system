@@ -2,7 +2,7 @@ from sqlalchemy.orm.session import Session
 from sqlalchemy.orm import sessionmaker, scoped_session
 import sqlalchemy as db
 
-from data_management.model import Failure, FailureType, Transmission, TransmissionConfiguration
+from data_management.model import Failure, Indicator, IndicatorType, Transmission, TransmissionConfiguration
 from data_management.model import Measurement, Assembly, AssemblyStep, DataPoint
 
 from typing import List, Tuple
@@ -80,18 +80,11 @@ def get_assembly_from_current_transmission(session:Session, step:AssemblyStep) -
 
 
 @create_session
-def get_failure_type_for_description_and_assembly_step(session:Session, description:str, assembly_step:AssemblyStep):
-    query_result = session.query(FailureType).filter_by(description = description, assembly_step = assembly_step)
+def get_indicator_for_description_and_assembly_step(session:Session, description:str, assembly_step:AssemblyStep):
+    query_result = session.query(Indicator).filter_by(description = description, assembly_step = assembly_step)
     if len(query_result.all()) > 1:
         raise Exception("This should never be greater 1!")
     return query_result.first()
-
-@create_session
-def create_failure(session:Session, failure_type:FailureType):
-    transmission = get_current_transmission(session)
-    f = Failure(failure_type = failure_type, transmission = transmission)
-    session.add(f)
-    session.commit()
 
 
 
@@ -131,8 +124,18 @@ def get_plot_data_for_current_measurement(session:Session)-> List[Tuple]:
 
 
 @create_session
-def get_failure_types(session:Session, assembly_step:AssemblyStep) -> str:
-    return session.query(FailureType).filter_by(assembly_step = assembly_step).all()
+def get_indicators_for_assembly_step(session:Session, assembly_step:AssemblyStep):
+    return  session.query(Indicator).filter_by(assembly_step = assembly_step).all()
+
+@create_session
+def get_indicators_for_assembly_step_and_IndicatorType(session:Session, assembly_step:AssemblyStep, indicator_type:IndicatorType):
+    return session.query(Indicator).filter_by(assembly_step = assembly_step, indicator_type = indicator_type).all()
+
+
+
+# @create_session
+# def get_failure_types(session:Session, assembly_step:AssemblyStep) -> str:
+#     return session.query(FailureType).filter_by(assembly_step = assembly_step).all()
 
 
 

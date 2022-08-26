@@ -4,7 +4,7 @@ import traceback
 import PySimpleGUI as sg
 import logging, time, threading
 
-from data_management.model import AssemblyStep, Failure, FailureClassification, FailureType, Measurement
+from data_management.model import AssemblyStep, Failure, Indicator, IndicatorType, Measurement
 from data_management import data_controller, data_transformation
 
 from hw_interface.motor_controller import RebelAxisController
@@ -81,7 +81,7 @@ def start_velocity_mode(event, values, controller:RebelAxisController):
 
     # definition of stop-function that is invoked after the movement has stopped (e.g. duration is reached)
     stop_func = lambda: window.write_event_value(KeyDefs.FINISHED_VELO_STOP_GRAPH_UPDATING, "Data")
-    controller.start_movement_velocity_mode(velocity=20, duration=5, invoke_stop_function = stop_func)
+    controller.start_movement_velocity_mode(velocity=20, duration=3, invoke_stop_function = stop_func)
 
 
 def stop_velocity_mode(event, values, controller:RebelAxisController):
@@ -142,54 +142,57 @@ def stop_graph_update(event, values):
 
     text_field.update(f"Min current: {min_val} ||| Max. current: {max_val} || Mean current: {mean_val}")
 
-    predict_failure(measurement)
+    predict_indicator(measurement)
 
 
 
-def predict_failure(measurement: Measurement):
-    """Gets called after graph updating has stopped."""
+def predict_indicator(measurement: Measurement):
+    """Tries to predict < Indicator > (e.g. Overcurrent) based on currently measurement taken. Gets called after graph updating has stopped. """
+
+    logger.info("#"*10)
+    logger.info("predict_indicator")
 
     assembly_step = get_assembly_step_for_page_index(current_page_index)
-    failure_types = data_controller.get_failure_types(assembly_step)
 
-    current_limit = current_limits.get(assembly_step.name)
-    
-    if measurement.max_current  > current_limit:
-        logger.warning("Predicted_Failure: Overcurrent!!!")
-        detected_failure = list(filter(lambda item: item.failure_classification == FailureClassification.overcurrent, failure_types))[0]
+    indicators = data_controller.get_indicators_for_assembly_step(assembly_step)
+    limit = current_limits.get(assembly_step.name)    
+
+    logger.info(f"Indicators = {indicators} / len() = {len(indicators)} / limit_current = {limit}")
+
+    if measurement.max_current > limit:
+        ...
+        logger.info("Predict overcurrent")
+        selected_indicator = data_controller.get_indicators_for_assembly_step_and_IndicatorType(assembly_step, IndicatorType.overcurrent)[0]
+
     
     else:
-        # select failure with highest occurrence frequency!!!
-        # For simplicity: Select a random from the other failure_types not beeing overcurrent
-        ...
-        failure_types = list(filter(lambda item: item.failure_classification == FailureClassification.not_measurable, failure_types))
-
-        rand_index = random.randint(0,len(failure_types)-1)
-        detected_failure = failure_types[rand_index]
-        logger.warning("Predicted_Failure: Another failure, not overcurrent!!!")
-    
-    set_combo_current_selection(detected_failure)
+        logger.info("Predict: Indicator is not measurable")
+        indicators = data_controller.get_indicators_for_assembly_step_and_IndicatorType(assembly_step, IndicatorType.not_measurable)
+        selected_indicator = random.choice(indicators)
 
 
-    window[KeyDefs.COMBO_FAILURE_SELECT].update(values=[f.description for f in failure_types], value=detected_failure.description)
+    set_combo_current_selection(selected_indicator)
+   
+    window[KeyDefs.COMBO_FAILURE_SELECT].update(values=[i.description for i in indicators], value=selected_indicator.description)
     window[KeyDefs.FRAME_FAILURE].update(visible=True)
 
 
-def set_combo_current_selection(failure_type):
-    global combo_selected_failure_type
 
-    if type(failure_type) == FailureType:
-        combo_selected_failure_type = failure_type
-    elif type(failure_type) == str:
+def set_combo_current_selection(indicator:Indicator):
+    global combo_selected_indicator
+    if type(indicator) == str:
+        ...
         assembly_step = get_assembly_step_for_page_index(current_page_index)
-        combo_selected_failure_type = data_controller.get_failure_type_for_description_and_assembly_step(failure_type, assembly_step)
-    
+        indicator = data_controller.get_indicator_for_description_and_assembly_step(indicator, assembly_step)
+
+    combo_selected_indicator = indicator
+
 
 def create_failure_object(event, values, *args):
     """Execited by Button-click."""
     ...
-    print("Create Failure")
-    data_controller.create_failure(combo_selected_failure_type)
+    print("Create Failure", combo_selected_indicator)
+    # data_controller.create_failure(combo_selected_failure_type)
 
 
 
@@ -291,7 +294,7 @@ if __name__ == "__main__":
 
     current_page_index = 0
 
-    combo_selected_failure_type = None
+    combo_selected_indicator = None
 
     plotters = {
         l:GraphPlotter(window[(KeyDefs.CANVAS_GRAPH_PLOTTING, l)]) for l in get_page_keys()[1:]
