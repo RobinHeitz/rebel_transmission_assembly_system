@@ -2,8 +2,8 @@
 
 import sqlalchemy as db
 
-from data_management.model import Failure, Transmission, TransmissionConfiguration, AssemblyStep
-from data_management.model import Measurement, Assembly, AssemblyStep, DataPoint, Failure, Indicator
+from data_management.model import Failure, Indicator, Transmission, TransmissionConfiguration, AssemblyStep
+from data_management.model import Measurement, Assembly, AssemblyStep, DataPoint
 
 engine, connection, metadata, session = None, None, None, None
 

@@ -1,6 +1,4 @@
-from email.policy import default
-from xmlrpc.client import Boolean
-from sqlalchemy import Column, Integer, String, ForeignKey, Table, Enum, DateTime, Float
+from sqlalchemy import Column, Integer, String, ForeignKey, Table, Enum, DateTime, Float, Boolean
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import func 
@@ -51,16 +49,6 @@ class AssemblyStep(enum.Enum):
 
 
 class Transmission(Base):
-    """
-    Transmission model cls (SQLAlchemy).
-    Params:
-    - id (auto generated): Integer
-    - created_at (auto generated): DateTime
-    - updated_at (auto generated): DateTime
-    - transmission_configuration: TransmissionConfiguration
-    - finished_date: DateTime
-    - assemblies (auto generated): List of Assembly-Objects (backref relation)"""
-
     __tablename__ = "transmission"
     id = Column(Integer, primary_key=True)
     created_at = Column(DateTime, default=datetime.now)
@@ -73,18 +61,7 @@ class Transmission(Base):
     failures = relationship("Failure", backref=backref("transmission"))
     
 
-
-
 class Assembly(Base):
-    """
-    Assembly model cls (SQLAlchemy).
-    Params:
-    - id (auto generated): Integer
-    - created_at (auto generated): DateTime
-    - assembly_step: AssemblyStep
-    - transmission_id (auto generated): Integer(Transmission Object)
-    - measurements: List of Measurement-Objects (backref relation)"""
-
     __tablename__ = "assembly"
     created_at = Column(DateTime, default=datetime.now)
     id = Column(Integer, primary_key=True)
@@ -93,23 +70,12 @@ class Assembly(Base):
     
     transmission_id = Column(Integer, ForeignKey("transmission.id"))
     measurements = relationship("Measurement", backref=backref("assembly"))
-    
-    
 
     def __repr__(self) -> str:
         return f"Assembly: {self.assembly_step}"
 
 
-
 class Measurement(Base):
-    """
-    Measurement model cls (SQLAlchemy).
-    Params:
-    - id (auto generated): Integer
-    - title: String
-    - assembly_id: Assembly Object (ForeignKey)
-    - datapoints: List of DataPoint-Objects (backref relation)"""
-    
     __tablename__ = "measurement"
 
     # ToDO: Add meta data about measure: Duration, Which speed, was measurement ok?
@@ -129,14 +95,6 @@ class Measurement(Base):
 
 
 class DataPoint(Base):
-    """
-    DataPoint model cls (SQLAlchemy).
-    Params:
-    - id (auto generated): Integer
-    - current: Integer
-    - timestamp: Integer
-    - measurement_id: Integer(Measurement Object)"""
-
     __tablename__ = "datapoint"
     id = Column(Integer, primary_key = True)
     created_at = Column(DateTime, default=datetime.now)
@@ -147,7 +105,6 @@ class DataPoint(Base):
     measurement_id = Column(Integer, ForeignKey("measurement.id"))
 
 
-
 class IndicatorType(enum.Enum):
     overcurrent = 1
     calibration_both_tracks_values =  2
@@ -155,34 +112,61 @@ class IndicatorType(enum.Enum):
     not_measurable = 10
 
 
-ItemDetail = Table(
-    'ItemDetail',
+IndicatorFailureTable = Table(
+    'IndicatorFailureTable',
     Base.metadata,
     Column('id', Integer, primary_key=True),
     Column('indicatorID', Integer, ForeignKey('indicator.id')),
     Column('failureID', Integer, ForeignKey('failure.id')),
-
 )
+
+
+FailureImprovementTable = Table(
+    'FailureImprovementTable',
+    Base.metadata,
+    Column('id', Integer, primary_key=True),
+    Column('failureID', Integer, ForeignKey('failure.id')),
+    Column('improvementID', Integer, ForeignKey('improvement.id')),
+)
+
+
 class Indicator(Base):
     __tablename__ = 'indicator'
     id = Column(Integer, primary_key=True)
     created_at = Column(DateTime, default=datetime.now)
-
     description = Column(String)
-    
+
     assembly_step = Column(Enum(AssemblyStep))
     indicator_type = Column(Enum(IndicatorType), default = IndicatorType.not_measurable)
     
-    failures = relationship('Failure', secondary=ItemDetail, back_populates="indicators")
+    failures = relationship('Failure', secondary=IndicatorFailureTable, back_populates="indicators")
+
+
+
 
 class Failure(Base):
     __tablename__ = 'failure'
     id = Column(Integer, primary_key=True)
     created_at = Column(DateTime, default=datetime.now)
+    description = Column(String)
     
-    value = Column(String)
-    indicators = relationship('Indicator', secondary=ItemDetail, back_populates="failures")
+    indicators = relationship('Indicator', secondary=IndicatorFailureTable, back_populates="failures")
+    improvements = relationship('Improvement', secondary=FailureImprovementTable, back_populates="failures")
     transmission_id = Column(Integer, ForeignKey('transmission.id'))
+
+
+
+
+
+class Improvement(Base):
+    __tablename__ = "improvement"
+    id = Column(Integer, primary_key = True)
+    created_at = Column(DateTime, default=datetime.now)
+    description = Column(String)
+    
+    improvement_successfull = Column(Boolean)
+    failures = relationship('Failure', secondary=FailureImprovementTable, back_populates="improvements")
+
 
 
 
@@ -229,14 +213,6 @@ class Failure(Base):
 # )
 
 
-# class Improvement(Base):
-#     # Bsp: zu OC in Schritt n zu Fehler 'Flexring falsch' --> Flexring wechseln ODER Frästeil wechseln 
-#     __tablename__ = "improvement"
-#     id = Column(Integer, primary_key = True)
-#     created_at = Column(DateTime, default=datetime.now)
-    
-#     description = Column(String)
-#     improvement_successfull = Column(Boolean)
 
 
 
