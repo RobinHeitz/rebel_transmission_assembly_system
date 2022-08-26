@@ -61,7 +61,7 @@ class Transmission(Base):
     - assemblies (auto generated): List of Assembly-Objects (backref relation)"""
 
     __tablename__ = "transmission"
-    transmission_id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True)
     created_at = Column(DateTime, default=datetime.now)
     updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
     
@@ -86,11 +86,11 @@ class Assembly(Base):
 
     __tablename__ = "assembly"
     created_at = Column(DateTime, default=datetime.now)
-    assembly_id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True)
 
     assembly_step = Column(Enum(AssemblyStep))
     
-    transmission_id = Column(Integer, ForeignKey("transmission.transmission_id"))
+    transmission_id = Column(Integer, ForeignKey("transmission.id"))
     measurements = relationship("Measurement", backref=backref("assembly"))
     
     
@@ -112,14 +112,14 @@ class Measurement(Base):
     __tablename__ = "measurement"
 
     # ToDO: Add meta data about measure: Duration, Which speed, was measurement ok?
-    measurement_id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True)
     created_at = Column(DateTime, default=datetime.now)
 
     max_current = Column(Float)
     min_current = Column(Float)
     mean_current = Column(Float)
 
-    assembly_id = Column(Integer, ForeignKey("assembly.assembly_id"))
+    assembly_id = Column(Integer, ForeignKey("assembly.id"))
     datapoints = relationship("DataPoint", backref=backref("measurement"))
 
     def __repr__(self):
@@ -137,13 +137,13 @@ class DataPoint(Base):
     - measurement_id: Integer(Measurement Object)"""
 
     __tablename__ = "datapoint"
-    datapoint_id = Column(Integer, primary_key = True)
+    id = Column(Integer, primary_key = True)
     created_at = Column(DateTime, default=datetime.now)
     
     current = Column(Float)
     timestamp = Column(Float)
 
-    measurement_id = Column(Integer, ForeignKey("measurement.measurement_id"))
+    measurement_id = Column(Integer, ForeignKey("measurement.id"))
 
 
 
@@ -152,10 +152,10 @@ class Failure(Base):
     
     """
     __tablename__ = "failure"
-    failure_id = Column(Integer, primary_key = True)
+    id = Column(Integer, primary_key = True)
     
-    failure_type_id = Column(Integer, ForeignKey("failuretype.failuretype_id"))
-    transmission_id = Column(Integer, ForeignKey("transmission.transmission_id"))
+    failure_type_id = Column(Integer, ForeignKey("failuretype.id"))
+    transmission_id = Column(Integer, ForeignKey("transmission.id"))
     
 
 class FailureClassification(enum.Enum):
@@ -180,7 +180,7 @@ class FailureType(Base):
     """
 
     __tablename__ = "failuretype"
-    failuretype_id = Column(Integer, primary_key = True)
+    id = Column(Integer, primary_key = True)
     description = Column(String)
 
     failure_classification = Column(Enum(FailureClassification), default = FailureClassification.not_measurable)
@@ -195,4 +195,4 @@ class CorrectiveAction(Base):
     
     """
     __tablename__ = "correctiveaction"
-    corrective_action_id = Column(Integer, primary_key = True)
+    id = Column(Integer, primary_key = True)

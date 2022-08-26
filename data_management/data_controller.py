@@ -33,12 +33,12 @@ def create_session(f):
 
 @create_session
 def get_current_measurement_instance(session:Session) -> Measurement:
-    return session.query(Measurement).order_by(Measurement.measurement_id.desc()).first()
+    return session.query(Measurement).order_by(Measurement.id.desc()).first()
 
 
 @create_session
 def update_current_measurement_fields(session:Session):
-    m = session.query(Measurement).order_by(Measurement.measurement_id.desc()).first()
+    m = session.query(Measurement).order_by(Measurement.id.desc()).first()
     datapoints_ = session.query(DataPoint).filter_by(measurement=m)
     
     current_values = [dp.current for dp in datapoints_]
@@ -69,13 +69,13 @@ def create_transmission(session:Session, config:TransmissionConfiguration) -> Tr
 
 
 def get_current_transmission(session:Session):
-    return session.query(Transmission).order_by(Transmission.transmission_id.desc()).first()
+    return session.query(Transmission).order_by(Transmission.id.desc()).first()
 
 
 @create_session
 def get_assembly_from_current_transmission(session:Session, step:AssemblyStep) -> Assembly:
     """Returns assembly (filtered by param: Step) from current transmission."""
-    t = session.query(Transmission).order_by(Transmission.transmission_id.desc()).first()
+    t = session.query(Transmission).order_by(Transmission.id.desc()).first()
     return session.query(Assembly).filter_by(transmission=t, assembly_step=step).first()
 
 
