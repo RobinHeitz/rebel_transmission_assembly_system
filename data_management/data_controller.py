@@ -94,7 +94,7 @@ def create_failure(session:Session, failure_type:FailureType):
     print("TRANSMISSION = ", transmission, type(transmission))
     print("FailureType = ", failure_type, type(failure_type))
 
-    f = Failure()
+    f = Failure(failure_type = failure_type, transmission = transmission)
     session.add(f)
 
     session.commit()
