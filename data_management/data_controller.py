@@ -94,49 +94,10 @@ def create_failure(session:Session, failure_type:FailureType):
     print("TRANSMISSION = ", transmission, type(transmission))
     print("FailureType = ", failure_type, type(failure_type))
 
-    
-    # f = Failure(transmission = transmission)
+    f = Failure()
+    session.add(f)
 
-    # new_ft = FailureType()
-    # session.add(new_ft)
-    # session.commit()
-
-    # f = Failure(failure_type = transmission)
-    # # f = Failure(failure_type=failure_type, transmission = transmission)
-    # session.add(f)
-    # session.commit()
-
-
-# @create_session
-# def get_or_create_assembly_for_assembly_step(session:Session, assembly_step:AssemblyStep, transmission:Transmission = None) -> Assembly:
-#     """If current transmission has already assembly with given assembly_step, this assembly is returned. Otherwise it gets created."""
-
-#     assemblies_list = session.query(Assembly).filter_by(transmission = transmission, assembly_step = assembly_step).all()
-#     print("********")
-#     print("********")
-#     print("********")
-#     print("LEN Of assemblies =", len(assemblies_list))
-#     print("********")
-#     print("********")
-#     print("********")
-
-
-
-#     global current_assemblies
-
-#     if assembly_step in current_assemblies:
-#         return current_assemblies[assembly_step]
-    
-#     if transmission == None:
-#         raise ValueError("Transmission shouldn't be None if Assembly gets created.")
-    
-#     a = Assembly(assembly_step = assembly_step, transmission = transmission)
-#     session.add(a)
-#     session.commit()
-
-#     current_assemblies[assembly_step] = a
-#     return a
-
+    session.commit()
 
 @create_session
 def create_measurement(session:Session, assembly:Assembly) -> Measurement:

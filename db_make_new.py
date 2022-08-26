@@ -36,7 +36,7 @@ if __name__ == "__main__":
 
     for step in AssemblyStep:
         
-        overcurrent = FailureType(description = f"Current to high for this assembly step {step.value}", assembly_step = step, failure_classification = FailureClassification.failure_type_overcurrent)
+        overcurrent = FailureType(description = f"Current to high for this assembly step {step.value}", assembly_step = step, failure_classification = FailureClassification.overcurrent)
         vibrations = FailureType(description = f"To high vibrations: {step.value}", assembly_step = step)
         squeaks = FailureType(description = f"Transmission is squeaking: {step.value}", assembly_step = step)
         

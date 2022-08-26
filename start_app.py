@@ -113,7 +113,6 @@ def graph_update_cycle(window:sg.Window, controller:RebelAxisController):
 
 def update_graph(event, values):
     """Updates graph. Gets called from a thread running graph_update_cycle()."""
-    # plotter = graph_plotters[0]
     page_key = get_page_key_for_index(current_page_index)
     
     plotter = plotters[page_key]
@@ -157,13 +156,13 @@ def predict_failure(measurement: Measurement):
     
     if measurement.max_current  > current_limit:
         logger.warning("Predicted_Failure: Overcurrent!!!")
-        detected_failure = list(filter(lambda item: item.failure_classification == FailureClassification.failure_type_overcurrent, failure_types))[0]
+        detected_failure = list(filter(lambda item: item.failure_classification == FailureClassification.overcurrent, failure_types))[0]
     
     else:
         # select failure with highest occurrence frequency!!!
         # For simplicity: Select a random from the other failure_types not beeing overcurrent
         ...
-        failure_types = list(filter(lambda item: item.failure_classification == FailureClassification.failure_type_others, failure_types))
+        failure_types = list(filter(lambda item: item.failure_classification == FailureClassification.not_measurable, failure_types))
 
         rand_index = random.randint(0,len(failure_types)-1)
         detected_failure = failure_types[rand_index]
@@ -353,8 +352,12 @@ if __name__ == "__main__":
             controller.shut_down()
             break
         
-        except Exception as e:
+        except TypeError as e:
             logger.error(f"WARNING: Missing event in 'key_functin_map': Event = {event} // values = {values.get(event)}")
+            logger.error(traceback.format_exc())
+        
+        except Exception as e:
+            logger.error(f"Error has occured while executing event: {event} | function name: {func.__name__}")
             logger.error(traceback.format_exc())
         
 
