@@ -88,16 +88,12 @@ def get_failure_type_for_description_and_assembly_step(session:Session, descript
 
 @create_session
 def create_failure(session:Session, failure_type:FailureType):
-
     transmission = get_current_transmission(session)
-
-    print("TRANSMISSION = ", transmission, type(transmission))
-    print("FailureType = ", failure_type, type(failure_type))
-
     f = Failure(failure_type = failure_type, transmission = transmission)
     session.add(f)
-
     session.commit()
+
+
 
 @create_session
 def create_measurement(session:Session, assembly:Assembly) -> Measurement:

@@ -1,8 +1,8 @@
-"""initial rev
+"""initial
 
-Revision ID: e2e69ed88b76
+Revision ID: c54e056271ad
 Revises: 
-Create Date: 2022-08-26 10:40:28.280054
+Create Date: 2022-08-26 11:03:55.817338
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'e2e69ed88b76'
+revision = 'c54e056271ad'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -22,7 +22,7 @@ def upgrade() -> None:
     sa.Column('id', sa.Integer(), nullable=False),
     sa.PrimaryKeyConstraint('id')
     )
-    op.create_table('failuretype',
+    op.create_table('failure_type',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('description', sa.String(), nullable=True),
     sa.Column('failure_classification', sa.Enum('overcurrent', 'calibration_both_tracks_have_values', 'not_measurable', name='failureclassification'), nullable=True),
@@ -49,7 +49,7 @@ def upgrade() -> None:
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('failure_type_id', sa.Integer(), nullable=True),
     sa.Column('transmission_id', sa.Integer(), nullable=True),
-    sa.ForeignKeyConstraint(['failure_type_id'], ['failuretype.id'], ),
+    sa.ForeignKeyConstraint(['failure_type_id'], ['failure_type.id'], ),
     sa.ForeignKeyConstraint(['transmission_id'], ['transmission.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
@@ -82,6 +82,6 @@ def downgrade() -> None:
     op.drop_table('failure')
     op.drop_table('assembly')
     op.drop_table('transmission')
-    op.drop_table('failuretype')
+    op.drop_table('failure_type')
     op.drop_table('correctiveaction')
     # ### end Alembic commands ###

@@ -186,6 +186,7 @@ def set_combo_current_selection(failure_type):
     
 
 def create_failure_object(event, values, *args):
+    """Execited by Button-click."""
     ...
     print("Create Failure")
     data_controller.create_failure(combo_selected_failure_type)
