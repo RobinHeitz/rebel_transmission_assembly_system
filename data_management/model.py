@@ -69,7 +69,7 @@ class Transmission(Base):
     finished_date = Column(DateTime)
     
     assemblies = relationship("Assembly", backref=backref("transmission"))
-    # failures = relationship("Failure", backref=backref("transmission"))
+    failures = relationship("Failure", backref=backref("transmission"))
     
 
 
@@ -154,14 +154,16 @@ class Failure(Base):
     __tablename__ = "failure"
     failure_id = Column(Integer, primary_key = True)
     
-    # failure_type_id = Column(Integer, ForeignKey("failuretype.failuretype_id"))
-    # transmission_id = Column(Integer, ForeignKey("transmission.transmission_id"))
+    failure_type_id = Column(Integer, ForeignKey("failuretype.failuretype_id"))
+    transmission_id = Column(Integer, ForeignKey("transmission.transmission_id"))
     
 
 class FailureClassification(enum.Enum):
     """Is the failure_type overcurrent or another failure? This classification makes sure, failures that can be measured (by data points) are mapped to the correct failure type."""
-    failure_type_overcurrent = 1
-    failure_type_others = 2
+    overcurrent = 1
+    calibration_both_tracks_have_values = 2
+
+    not_measurable = 10
 
 
 
@@ -181,11 +183,11 @@ class FailureType(Base):
     failuretype_id = Column(Integer, primary_key = True)
     description = Column(String)
 
-    failure_classification = Column(Enum(FailureClassification), default = FailureClassification.failure_type_others)
+    failure_classification = Column(Enum(FailureClassification), default = FailureClassification.not_measurable)
 
     assembly_step = Column(Enum(AssemblyStep))
 
-    # failures = relationship("Failure", backref=backref("failuretype"))
+    failures = relationship("Failure", backref=backref("failuretype"))
 
 
 class CorrectiveAction(Base):

@@ -25,3 +25,5 @@ use 'python start_app.py' in console to start GUI interface.
 ### Using alembic auto-migration:
 alembic revision --autogenerate -m "my migration description" 
 alembic upgrade head
+
+SQLite databases are not made for altering relationship via migrations. Thus, if migration errors occure, it might be a good idea to delete all files within alembic/versions and delete the *.sqlite - file. Then use both commands above, revision and upgrade to make a clean db.
