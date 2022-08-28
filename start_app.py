@@ -81,7 +81,7 @@ def start_velocity_mode(event, values, controller:RebelAxisController):
 
     # definition of stop-function that is invoked after the movement has stopped (e.g. duration is reached)
     stop_func = lambda: window.write_event_value(KeyDefs.FINISHED_VELO_STOP_GRAPH_UPDATING, "Data")
-    controller.start_movement_velocity_mode(velocity=20, duration=3, invoke_stop_function = stop_func)
+    controller.start_movement_velocity_mode(velocity=10, duration=3, invoke_stop_function = stop_func)
 
 
 def stop_velocity_mode(event, values, controller:RebelAxisController):

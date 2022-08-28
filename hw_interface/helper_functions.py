@@ -53,6 +53,16 @@ def response_error_codes(error_byte):
                 error_codes_list.append(i)
         return error_descriptions_list, error_codes_list
 
+def get_referenced_and_alignment_status(byte):
+    """Searches for both flags within movement command reply messages (last byte)
+    Returns tuple: referenced, alligned
+    """
+    can_receive_movement_cmds = byte & (1 << 4) != 0
+    alligned = byte & (1 << 6) != 0
+    referenced = byte & (1 << 7) != 0
+    return referenced, alligned, can_receive_movement_cmds
+
+
 def pos_from_tics(tics):
     return tics/GEAR_SCALE
 

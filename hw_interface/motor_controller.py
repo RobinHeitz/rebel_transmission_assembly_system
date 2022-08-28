@@ -13,7 +13,7 @@ import time, logging
 from ctypes import *
 
 from .helper_functions import get_cmd_msg, bytes_to_int, int_to_bytes
-from .helper_functions import pos_from_tics, tics_from_pos, response_error_codes
+from .helper_functions import pos_from_tics, tics_from_pos, response_error_codes, get_referenced_and_alignment_status
 
 from .definitions import GEAR_SCALE, RESPONSE_ERROR_CODES, MessageMovementCommandReply, MessageEnvironmentStatus, MovementPositionMode, MovementVelocityMode
 from .definitions import Exception_PCAN_Connection_Failed, Exception_Controller_No_CAN_ID, Exception_Movement_Command_Reply_Error
@@ -310,7 +310,8 @@ class RebelAxisController:
                     # Movement cmd answer
                     
                     error_descriptions_list, error_codes_list = response_error_codes(msg.DATA[0])
-                    logger.debug(f"Current Error Codes: {error_descriptions_list}")
+                    referenced, alligned, can_receive_movement_cmds = get_referenced_and_alignment_status(msg.DATA[7])
+                    logger.debug(f"Current Error Codes: {error_descriptions_list} | Referenced: {referenced} | alligned: {alligned} | Can receive Movement cmds: {can_receive_movement_cmds}")
 
                     _tics_current = bytes_to_int(msg.DATA[1:5], signed=True)
                     pos = round(pos_from_tics(_tics_current),2)
