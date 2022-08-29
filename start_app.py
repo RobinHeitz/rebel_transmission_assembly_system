@@ -193,8 +193,7 @@ def set_combo_current_selection(indicator:Indicator):
 
 def display_failure_objects(event, values, *args):
     """display_failure_objects() : Executed by Button-click."""
-    ...
-    print("Currently selected Indicator", combo_selected_indicator)
+    logger.info(f"Currently selected Indicator: {combo_selected_indicator}")
 
     window[KeyDefs.FRAME_POSSIBLE_FAILURES].update(visible=True)
     failures = data_controller.get_failures_list_from_indicator(combo_selected_indicator)
@@ -207,7 +206,7 @@ def display_failure_objects(event, values, *args):
     # data_controller.create_failure(combo_selected_failure_type)
 
 def set_listbox_current_selection(failure):
-    print("current selected failre = ", failure)
+    logger.info(f"current selected failre = {failure}")
     if type(failure) == list:
         failure = failure[0]
     
@@ -220,8 +219,7 @@ def set_listbox_current_selection(failure):
 
 def failure_selected(event, values, *args):
     """failure_selected() | executed by button click 'Fehler beheben'"""
-    ...
-    print("Failure selected: ", listbox_selected_failure)
+    logger.info(f"Failure selected: {listbox_selected_failure}")
 
 
 ######################################################
