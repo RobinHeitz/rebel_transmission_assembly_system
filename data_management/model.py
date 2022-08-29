@@ -181,7 +181,6 @@ class Improvement(Base):
     assembly_step = Column(Enum(AssemblyStep))
     
     improvement_instances = relationship("ImprovementInstance", backref=backref("improvement"))
-    
     failures = relationship('Failure', secondary=FailureImprovementTable, back_populates="improvements")
 
 

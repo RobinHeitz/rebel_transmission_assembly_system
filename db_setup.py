@@ -10,6 +10,9 @@ import random
 
 engine, connection, metadata, session = None, None, None, None
 
+def add_to_session(session:Session, *args):
+    for i in args:
+        session.add(i)
 
 def setup_session():
     global engine, connection, metadata, session
@@ -88,25 +91,59 @@ def test(session:Session, t:Transmission, assembly_step: AssemblyStep):
 
 
 def create_assembly_step_1(session:Session, t:Transmission, assembly_step:AssemblyStep):
-    ind_1 = Indicator(description = "Strom > Nennwert", assembly_step = assembly_step, indicator_type = IndicatorType.overcurrent)
-    ind_2 = Indicator(description = "Module Dead: Wicklungsfehler?", assembly_step = assembly_step, indicator_type = IndicatorType.not_measurable)
+    ind_1 = Indicator(description = "Module Dead: Wicklungsfehler?", assembly_step = assembly_step, indicator_type = IndicatorType.not_measurable)
+    ind_2 = Indicator(description = "Strom > Nennwert", assembly_step = assembly_step, indicator_type = IndicatorType.overcurrent)
     ind_3 = Indicator(description = "Encoderfehler", assembly_step = assembly_step, indicator_type = IndicatorType.not_measurable)
     ind_4 = Indicator(description = "Ruckeln beim Anfahren", assembly_step = assembly_step, indicator_type = IndicatorType.not_measurable)
     ind_5 = Indicator(description = "OC beim anfahren", assembly_step = assembly_step, indicator_type = IndicatorType.not_measurable)
 
-    session.add(ind_1)
-    session.add(ind_2)
-    session.add(ind_3)
-    session.add(ind_4)
-    session.add(ind_5)
+    add_to_session(session, ind_1, ind_2, ind_3, ind_4, ind_5)
 
-    fail_1 = Failure(description = "Wicklungsfehler Motorspule", transmission = t, assembly_step = assembly_step)
-    fail_1 = Failure(description = "Wicklungsfehler Motorspule", transmission = t)
+    fail_1 = Failure(description = "Wicklungsfehler Motorspule", assembly_step = assembly_step)
+    fail_2 = Failure(description = "Motor entspricht nicht der geforderten Qualität", assembly_step = assembly_step)
+    fail_3 = Failure(description = "Encoder defekt", assembly_step = assembly_step)
+    fail_4 = Failure(description = "Encoderkabel defekt", assembly_step = assembly_step)
+    fail_5 = Failure(description = "Encoderkabel nicht verbunden", assembly_step = assembly_step)
+    fail_6 = Failure(description = "Falsche Parameter/ FW", assembly_step = assembly_step)
+    fail_7 = Failure(description = "Abstand Encoder/ Magnetring (Rotor) falsch", assembly_step = assembly_step)
+    fail_8 = Failure(description = "Bremse löst nicht", assembly_step = assembly_step)
     
-    session.add(fail_1)
+    add_to_session(session, fail_1, fail_2, fail_3, fail_4, fail_5, fail_6, fail_7)
 
-    print("Fail.ind", fail_1.indicators)
+    imp_1 = Improvement(description = "Motor tauschen", assembly_step = assembly_step)
+    imp_2 = Improvement(description = "Encoder tauschen", assembly_step = assembly_step)
+    imp_3 = Improvement(description = "Kabel verbinden/ tauschen", assembly_step = assembly_step)
+    imp_4 = Improvement(description = "Paramter auf Controller updaten", assembly_step = assembly_step)
+    imp_5 = Improvement(description = "Encoder & Halter auf Welle pressen", assembly_step = assembly_step)
+    imp_6 = Improvement(description = "Bremse tauschen", assembly_step = assembly_step)
+
+    add_to_session(session, imp_1, imp_2, imp_3, imp_4, imp_5, imp_6)
+
+    # Connect objects
+    fail_1.indicators.append(ind_1)
+    fail_1.improvements.append(imp_1)
+
+    fail_2.indicators.append(ind_2)
+    fail_2.improvements.append(imp_1)
+
+    fail_3.indicators.append(ind_3)
+    fail_3.improvements.append(imp_2)
+
+    fail_4.indicators.append(ind_3)
+    fail_4.improvements.append(imp_3)
+
+    fail_5.indicators.append(ind_3)
+    fail_5.improvements.append(imp_3)
+
+    fail_6.indicators.append(ind_4)
+    fail_6.improvements.append(imp_4)
     
+    fail_7.indicators.append(ind_4)
+    fail_7.improvements.append(imp_5)
+
+    fail_8.indicators.append(ind_5)
+    fail_8.improvements.append(imp_4)
+    fail_8.improvements.append(imp_6)
 
 
 
@@ -133,69 +170,8 @@ if __name__ == "__main__":
     session.add(t)
 
 
-    # create_assembly_step_1(session, t, AssemblyStep.step_1_no_flexring)
-    test(session, t, AssemblyStep.step_1_no_flexring)
-
-
-    # indicator_descriptions = [
-    #     "Schleifen/ zyklisches Klacken", 
-    #     "Bewegung des Motors mit Steuerung nicht möglich", 
-    #     "Encoder-Error in Anzeige", 
-    #     "Ruckeln bei Bewegung des Motors", 
-    #     "Stromverlauf schwankt zu stark", 
-    #     "Abrieb (Magnetring)", 
-    #     "Quietschen",
-    # ]
-
-    # indicators = []
-
-
-    # for step in AssemblyStep:
-
-    #     a = Assembly(assembly_step = step, transmission = t)
-    #     session.add(a)
-
-
-    #     oc = Indicator(description = "Strom > Nennwert", assembly_step = step, indicator_type = IndicatorType.overcurrent)
-    #     session.add(oc)
-    #     indicators.append(oc)
-
-    #     other_indicator_descriptions = random.sample(indicator_descriptions, 2)
-    #     for i in other_indicator_descriptions:
-    #         ind = Indicator(description = i, assembly_step = step, indicator_type = IndicatorType.not_measurable)
-    #         session.add(ind)
-    #         indicators.append(ind)
-
-
-
-    # ########################
-    # # create failure objects
-    # ########################
-
-    # failure_descriptions = [
-    #     "Wicklungsfehler", 
-    #     "Encoder Defekt", 
-    #     "Encoderkabel defekt",
-    #     "Abstand zwischen Encoder und Rotor zu groß",
-    #     "Zylinderrollenlager (Kunststoff) defekt/ Klemmt",
-    #     "Dicke des Flexrings zu hoch",
-    #     "Zahnradeinleger nicht richtig montiert",
-    #     "Fertigungsfehler Alugehäuse (Motorseitig)",
-    #     "Fertigungsfehler Alugehäuse (Abtriebsseitig)",
-    #     "Encoder schleift",
-    #     "Flexring schleift",
-    # ]
-
-    # for ind in indicators:
-    #     descriptions = random.sample(failure_descriptions, 2)
-    #     for d in descriptions:
-
-    #         f = Failure(transmission = t, description = random.choice(failure_descriptions))
-    #         ind.failures.append(f)
-
-    #         session.add(f)    
-    
-    
+    create_assembly_step_1(session, t, AssemblyStep.step_1_no_flexring)
+    # test(session, t, AssemblyStep.step_1_no_flexring)
     session.commit()
 
 
