@@ -23,70 +23,70 @@ def setup_session():
     session = sessionmaker(bind = engine)()
 
 
-def test(session:Session, t:Transmission, assembly_step: AssemblyStep):
-    ...
-    ind_1 = Indicator(description = "Strom > Nennwert", assembly_step = assembly_step, indicator_type = IndicatorType.overcurrent)
-    ind_2 = Indicator(description = "Module Dead: Wicklungsfehler?", assembly_step = assembly_step, indicator_type = IndicatorType.not_measurable)
-    ind_3 = Indicator(description = "Encoderfehler", assembly_step = assembly_step, indicator_type = IndicatorType.not_measurable)
-    session.add(ind_1)
-    session.add(ind_2)
-    session.add(ind_3)
+# def test(session:Session, t:Transmission, assembly_step: AssemblyStep):
+#     ...
+#     ind_1 = Indicator(description = "Strom > Nennwert", assembly_step = assembly_step, indicator_type = IndicatorType.overcurrent)
+#     ind_2 = Indicator(description = "Module Dead: Wicklungsfehler?", assembly_step = assembly_step, indicator_type = IndicatorType.not_measurable)
+#     ind_3 = Indicator(description = "Encoderfehler", assembly_step = assembly_step, indicator_type = IndicatorType.not_measurable)
+#     session.add(ind_1)
+#     session.add(ind_2)
+#     session.add(ind_3)
 
-    fail_1 = Failure(description = "Fehler-Kategorie 1", assembly_step = assembly_step)
-    session.add(fail_1)
-    fail_1.indicators.append(ind_1)
-    fail_1.indicators.append(ind_3)
+#     fail_1 = Failure(description = "Fehler-Kategorie 1", assembly_step = assembly_step)
+#     session.add(fail_1)
+#     fail_1.indicators.append(ind_1)
+#     fail_1.indicators.append(ind_3)
 
-    fail_2 = Failure(description = "Fehler-Kategorie 2", assembly_step = assembly_step)
-    session.add(fail_2)
-    fail_2.indicators.append(ind_1)
-    fail_2.indicators.append(ind_2)
+#     fail_2 = Failure(description = "Fehler-Kategorie 2", assembly_step = assembly_step)
+#     session.add(fail_2)
+#     fail_2.indicators.append(ind_1)
+#     fail_2.indicators.append(ind_2)
     
-    fail_3 = Failure(description = "Fehler-Kategorie 3", assembly_step = assembly_step)
-    session.add(fail_3)
-    fail_3.indicators.append(ind_3)
-    fail_3.indicators.append(ind_2)
+#     fail_3 = Failure(description = "Fehler-Kategorie 3", assembly_step = assembly_step)
+#     session.add(fail_3)
+#     fail_3.indicators.append(ind_3)
+#     fail_3.indicators.append(ind_2)
 
-    imp_1 = Improvement(description="Improvement Methode 1", assembly_step = assembly_step)
-    session.add(imp_1)
-    imp_2 = Improvement(description="Improvement Methode 2", assembly_step = assembly_step)
-    session.add(imp_2)
-    imp_3 = Improvement(description="Improvement Methode 3", assembly_step = assembly_step)
-    session.add(imp_3)
-    imp_4 = Improvement(description="Improvement Methode 4", assembly_step = assembly_step)
-    session.add(imp_4)
-    imp_5 = Improvement(description="Improvement Methode 5", assembly_step = assembly_step)
-    session.add(imp_5)
+#     imp_1 = Improvement(description="Improvement Methode 1", assembly_step = assembly_step)
+#     session.add(imp_1)
+#     imp_2 = Improvement(description="Improvement Methode 2", assembly_step = assembly_step)
+#     session.add(imp_2)
+#     imp_3 = Improvement(description="Improvement Methode 3", assembly_step = assembly_step)
+#     session.add(imp_3)
+#     imp_4 = Improvement(description="Improvement Methode 4", assembly_step = assembly_step)
+#     session.add(imp_4)
+#     imp_5 = Improvement(description="Improvement Methode 5", assembly_step = assembly_step)
+#     session.add(imp_5)
 
-    fail_1.improvements.append(imp_1)
-    fail_1.improvements.append(imp_3)
+#     fail_1.improvements.append(imp_1)
+#     fail_1.improvements.append(imp_3)
     
-    fail_2.improvements.append(imp_2)
-    fail_2.improvements.append(imp_4)
+#     fail_2.improvements.append(imp_2)
+#     fail_2.improvements.append(imp_4)
     
-    fail_3.improvements.append(imp_4)
-    fail_3.improvements.append(imp_5)
-    fail_3.improvements.append(imp_1)
+#     fail_3.improvements.append(imp_4)
+#     fail_3.improvements.append(imp_5)
+#     fail_3.improvements.append(imp_1)
 
-    # Create Indicator-/ Failure-/ Improvement - Instances!
+#     # Create Indicator-/ Failure-/ Improvement - Instances!
 
-    i_ind_1 = IndicatorInstance(indicator=ind_1, transmission = t)
-    i_ind_2 = IndicatorInstance(indicator=ind_3, transmission = t)
-    session.add(i_ind_1)
-    session.add(i_ind_2)
+#     i_ind_1 = IndicatorInstance(indicator=ind_1, transmission = t)
+#     i_ind_2 = IndicatorInstance(indicator=ind_3, transmission = t)
+#     session.add(i_ind_1)
+#     session.add(i_ind_2)
     
-    i_fail_1 = FailureInstance(failure=fail_1, transmission = t)
-    i_fail_2 = FailureInstance(failure=fail_2, transmission = t)
-    session.add(i_fail_1)
-    session.add(i_fail_2)
+#     i_fail_1 = FailureInstance(failure=fail_1, transmission = t)
+#     i_fail_2 = FailureInstance(failure=fail_2, transmission = t)
+#     session.add(i_fail_1)
+#     session.add(i_fail_2)
     
-    i_imp_1 = ImprovementInstance(improvement=imp_3, transmission=t, successful=True)
-    i_imp_2 = ImprovementInstance(improvement=imp_4, transmission=t, successful=False)
-    i_imp_3 = ImprovementInstance(improvement=imp_1, transmission=t, successful=False)
+#     i_imp_1 = ImprovementInstance(improvement=imp_3, transmission=t, successful=True)
+#     i_imp_2 = ImprovementInstance(improvement=imp_4, transmission=t, successful=False)
+#     i_imp_3 = ImprovementInstance(improvement=imp_1, transmission=t, successful=False)
 
-    session.add(i_imp_1)
-    session.add(i_imp_2)
-    session.add(i_imp_3)
+#     session.add(i_imp_1)
+#     session.add(i_imp_2)
+#     session.add(i_imp_3)
 
 
 

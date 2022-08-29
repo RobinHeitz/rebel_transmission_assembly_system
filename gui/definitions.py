@@ -10,6 +10,7 @@ font_normal = "Helvetica 15"
 font_small = "Helvetica 13"
 
 
+
 class KeyDefs(enum.Enum):
     """Represents all needed Keys as Enum-Class."""
 

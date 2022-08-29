@@ -213,3 +213,6 @@ class ImprovementInstance(Base):
     transmission_id = Column(Integer, ForeignKey("transmission.id"))
     successful = Column(Boolean)
 
+    def __str__(self):
+        return f"ImprovementInstance: Improvement-ID = {self.improvement_id} | Transmission-ID = {self.transmission_id}"
+

@@ -17,6 +17,8 @@ from gui.helper_functions import can_connection_functions
 from gui.pages import main_layout
 from gui.pages import get_headline_for_index, get_page_keys, get_page_key_for_index,get_assembly_step_for_page_index
 from gui.plotting import GraphPlotter
+import gui.improvement_window as improvement_window
+
 
 
 logFormatter = logging.Formatter("'%(asctime)s - %(message)s")
@@ -202,10 +204,10 @@ def list_improvement_selected(event, values):
 
 def btn_improvement_selection_clicked(event, values):
     logger.info("*"*10)
-    logger.info(f"btn_improvement_selection_clicked: {improvement_selection}")
-    data_controller.create_improvement_instance(improvement_selection)
+    _, imp_id = data_controller.create_improvement_instance(improvement_selection)
+    logger.info(f"btn_improvement_selection_clicked: {improvement_selection} | ImprovementInstance - ID = {imp_id}")
+    improvement_window.improvement_window(imp_id)
     
-
 
 ######################################################
 # FUNCTIONS FOR ENABLING / DISABLING NAVIGATION BUTTONS
