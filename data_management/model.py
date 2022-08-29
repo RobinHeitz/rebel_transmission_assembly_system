@@ -59,7 +59,7 @@ class Transmission(Base):
     
     assemblies = relationship("Assembly", backref=backref("transmission"))
     
-    indicator_instances = relationship("IndicatorInstance", backref=backref("transmission"))
+    # indicator_instances = relationship("IndicatorInstance", backref=backref("transmission"))
     failure_instances = relationship("FailureInstance", backref=backref("transmission"))
     improvement_instances = relationship("ImprovementInstance", backref=backref("transmission"))
     
@@ -108,20 +108,26 @@ class DataPoint(Base):
     measurement_id = Column(Integer, ForeignKey("measurement.id"))
 
 
-class IndicatorType(enum.Enum):
+# class IndicatorType(enum.Enum):
+#     overcurrent = 1
+#     calibration_both_tracks_values =  2
+
+#     not_measurable = 10
+
+class FailureType(enum.Enum):
     overcurrent = 1
     calibration_both_tracks_values =  2
 
     not_measurable = 10
 
 
-IndicatorFailureTable = Table(
-    'IndicatorFailureTable',
-    Base.metadata,
-    Column('id', Integer, primary_key=True),
-    Column('indicatorID', Integer, ForeignKey('indicator.id')),
-    Column('failureID', Integer, ForeignKey('failure.id')),
-)
+# IndicatorFailureTable = Table(
+#     'IndicatorFailureTable',
+#     Base.metadata,
+#     Column('id', Integer, primary_key=True),
+#     Column('indicatorID', Integer, ForeignKey('indicator.id')),
+#     Column('failureID', Integer, ForeignKey('failure.id')),
+# )
 
 
 FailureImprovementTable = Table(
@@ -133,27 +139,27 @@ FailureImprovementTable = Table(
 )
 
 
-class Indicator(Base):
-    __tablename__ = 'indicator'
-    id = Column(Integer, primary_key=True)
-    created_at = Column(DateTime, default=datetime.now)
-    description = Column(String)
-    assembly_step = Column(Enum(AssemblyStep))
+# class Indicator(Base):
+#     __tablename__ = 'indicator'
+#     id = Column(Integer, primary_key=True)
+#     created_at = Column(DateTime, default=datetime.now)
+#     description = Column(String)
+#     assembly_step = Column(Enum(AssemblyStep))
 
-    indicator_type = Column(Enum(IndicatorType), default = IndicatorType.not_measurable)
-    indicator_instances = relationship("IndicatorInstance", backref=backref("indicator"))
+#     indicator_type = Column(Enum(IndicatorType), default = IndicatorType.not_measurable)
+#     indicator_instances = relationship("IndicatorInstance", backref=backref("indicator"))
     
-    failures = relationship('Failure', secondary=IndicatorFailureTable, back_populates="indicators")
+#     failures = relationship('Failure', secondary=IndicatorFailureTable, back_populates="indicators")
 
-    def __repr__(self):
-        return f"Indicator-instance: {self.description}"
+#     def __repr__(self):
+#         return f"Indicator-instance: {self.description}"
 
 
-class IndicatorInstance(Base):
-    __tablename__ = "indicatorinstance"
-    id = Column(Integer, primary_key = True)
-    indicator_id = Column(Integer, ForeignKey("indicator.id"))
-    transmission_id = Column(Integer, ForeignKey("transmission.id"))
+# class IndicatorInstance(Base):
+#     __tablename__ = "indicatorinstance"
+#     id = Column(Integer, primary_key = True)
+#     indicator_id = Column(Integer, ForeignKey("indicator.id"))
+#     transmission_id = Column(Integer, ForeignKey("transmission.id"))
 
 
 
@@ -163,10 +169,11 @@ class Failure(Base):
     created_at = Column(DateTime, default=datetime.now)
     description = Column(String)
     assembly_step = Column(Enum(AssemblyStep))
-    
+
+    failure_type = Column(Enum(FailureType), default=FailureType.not_measurable)    
     failure_instances = relationship("FailureInstance", backref=backref("failure"))
     
-    indicators = relationship('Indicator', secondary=IndicatorFailureTable, back_populates="failures")
+    # indicators = relationship('Indicator', secondary=IndicatorFailureTable, back_populates="failures")
     improvements = relationship('Improvement', secondary=FailureImprovementTable, back_populates="failures")
 
     def __repr__(self):
