@@ -13,15 +13,19 @@ class Key(enum.Enum):
 
 
 
-def cancel_improvement_button_clicked(event, values, window:sg.Window,imp_id):
+# def cancel_improvement_button_clicked(event, values, window:sg.Window,imp_id):
+def cancel_improvement_button_clicked(*args):
     ...
+    event, values, window, imp_id = args
+    print("###"*5, *args)
+    print("cancel_improvement_button_clicked() | Imp_ID = ", imp_id)
     data_controller.delete_improvement_instance(imp_id)
     window.write_event_value("Exit", "No")
     
 
 
 def improvement_window(imp_id):
-    ...
+
     layout = [
         [sg.Text(f"{imp_id} / ID = {imp_id}")],
         [sg.B("Abbrechen", k=Key.CANCEL_IMPROVEMENT), ]

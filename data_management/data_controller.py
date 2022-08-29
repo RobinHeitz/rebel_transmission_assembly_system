@@ -209,6 +209,10 @@ def create_improvement_instance(session:Session, imp:Improvement):
     session.commit()
     return i, i.id
 
+@create_session
+def get_improvement_instance(session:Session, imp_id):
+    return session.query(ImprovementInstance).get(imp_id)
+
 
 @create_session
 def get_improvements_for_failure(session:Session, fail:Failure):
