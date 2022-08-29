@@ -178,6 +178,8 @@ class Failure(Base):
 
     def __repr__(self):
         return f"Failure-instance: {self.description}"
+    def __str__(self):
+        return self.description
 
 
 class FailureInstance(Base):
@@ -199,6 +201,9 @@ class Improvement(Base):
 
     def __repr__(self):
         return f"Improvement-instance: {self.description}"
+
+    def __str__(self):
+        return self.description
 
 
 class ImprovementInstance(Base):

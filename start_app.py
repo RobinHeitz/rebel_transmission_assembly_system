@@ -160,77 +160,48 @@ def predict_failure(measurement: Measurement):
 
     # global combo_indicators
     assembly_step = get_assembly_step_for_page_index(current_page_index)
+    failures = data_controller.get_failures_list_for_assembly_step(assembly_step)
 
-    # indicators = data_controller.get_indicators_for_assembly_step(assembly_step)
-    # limit = current_limits.get(assembly_step.name)    
+    f = failures[0]
+    global failure_selection 
+    failure_selection = f
 
-    # logger.info(f"Indicators = {indicators} / len() = {len(indicators)} / limit_current = {limit}")
+    window[KeyDefs.FRAME_FAILURE_DETECTION].update(visible=True)
+    window[KeyDefs.COMBO_FAILURE_SELECT].update(values = failures, value=f)
 
-    # if measurement.max_current > limit:
-    #     logger.info("Predict overcurrent")
-    #     selected_indicator = data_controller.get_indicators_for_assembly_step_and_IndicatorType(assembly_step, IndicatorType.overcurrent)[0]
 
-    # else:
-    #     logger.info("Predict: Indicator is not measurable")
-    #     indicators = data_controller.get_indicators_for_assembly_step_and_IndicatorType(assembly_step, IndicatorType.not_measurable)
-    #     selected_indicator = random.choice(indicators)
+### Selected Failure
+def combo_failure_selection(event, values):
+    f = values[event]
+    logger.info("*"*10)
+    logger.info(f"combo_failure_selection(): {f}")
+    global failure_selection
+    failure_selection = f
     
-    # set_combo_current_selection(selected_indicator)
-   
-    # window[KeyDefs.COMBO_INDICATOR_SELECT].update(values=[i.description for i in indicators], value=selected_indicator.description)
-    # window[KeyDefs.FRAME_INDICATOR].update(visible=True)
 
-
-
-# def set_combo_current_selection(indicator:Indicator):
-#     global combo_selected_indicator
-#     if type(indicator) == str:
-#         ...
-#         assembly_step = get_assembly_step_for_page_index(current_page_index)
-#         indicator = data_controller.get_indicator_for_description_and_assembly_step(indicator, assembly_step)
-#     combo_selected_indicator = indicator
-
-
-# def display_failure_objects(event, values, *args):
-#     """display_failure_objects() : Executed by Button-click."""
-#     logger.info(f"Currently selected Indicator: {combo_selected_indicator}")
-
-#     window[KeyDefs.FRAME_POSSIBLE_FAILURES].update(visible=True)
-#     failures = data_controller.get_failures_list_from_indicator(combo_selected_indicator)
-
-#     if len(failures) > 0:
-#         window[KeyDefs.LISTBOX_POSSIBLE_FAILURES].update([f.description for f in failures])
-
-
-
-    # data_controller.create_failure(combo_selected_failure_type)
-
-def set_listbox_current_selection(failure):
-    logger.info(f"current selected failre = {failure}")
-    if type(failure) == list:
-        failure = failure[0]
-    
-    if type(failure) == Failure:
-        # failure = failure.description
-        ...
-    elif type(failure) == str:
-        ...
-        assembly_step = get_assembly_step_for_page_index(current_page_index)
-        failure = data_controller.get_failure_for_description_and_assembly_step(failure, assembly_step)
-
-    global listbox_selected_failure
-    listbox_selected_failure = failure
-
-
-def failure_selected(event, values, *args):
-    """failure_selected() | executed by button click 'Fehler beheben'"""
-    logger.info(f"Failure selected: {listbox_selected_failure}")
-
+def btn_failure_selection_clicked(event, values):
+    logger.info("*"*10)
+    logger.info(f"btn_failure_selection_clicked: {failure_selection}")
+    improvements = data_controller.get_improvements_for_failure(failure_selection)
+    window[KeyDefs.LISTBOX_POSSIBLE_IMPROVEMENTS].update(improvements)
     window[KeyDefs.FRAME_POSSIBLE_IMPROVEMENTS].update(visible=True)
 
-    improvements = data_controller.get_improvements_for_failure(listbox_selected_failure)
 
-    window[KeyDefs.LISTBOX_POSSIBLE_IMPROVEMENTS].update([i.description for i in improvements])
+# selected improvement from list
+def list_improvement_selected(event, values):
+    logger.info("*"*10)
+    selected_improvement = values[event][0]
+    logger.info(f"list_improvement_selected: {selected_improvement}")
+
+    global improvement_selection
+    improvement_selection = selected_improvement
+    
+
+def btn_improvement_selection_clicked(event, values):
+    logger.info("*"*10)
+    logger.info(f"btn_improvement_selection_clicked: {improvement_selection}")
+
+    
 
 
 ######################################################
@@ -330,8 +301,9 @@ if __name__ == "__main__":
 
     current_page_index = 0
 
-    combo_selected_indicator = None
-    listbox_selected_failure = None
+    failure_selection = None
+    improvement_selection = None
+
 
     plotters = {
         l:GraphPlotter(window[(KeyDefs.CANVAS_GRAPH_PLOTTING, l)]) for l in get_page_keys()[1:]
@@ -371,15 +343,12 @@ if __name__ == "__main__":
         KeyDefs.UPDATE_GRAPH: (update_graph, dict()),
         KeyDefs.FINISHED_VELO_STOP_GRAPH_UPDATING: (stop_graph_update, dict()),
 
-        KeyDefs.BTN_FAILURE_DETECTION: (lambda *args: print("Button FAILURE DETECTION PRESSED")),
-
-        #Failure Detection
-        # KeyDefs.BTN_INDICATOR_DETECTION: (display_failure_objects, dict()),
-        # KeyDefs.COMBO_INDICATOR_SELECT: (lambda event, values: set_combo_current_selection(values[event]), dict()),
-
-        # KeyDefs.LISTBOX_POSSIBLE_FAILURES: (lambda *args:None window[KeyDefs.LISTBOX_POSSIBLE_FAILURES].update(["Var1", "Var2", "Var3"]), dict()),
-        # KeyDefs.LISTBOX_POSSIBLE_FAILURES: (lambda event, values: set_listbox_current_selection(values[event]), dict()),
-        # KeyDefs.BTN_SELECT_FAILURE: (failure_selected ,dict()),
+        KeyDefs.COMBO_FAILURE_SELECT: (combo_failure_selection, dict()),
+        KeyDefs.BTN_FAILURE_DETECTION: (btn_failure_selection_clicked, dict()),
+        
+        
+        KeyDefs.LISTBOX_POSSIBLE_IMPROVEMENTS: (list_improvement_selected, dict()),
+        KeyDefs.BTN_SELECT_IMPROVEMENT: (btn_improvement_selection_clicked, dict()),
 
 
 

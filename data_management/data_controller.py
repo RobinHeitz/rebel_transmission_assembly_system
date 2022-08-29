@@ -158,20 +158,20 @@ def create_data_point_to_current_measurement(current, timestamp):
 ### Failure ###
 ###############
 
-@create_session
-def get_failure_for_description_and_assembly_step(session:Session, description:str, assembly_step:AssemblyStep):
-    query_result = session.query(Failure).filter_by(description = description, assembly_step = assembly_step)
-    if len(query_result.all()) > 1:
-        raise Exception("This should never be greater 1!")
-    return query_result.first()
+# @create_session
+# def get_failure_for_description_and_assembly_step(session:Session, description:str, assembly_step:AssemblyStep):
+#     query_result = session.query(Failure).filter_by(description = description, assembly_step = assembly_step)
+#     if len(query_result.all()) > 1:
+#         raise Exception("This should never be greater 1!")
+#     return query_result.first()
 
 
 
-@create_session
-def create_failure(session:Session, assembly_step:AssemblyStep) -> Failure:
-    ...
+# @create_session
+# def create_failure(session:Session, assembly_step:AssemblyStep) -> Failure:
+#     ...
 
-    f = Failure()
+#     f = Failure()
 
 
 # @create_session
@@ -182,6 +182,13 @@ def create_failure(session:Session, assembly_step:AssemblyStep) -> Failure:
 #         return []
 #     failures = indicator.failures
 #     return failures
+
+@create_session
+def get_failures_list_for_assembly_step(session:Session, step:AssemblyStep):
+    failures = session.query(Failure).filter_by(assembly_step = step).all()
+    if failures == None:
+        return []
+    return failures
 
 
 
@@ -198,3 +205,5 @@ def get_improvements_for_failure(session:Session, fail:Failure):
     
     improvements = failure.improvements
     return improvements
+
+    

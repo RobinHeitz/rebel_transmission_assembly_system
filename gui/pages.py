@@ -52,18 +52,18 @@ layout_assembly_step_1 = [
                 [
                     sg.T("Fehler: "), 
                     sg.Combo(["A", "B", "C"], default_value="B", s=(50,25), enable_events=True, readonly=True, k=KeyDefs.COMBO_FAILURE_SELECT),
-                    sg.B("Ursachen anzeigen", k=KeyDefs.BTN_FAILURE_DETECTION),
+                    sg.B("Fehler auswählen", k=KeyDefs.BTN_FAILURE_DETECTION),
                     ],
                 
             ], visible=False, k=KeyDefs.FRAME_FAILURE_DETECTION) ],
 
-            # [sg.Frame("Behebung:", layout=[
-            #     [
-            #         sg.T("Ursache:"),
-            #         sg.Listbox([], size=(50,8), enable_events=True, k=KeyDefs.LISTBOX_POSSIBLE_FAILURES, ),
-            #         sg.B("Fehler beheben", enable_events=True ,k=KeyDefs.BTN_SELECT_FAILURE)
-            #         ],
-            # ], visible=False, k=KeyDefs.FRAME_POSSIBLE_FAILURES)],
+            [sg.Frame("Behebungsmaßnahmen:", layout=[
+                [
+                    sg.T("Maßnahmen:"),
+                    sg.Listbox([], size=(50,8), enable_events=True, k=KeyDefs.LISTBOX_POSSIBLE_IMPROVEMENTS, ),
+                    sg.B("Fehler beheben", enable_events=True ,k=KeyDefs.BTN_SELECT_FAILURE)
+                    ],
+            ], visible=False, k=KeyDefs.FRAME_POSSIBLE_IMPROVEMENTS)],
            
             # [sg.Frame("Mögliche Fehlerbehebungen:", layout=[
             #     [
