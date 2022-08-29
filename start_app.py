@@ -66,6 +66,12 @@ def perform_software_update_thread(window, controller):
     window.write_event_value(KeyDefs.SOFTWARE_UPDATE_DONE, None)
     
 
+def check_moveability(event, values):
+    ...
+    logger.info("check_moveability button clicked")
+    controller.reach_moveability()
+
+
 # VELOCITY MODE
 
 def start_velocity_mode(event, values, controller:RebelAxisController):
@@ -189,9 +195,9 @@ def set_combo_current_selection(indicator:Indicator):
 
 
 def display_failure_objects(event, values, *args):
-    """Execited by Button-click."""
+    """display_failure_objects() : Executed by Button-click."""
     ...
-    print("Create Failure", combo_selected_indicator)
+    print("Currently selected Indicator", combo_selected_indicator)
 
     window[KeyDefs.FRAME_POSSIBLE_FAILURES].update(visible=True)
     failures = data_controller.get_failures_list_from_indicator(combo_selected_indicator)
@@ -203,8 +209,9 @@ def display_failure_objects(event, values, *args):
 
     # data_controller.create_failure(combo_selected_failure_type)
 
-
-
+def failure_selected(event, values, *args):
+    ...
+    print("Failure selected")
 
 ######################################################
 # FUNCTIONS FOR ENABLING / DISABLING NAVIGATION BUTTONS
@@ -284,7 +291,7 @@ def _disable_enable_nav_buttons():
 #################
 
 if __name__ == "__main__":
-    window = sg.Window("ReBeL Getriebe Montage & Kalibrierung", main_layout, size=(1200,1000), finalize=True)
+    window = sg.Window("ReBeL Getriebe Montage & Kalibrierung", main_layout, size=(1200,1000), finalize=True, location=(0,0))
     controller = None
     try:
         controller = RebelAxisController(verbose=False)
@@ -329,6 +336,8 @@ if __name__ == "__main__":
         KeyDefs.CHECKBOX_HAS_ENCODER: (lambda event, values: transmission_config.set_encoder_flag(values[event]), dict()),
         KeyDefs.CHECKBOX_HAS_BRAKE: (lambda event, values: transmission_config.set_brake_flag(values[event]), dict()),
         
+        KeyDefs.BTN_CHECK_MOVEABILITY: (check_moveability, dict()),
+
         (KeyDefs.BTN_START_VELO_MODE, LayoutPageKeys.layout_assembly_step_1_page): (start_velocity_mode, dict(controller=controller)),
         (KeyDefs.BTN_STOP_VELO_MODE, LayoutPageKeys.layout_assembly_step_1_page): (stop_velocity_mode, dict(controller=controller)),
         
@@ -347,6 +356,7 @@ if __name__ == "__main__":
 
         # KeyDefs.LISTBOX_POSSIBLE_FAILURES: (lambda *args:None window[KeyDefs.LISTBOX_POSSIBLE_FAILURES].update(["Var1", "Var2", "Var3"]), dict()),
         KeyDefs.LISTBOX_POSSIBLE_FAILURES: (lambda *args:None, dict()),
+        KeyDefs.BTN_SELECT_FAILURE: (failure_selected ,dict()),
 
 
 

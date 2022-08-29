@@ -166,6 +166,22 @@ class RebelAxisController:
     ####################################################
     # Movement directly through velocity CMDs / NO QUEUE
     ####################################################
+
+    def reach_moveability(self):
+        ...
+        can_move = self.can_move()
+        logger.info(f"reach_moveability() | can_move: {can_move}")
+        max_reset = 5
+        reset_counter = 0
+
+        while not self.can_move() and reset_counter < max_reset:
+            self.cmd_reset_errors()
+            self.do_cycle()
+            self.cmd_enable_motor()
+            self.do_cycle()
+            reset_counter += 1
+            self.cmd_velocity_mode(0)
+
     
     def start_movement_velocity_mode(self, velocity, duration, invoke_stop_function):
         """Starts sending movement cmds with velocity-type. After duration [sec], the invoke_stop_function is called.

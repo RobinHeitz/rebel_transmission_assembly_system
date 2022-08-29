@@ -30,6 +30,9 @@ layout_config_page = [
         sg.ProgressBar(max_value=10, size=(20,20), k=KeyDefs.PROGRESSBAR_SOFTWARE_UPDATE),
         sg.Text("", k=KeyDefs.TEXT_SOFTWARE_UPDATE_STATUS_TEXT, font=font_normal),
         ],
+    [
+        sg.B("Bewegung testen", k=KeyDefs.BTN_CHECK_MOVEABILITY, enable_events=True, font=font_normal, size=(20,1))
+    ],
     ]
 
 
@@ -57,7 +60,7 @@ layout_assembly_step_1 = [
                 [
                     sg.T("Ursache:"),
                     sg.Listbox([], size=(50,8), enable_events=True, k=KeyDefs.LISTBOX_POSSIBLE_FAILURES, ),
-                    sg.B("Fehler beheben")
+                    sg.B("Fehler beheben", enable_events=True ,k=KeyDefs.BTN_SELECT_FAILURE)
                     ],
             ], visible=False, k=KeyDefs.FRAME_POSSIBLE_FAILURES)],
 
