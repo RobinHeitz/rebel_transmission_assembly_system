@@ -1,3 +1,4 @@
+from cmath import exp
 from sqlalchemy.orm.session import Session
 from sqlalchemy.orm import sessionmaker, scoped_session
 import sqlalchemy as db
@@ -5,6 +6,9 @@ import sqlalchemy as db
 from data_management.model import Transmission, TransmissionConfiguration
 from data_management.model import Measurement, Assembly, AssemblyStep, DataPoint
 from data_management.model import Failure, FailureInstance, Improvement, ImprovementInstance
+
+import traceback
+import threading
 
 from typing import List, Tuple
 
@@ -16,9 +20,34 @@ current_transmission = None
 
 current_assemblies = dict()
 
+# testing:
+
+# factory = sessionmaker(bind=engine, expire_on_commit=False)
+# session = scoped_session(factory)()
+
+sessions = {}
+
 ######################
 #### helper functions
 ######################
+
+def  get_session() -> Session:
+    ...
+    thread_id = threading.get_ident()
+
+    try:
+        session = sessions[thread_id]
+        return session
+    except KeyError:
+        factory = sessionmaker(bind=engine, expire_on_commit=False)
+        session = scoped_session(factory)()
+
+        sessions[thread_id] = session
+        return session
+
+
+
+
 
 def create_session(f):
     def wrap(*args, **kwargs):
@@ -37,8 +66,9 @@ def create_session(f):
 ###  Transmission ###
 #####################
 
-@create_session
-def create_transmission(session:Session, config:TransmissionConfiguration) -> Transmission:
+# @create_session
+def create_transmission(config:TransmissionConfiguration) -> Transmission:
+    session = get_session()
     if config == None:
         raise ValueError("Config shouldn't be None if Transmission gets created.")
 
@@ -53,7 +83,8 @@ def create_transmission(session:Session, config:TransmissionConfiguration) -> Tr
     return t
 
 
-def get_current_transmission(session:Session):
+def get_current_transmission():
+    session = get_session()
     return session.query(Transmission).order_by(Transmission.id.desc()).first()
 
 
@@ -62,9 +93,9 @@ def get_current_transmission(session:Session):
 ################
 
 
-@create_session
-def get_assembly_from_current_transmission(session:Session, step:AssemblyStep) -> Assembly:
+def get_assembly_from_current_transmission(step:AssemblyStep) -> Assembly:
     """Returns assembly (filtered by param: Step) from current transmission."""
+    session = get_session()
     t = session.query(Transmission).order_by(Transmission.id.desc()).first()
     return session.query(Assembly).filter_by(transmission=t, assembly_step=step).first()
 
@@ -73,13 +104,13 @@ def get_assembly_from_current_transmission(session:Session, step:AssemblyStep) -
 ### Measurement ###
 ###################
 
-@create_session
-def get_current_measurement_instance(session:Session) -> Measurement:
+def get_current_measurement_instance() -> Measurement:
+    session = get_session()
     return session.query(Measurement).order_by(Measurement.id.desc()).first()
 
 
-@create_session
-def create_measurement(session:Session, assembly:Assembly) -> Measurement:
+def create_measurement(assembly:Assembly) -> Measurement:
+    session = get_session()
     new_measure = Measurement(assembly = assembly)
     
     session.add(new_measure)
@@ -88,8 +119,8 @@ def create_measurement(session:Session, assembly:Assembly) -> Measurement:
     return new_measure
 
 
-@create_session
-def update_current_measurement_fields(session:Session):
+def update_current_measurement_fields():
+    session = get_session()
     m = session.query(Measurement).order_by(Measurement.id.desc()).first()
     datapoints_ = session.query(DataPoint).filter_by(measurement=m)
     
@@ -100,13 +131,17 @@ def update_current_measurement_fields(session:Session):
     session.commit()
 
 
-@create_session
-def get_plot_data_for_current_measurement(session:Session)-> List[Tuple]:
+def get_plot_data_for_current_measurement()-> List[Tuple]:
     """Returns list of (timestamp, current) of current measurement for plotting."""
-    m = get_current_measurement_instance()
+    session = get_session()
+    try:
+        
+        m = get_current_measurement_instance()
 
-    datapoints = session.query(DataPoint).filter_by(measurement=m)
-    return [(d.timestamp, d.current) for d in datapoints]
+        datapoints = session.query(DataPoint).filter_by(measurement=m)
+        return [(d.timestamp, d.current) for d in datapoints]
+    except Exception as e:
+        print(traceback.format_exc(e))
 
 
 ##################
@@ -114,8 +149,8 @@ def get_plot_data_for_current_measurement(session:Session)-> List[Tuple]:
 ##################
 
 
-@create_session
-def create_data_point(session:Session, current, timestamp, measurement:Measurement):
+def create_data_point(current, timestamp, measurement:Measurement):
+    session = get_session()
    
     dp = DataPoint(current = current, timestamp = timestamp, measurement = measurement)
     session.add(dp)
@@ -125,6 +160,7 @@ def create_data_point(session:Session, current, timestamp, measurement:Measureme
 
 
 def create_data_point_to_current_measurement(current, timestamp):
+    session = get_session()
     return create_data_point(current, timestamp, get_current_measurement_instance())
 
 
@@ -183,16 +219,16 @@ def create_data_point_to_current_measurement(current, timestamp):
 #     failures = indicator.failures
 #     return failures
 
-@create_session
-def get_failures_list_for_assembly_step(session:Session, step:AssemblyStep):
+def get_failures_list_for_assembly_step(step:AssemblyStep):
+    session = get_session()
     failures = session.query(Failure).filter_by(assembly_step = step).all()
     if failures == None:
         return []
     return failures
 
-@create_session
-def create_failure_instance(session:Session, failure:Failure):
-    f = FailureInstance(failure_id=failure.id, transmission = get_current_transmission(session))
+def create_failure_instance(failure:Failure):
+    session = get_session()
+    f = FailureInstance(failure_id=failure.id, transmission = get_current_transmission())
     session.add(f)
     session.commit()
     return f
@@ -202,20 +238,20 @@ def create_failure_instance(session:Session, failure:Failure):
 ### IMPROVEMENTS ###
 ####################
 
-@create_session
-def create_improvement_instance(session:Session, imp:Improvement):
-    i = ImprovementInstance(improvement_id=imp.id, transmission=get_current_transmission(session))
+def create_improvement_instance(imp:Improvement):
+    session = get_session()
+    i = ImprovementInstance(improvement_id=imp.id, transmission=get_current_transmission())
     session.add(i)
     session.commit()
     return i, i.id
 
-@create_session
-def get_improvement_instance(session:Session, imp_id):
+def get_improvement_instance(imp_id):
+    session = get_session()
     return session.query(ImprovementInstance).get(imp_id)
 
 
-@create_session
-def get_improvements_for_failure(session:Session, fail:Failure):
+def get_improvements_for_failure(fail:Failure):
+    session = get_session()
     failure = session.query(Failure).get(fail.id)
 
     if failure == None:
@@ -224,8 +260,9 @@ def get_improvements_for_failure(session:Session, fail:Failure):
     improvements = failure.improvements
     return improvements
 
-@create_session
-def delete_improvement_instance(session:Session, imp_id):
+def delete_improvement_instance(imp_id):
+    session = get_session()
+
     imp = session.query(ImprovementInstance).get(imp_id)
     session.delete(imp)
     session.commit()
