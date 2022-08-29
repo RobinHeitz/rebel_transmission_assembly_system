@@ -158,6 +158,7 @@ def predict_indicator(measurement: Measurement):
     logger.info("#"*10)
     logger.info("predict_indicator")
 
+    global combo_indicators
     assembly_step = get_assembly_step_for_page_index(current_page_index)
 
     indicators = data_controller.get_indicators_for_assembly_step(assembly_step)
@@ -166,17 +167,14 @@ def predict_indicator(measurement: Measurement):
     logger.info(f"Indicators = {indicators} / len() = {len(indicators)} / limit_current = {limit}")
 
     if measurement.max_current > limit:
-        ...
         logger.info("Predict overcurrent")
         selected_indicator = data_controller.get_indicators_for_assembly_step_and_IndicatorType(assembly_step, IndicatorType.overcurrent)[0]
 
-    
     else:
         logger.info("Predict: Indicator is not measurable")
         indicators = data_controller.get_indicators_for_assembly_step_and_IndicatorType(assembly_step, IndicatorType.not_measurable)
         selected_indicator = random.choice(indicators)
-
-
+    
     set_combo_current_selection(selected_indicator)
    
     window[KeyDefs.COMBO_INDICATOR_SELECT].update(values=[i.description for i in indicators], value=selected_indicator.description)
@@ -190,7 +188,6 @@ def set_combo_current_selection(indicator:Indicator):
         ...
         assembly_step = get_assembly_step_for_page_index(current_page_index)
         indicator = data_controller.get_indicator_for_description_and_assembly_step(indicator, assembly_step)
-
     combo_selected_indicator = indicator
 
 
@@ -209,9 +206,23 @@ def display_failure_objects(event, values, *args):
 
     # data_controller.create_failure(combo_selected_failure_type)
 
+def set_listbox_current_selection(failure):
+    print("current selected failre = ", failure)
+    if type(failure) == list:
+        failure = failure[0]
+    
+    if type(failure) == Failure:
+        failure = failure.description
+    
+    global listbox_selected_failure
+    listbox_selected_failure = failure
+
+
 def failure_selected(event, values, *args):
+    """failure_selected() | executed by button click 'Fehler beheben'"""
     ...
-    print("Failure selected")
+    print("Failure selected: ", listbox_selected_failure)
+
 
 ######################################################
 # FUNCTIONS FOR ENABLING / DISABLING NAVIGATION BUTTONS
@@ -311,6 +322,7 @@ if __name__ == "__main__":
     current_page_index = 0
 
     combo_selected_indicator = None
+    listbox_selected_failure = None
 
     plotters = {
         l:GraphPlotter(window[(KeyDefs.CANVAS_GRAPH_PLOTTING, l)]) for l in get_page_keys()[1:]
@@ -355,7 +367,7 @@ if __name__ == "__main__":
         KeyDefs.COMBO_INDICATOR_SELECT: (lambda event, values: set_combo_current_selection(values[event]), dict()),
 
         # KeyDefs.LISTBOX_POSSIBLE_FAILURES: (lambda *args:None window[KeyDefs.LISTBOX_POSSIBLE_FAILURES].update(["Var1", "Var2", "Var3"]), dict()),
-        KeyDefs.LISTBOX_POSSIBLE_FAILURES: (lambda *args:None, dict()),
+        KeyDefs.LISTBOX_POSSIBLE_FAILURES: (lambda event, values: set_listbox_current_selection(values[event]), dict()),
         KeyDefs.BTN_SELECT_FAILURE: (failure_selected ,dict()),
 
 
