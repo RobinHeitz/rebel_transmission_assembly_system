@@ -2,8 +2,9 @@ from sqlalchemy.orm.session import Session
 from sqlalchemy.orm import sessionmaker, scoped_session
 import sqlalchemy as db
 
-from data_management.model import Failure, Indicator, IndicatorType, Transmission, TransmissionConfiguration
+from data_management.model import Transmission, TransmissionConfiguration
 from data_management.model import Measurement, Assembly, AssemblyStep, DataPoint
+from data_management.model import Failure, FailureInstance, Improvement, ImprovementInstance
 
 from typing import List, Tuple
 
@@ -133,22 +134,22 @@ def create_data_point_to_current_measurement(current, timestamp):
 ### Indicator ###
 #################
 
-@create_session
-def get_indicator_for_description_and_assembly_step(session:Session, description:str, assembly_step:AssemblyStep):
-    query_result = session.query(Indicator).filter_by(description = description, assembly_step = assembly_step)
-    if len(query_result.all()) > 1:
-        raise Exception("This should never be greater 1!")
-    return query_result.first()
+# @create_session
+# def get_indicator_for_description_and_assembly_step(session:Session, description:str, assembly_step:AssemblyStep):
+#     query_result = session.query(Indicator).filter_by(description = description, assembly_step = assembly_step)
+#     if len(query_result.all()) > 1:
+#         raise Exception("This should never be greater 1!")
+#     return query_result.first()
 
 
 
-@create_session
-def get_indicators_for_assembly_step(session:Session, assembly_step:AssemblyStep):
-    return  session.query(Indicator).filter_by(assembly_step = assembly_step).all()
+# @create_session
+# def get_indicators_for_assembly_step(session:Session, assembly_step:AssemblyStep):
+#     return  session.query(Indicator).filter_by(assembly_step = assembly_step).all()
 
-@create_session
-def get_indicators_for_assembly_step_and_IndicatorType(session:Session, assembly_step:AssemblyStep, indicator_type:IndicatorType):
-    return session.query(Indicator).filter_by(assembly_step = assembly_step, indicator_type = indicator_type).all()
+# @create_session
+# def get_indicators_for_assembly_step_and_IndicatorType(session:Session, assembly_step:AssemblyStep, indicator_type:IndicatorType):
+#     return session.query(Indicator).filter_by(assembly_step = assembly_step, indicator_type = indicator_type).all()
 
 
 
@@ -173,14 +174,14 @@ def create_failure(session:Session, assembly_step:AssemblyStep) -> Failure:
     f = Failure()
 
 
-@create_session
-def get_failures_list_from_indicator(session:Session, indicator:Indicator):
-    indicator = session.query(Indicator).get(indicator.id)
+# @create_session
+# def get_failures_list_from_indicator(session:Session, indicator:Indicator):
+#     indicator = session.query(Indicator).get(indicator.id)
 
-    if indicator == None:
-        return []
-    failures = indicator.failures
-    return failures
+#     if indicator == None:
+#         return []
+#     failures = indicator.failures
+#     return failures
 
 
 

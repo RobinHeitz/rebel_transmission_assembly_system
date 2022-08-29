@@ -4,7 +4,7 @@ import traceback
 import PySimpleGUI as sg
 import logging, time, threading
 
-from data_management.model import AssemblyStep, Failure, Indicator, IndicatorType, Measurement
+from data_management.model import AssemblyStep, Failure, Measurement
 from data_management import data_controller, data_transformation
 
 from hw_interface.motor_controller import RebelAxisController
@@ -148,58 +148,58 @@ def stop_graph_update(event, values):
 
     text_field.update(f"Min current: {min_val} ||| Max. current: {max_val} || Mean current: {mean_val}")
 
-    predict_indicator(measurement)
+    predict_failure(measurement)
 
 
 
-def predict_indicator(measurement: Measurement):
+def predict_failure(measurement: Measurement):
     """Tries to predict < Indicator > (e.g. Overcurrent) based on currently measurement taken. Gets called after graph updating has stopped. """
 
     logger.info("#"*10)
-    logger.info("predict_indicator")
+    logger.info("predict_failure")
 
-    global combo_indicators
+    # global combo_indicators
     assembly_step = get_assembly_step_for_page_index(current_page_index)
 
-    indicators = data_controller.get_indicators_for_assembly_step(assembly_step)
-    limit = current_limits.get(assembly_step.name)    
+    # indicators = data_controller.get_indicators_for_assembly_step(assembly_step)
+    # limit = current_limits.get(assembly_step.name)    
 
-    logger.info(f"Indicators = {indicators} / len() = {len(indicators)} / limit_current = {limit}")
+    # logger.info(f"Indicators = {indicators} / len() = {len(indicators)} / limit_current = {limit}")
 
-    if measurement.max_current > limit:
-        logger.info("Predict overcurrent")
-        selected_indicator = data_controller.get_indicators_for_assembly_step_and_IndicatorType(assembly_step, IndicatorType.overcurrent)[0]
+    # if measurement.max_current > limit:
+    #     logger.info("Predict overcurrent")
+    #     selected_indicator = data_controller.get_indicators_for_assembly_step_and_IndicatorType(assembly_step, IndicatorType.overcurrent)[0]
 
-    else:
-        logger.info("Predict: Indicator is not measurable")
-        indicators = data_controller.get_indicators_for_assembly_step_and_IndicatorType(assembly_step, IndicatorType.not_measurable)
-        selected_indicator = random.choice(indicators)
+    # else:
+    #     logger.info("Predict: Indicator is not measurable")
+    #     indicators = data_controller.get_indicators_for_assembly_step_and_IndicatorType(assembly_step, IndicatorType.not_measurable)
+    #     selected_indicator = random.choice(indicators)
     
-    set_combo_current_selection(selected_indicator)
+    # set_combo_current_selection(selected_indicator)
    
-    window[KeyDefs.COMBO_INDICATOR_SELECT].update(values=[i.description for i in indicators], value=selected_indicator.description)
-    window[KeyDefs.FRAME_INDICATOR].update(visible=True)
+    # window[KeyDefs.COMBO_INDICATOR_SELECT].update(values=[i.description for i in indicators], value=selected_indicator.description)
+    # window[KeyDefs.FRAME_INDICATOR].update(visible=True)
 
 
 
-def set_combo_current_selection(indicator:Indicator):
-    global combo_selected_indicator
-    if type(indicator) == str:
-        ...
-        assembly_step = get_assembly_step_for_page_index(current_page_index)
-        indicator = data_controller.get_indicator_for_description_and_assembly_step(indicator, assembly_step)
-    combo_selected_indicator = indicator
+# def set_combo_current_selection(indicator:Indicator):
+#     global combo_selected_indicator
+#     if type(indicator) == str:
+#         ...
+#         assembly_step = get_assembly_step_for_page_index(current_page_index)
+#         indicator = data_controller.get_indicator_for_description_and_assembly_step(indicator, assembly_step)
+#     combo_selected_indicator = indicator
 
 
-def display_failure_objects(event, values, *args):
-    """display_failure_objects() : Executed by Button-click."""
-    logger.info(f"Currently selected Indicator: {combo_selected_indicator}")
+# def display_failure_objects(event, values, *args):
+#     """display_failure_objects() : Executed by Button-click."""
+#     logger.info(f"Currently selected Indicator: {combo_selected_indicator}")
 
-    window[KeyDefs.FRAME_POSSIBLE_FAILURES].update(visible=True)
-    failures = data_controller.get_failures_list_from_indicator(combo_selected_indicator)
+#     window[KeyDefs.FRAME_POSSIBLE_FAILURES].update(visible=True)
+#     failures = data_controller.get_failures_list_from_indicator(combo_selected_indicator)
 
-    if len(failures) > 0:
-        window[KeyDefs.LISTBOX_POSSIBLE_FAILURES].update([f.description for f in failures])
+#     if len(failures) > 0:
+#         window[KeyDefs.LISTBOX_POSSIBLE_FAILURES].update([f.description for f in failures])
 
 
 
@@ -371,13 +371,15 @@ if __name__ == "__main__":
         KeyDefs.UPDATE_GRAPH: (update_graph, dict()),
         KeyDefs.FINISHED_VELO_STOP_GRAPH_UPDATING: (stop_graph_update, dict()),
 
+        KeyDefs.BTN_FAILURE_DETECTION: (lambda *args: print("Button FAILURE DETECTION PRESSED")),
+
         #Failure Detection
-        KeyDefs.BTN_INDICATOR_DETECTION: (display_failure_objects, dict()),
-        KeyDefs.COMBO_INDICATOR_SELECT: (lambda event, values: set_combo_current_selection(values[event]), dict()),
+        # KeyDefs.BTN_INDICATOR_DETECTION: (display_failure_objects, dict()),
+        # KeyDefs.COMBO_INDICATOR_SELECT: (lambda event, values: set_combo_current_selection(values[event]), dict()),
 
         # KeyDefs.LISTBOX_POSSIBLE_FAILURES: (lambda *args:None window[KeyDefs.LISTBOX_POSSIBLE_FAILURES].update(["Var1", "Var2", "Var3"]), dict()),
-        KeyDefs.LISTBOX_POSSIBLE_FAILURES: (lambda event, values: set_listbox_current_selection(values[event]), dict()),
-        KeyDefs.BTN_SELECT_FAILURE: (failure_selected ,dict()),
+        # KeyDefs.LISTBOX_POSSIBLE_FAILURES: (lambda event, values: set_listbox_current_selection(values[event]), dict()),
+        # KeyDefs.BTN_SELECT_FAILURE: (failure_selected ,dict()),
 
 
 

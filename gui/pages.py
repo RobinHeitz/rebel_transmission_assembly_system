@@ -51,27 +51,27 @@ layout_assembly_step_1 = [
             [sg.Frame("Es wurde ein Fehler erkannt:",layout=[
                 [
                     sg.T("Fehler: "), 
-                    sg.Combo(["A", "B", "C"], default_value="B", s=(50,25), enable_events=True, readonly=True, k=KeyDefs.COMBO_INDICATOR_SELECT),
-                    sg.B("Ursachen anzeigen", k=KeyDefs.BTN_INDICATOR_DETECTION),
+                    sg.Combo(["A", "B", "C"], default_value="B", s=(50,25), enable_events=True, readonly=True, k=KeyDefs.COMBO_FAILURE_SELECT),
+                    sg.B("Ursachen anzeigen", k=KeyDefs.BTN_FAILURE_DETECTION),
                     ],
                 
-            ], visible=False, k=KeyDefs.FRAME_INDICATOR) ],
+            ], visible=False, k=KeyDefs.FRAME_FAILURE_DETECTION) ],
 
-            [sg.Frame("Fehlerursache auswählen:", layout=[
-                [
-                    sg.T("Ursache:"),
-                    sg.Listbox([], size=(50,8), enable_events=True, k=KeyDefs.LISTBOX_POSSIBLE_FAILURES, ),
-                    sg.B("Fehler beheben", enable_events=True ,k=KeyDefs.BTN_SELECT_FAILURE)
-                    ],
-            ], visible=False, k=KeyDefs.FRAME_POSSIBLE_FAILURES)],
+            # [sg.Frame("Behebung:", layout=[
+            #     [
+            #         sg.T("Ursache:"),
+            #         sg.Listbox([], size=(50,8), enable_events=True, k=KeyDefs.LISTBOX_POSSIBLE_FAILURES, ),
+            #         sg.B("Fehler beheben", enable_events=True ,k=KeyDefs.BTN_SELECT_FAILURE)
+            #         ],
+            # ], visible=False, k=KeyDefs.FRAME_POSSIBLE_FAILURES)],
            
-            [sg.Frame("Mögliche Fehlerbehebungen:", layout=[
-                [
-                    # sg.T("Ursache:"),
-                    sg.Listbox([], size=(50,8), enable_events=False, k=KeyDefs.LISTBOX_POSSIBLE_IMPROVEMENTS, ),
-                    # sg.B("Fehler beheben", enable_events=True ,k=KeyDefs.BTN_SELECT_FAILURE)
-                    ],
-            ], visible=False, k=KeyDefs.FRAME_POSSIBLE_IMPROVEMENTS)],
+            # [sg.Frame("Mögliche Fehlerbehebungen:", layout=[
+            #     [
+            #         # sg.T("Ursache:"),
+            #         sg.Listbox([], size=(50,8), enable_events=False, k=KeyDefs.LISTBOX_POSSIBLE_IMPROVEMENTS, ),
+            #         # sg.B("Fehler beheben", enable_events=True ,k=KeyDefs.BTN_SELECT_FAILURE)
+            #         ],
+            # ], visible=False, k=KeyDefs.FRAME_POSSIBLE_IMPROVEMENTS)],
 
         ])
 
