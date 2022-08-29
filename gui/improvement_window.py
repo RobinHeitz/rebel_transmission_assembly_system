@@ -22,23 +22,25 @@ def cancel_improvement_button_clicked(*args):
     data_controller.delete_improvement_instance(imp_id)
     window.write_event_value("Exit", "No")
     
+def my_func(*args):
+    print(args)
 
+def improvement_window(imp_id, imp):
 
-def improvement_window(imp_id):
+    print("WE GOT IMPROVEMENT ISNTANCE: ", imp)
 
     imp = data_controller.get_improvement_instance(imp_id)
 
     layout = [
-        # [sg.Text(f"{imp_id} / ID = {imp_id}")],
         
         [sg.Col(layout=[
-            sg.T(imp.improvement.description)
+            [sg.T("imp.improvement.description"),sg.T("TWi")]
 
-        ]), sg.Image("gui/assembly_pictures/step_1_resize.png", size=(200,200))]
+        ]), sg.Image("gui/assembly_pictures/step_1_resize.png", size=(200,200))],
         
         
         
-        [sg.B("Abbrechen", k=Key.CANCEL_IMPROVEMENT), ]
+        [sg.B("Abbrechen", k=Key.CANCEL_IMPROVEMENT), sg.B("TEST", k=lambda: my_func("BTN Pressed"))]
         
         
         ]
@@ -49,13 +51,15 @@ def improvement_window(imp_id):
         event, values = window.read()
         if event == "Exit" or event == sg.WIN_CLOSED:
             break
-        
-        try:
-            func = key_function_map.get(event)
-            func(event, values, window, imp_id)
-        except:
-            print("ERROR: Event = ", event)
-            print(traceback.format_exc())
+        elif callable(event):
+            event()
+        else:
+            try:
+                func = key_function_map.get(event)
+                func(event, values, window, imp_id)
+            except:
+                print("ERROR: Event = ", event)
+                print(traceback.format_exc())
         
         
         
