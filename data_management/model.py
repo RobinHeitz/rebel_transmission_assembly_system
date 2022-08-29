@@ -58,7 +58,10 @@ class Transmission(Base):
     finished_date = Column(DateTime)
     
     assemblies = relationship("Assembly", backref=backref("transmission"))
-    failures = relationship("Failure", backref=backref("transmission"))
+    
+    indicator_instances = relationship("IndicatorInstance", backref=backref("transmission"))
+    failure_instances = relationship("FailureInstance", backref=backref("transmission"))
+    improvement_instances = relationship("ImprovementInstance", backref=backref("transmission"))
     
 
 class Assembly(Base):
@@ -135,12 +138,18 @@ class Indicator(Base):
     id = Column(Integer, primary_key=True)
     created_at = Column(DateTime, default=datetime.now)
     description = Column(String)
-
     assembly_step = Column(Enum(AssemblyStep))
+
     indicator_type = Column(Enum(IndicatorType), default = IndicatorType.not_measurable)
+    indicator_instances = relationship("IndicatorInstance", backref=backref("indicator"))
     
     failures = relationship('Failure', secondary=IndicatorFailureTable, back_populates="indicators")
 
+class IndicatorInstance(Base):
+    __tablename__ = "indicatorinstance"
+    id = Column(Integer, primary_key = True)
+    indicator_id = Column(Integer, ForeignKey("indicator.id"))
+    transmission_id = Column(Integer, ForeignKey("transmission.id"))
 
 
 
@@ -149,13 +158,19 @@ class Failure(Base):
     id = Column(Integer, primary_key=True)
     created_at = Column(DateTime, default=datetime.now)
     description = Column(String)
+    assembly_step = Column(Enum(AssemblyStep))
+    
+    failure_instances = relationship("FailureInstance", backref=backref("failure"))
     
     indicators = relationship('Indicator', secondary=IndicatorFailureTable, back_populates="failures")
     improvements = relationship('Improvement', secondary=FailureImprovementTable, back_populates="failures")
-    transmission_id = Column(Integer, ForeignKey('transmission.id'))
 
 
-
+class FailureInstance(Base):
+    __tablename__ = "failureinstance"
+    id = Column(Integer, primary_key = True)
+    failure_id = Column(Integer, ForeignKey("failure.id"))
+    transmission_id = Column(Integer, ForeignKey("transmission.id"))
 
 
 class Improvement(Base):
@@ -163,7 +178,17 @@ class Improvement(Base):
     id = Column(Integer, primary_key = True)
     created_at = Column(DateTime, default=datetime.now)
     description = Column(String)
+    assembly_step = Column(Enum(AssemblyStep))
     
-    improvement_successfull = Column(Boolean)
+    improvement_instances = relationship("ImprovementInstance", backref=backref("improvement"))
+    
     failures = relationship('Failure', secondary=FailureImprovementTable, back_populates="improvements")
+
+
+class ImprovementInstance(Base):
+    __tablename__ = "improvementinstance"
+    id = Column(Integer, primary_key = True)
+    improvement_id = Column(Integer, ForeignKey("improvement.id"))
+    transmission_id = Column(Integer, ForeignKey("transmission.id"))
+    successful = Column(Boolean)
 
