@@ -22,7 +22,7 @@ current_assemblies = dict()
 
 def create_session(f):
     def wrap(*args, **kwargs):
-        session_factory = sessionmaker(bind=engine)
+        session_factory = sessionmaker(bind=engine,expire_on_commit=False)
         Session = scoped_session(session_factory)
         session = Session()
         

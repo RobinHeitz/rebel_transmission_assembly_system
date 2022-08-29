@@ -26,9 +26,21 @@ def cancel_improvement_button_clicked(*args):
 
 def improvement_window(imp_id):
 
+    imp = data_controller.get_improvement_instance(imp_id)
+
     layout = [
-        [sg.Text(f"{imp_id} / ID = {imp_id}")],
+        # [sg.Text(f"{imp_id} / ID = {imp_id}")],
+        
+        [sg.Col(layout=[
+            sg.T(imp.improvement.description)
+
+        ]), sg.Image("gui/assembly_pictures/step_1_resize.png", size=(200,200))]
+        
+        
+        
         [sg.B("Abbrechen", k=Key.CANCEL_IMPROVEMENT), ]
+        
+        
         ]
     
     
