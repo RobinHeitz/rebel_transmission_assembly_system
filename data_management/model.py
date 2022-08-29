@@ -93,7 +93,7 @@ class Measurement(Base):
     datapoints = relationship("DataPoint", backref=backref("measurement"))
 
     def __repr__(self):
-        return f"Measurement-Instance."
+        return f"Measurement-Instance: mean current = {self.mean_current} | # DataPoints: {len(self.datapoints)} "
 
 
 
@@ -145,6 +145,10 @@ class Indicator(Base):
     
     failures = relationship('Failure', secondary=IndicatorFailureTable, back_populates="indicators")
 
+    def __repr__(self):
+        return f"Indicator-instance: {self.description}"
+
+
 class IndicatorInstance(Base):
     __tablename__ = "indicatorinstance"
     id = Column(Integer, primary_key = True)
@@ -165,6 +169,9 @@ class Failure(Base):
     indicators = relationship('Indicator', secondary=IndicatorFailureTable, back_populates="failures")
     improvements = relationship('Improvement', secondary=FailureImprovementTable, back_populates="failures")
 
+    def __repr__(self):
+        return f"Failure-instance: {self.description}"
+
 
 class FailureInstance(Base):
     __tablename__ = "failureinstance"
@@ -182,6 +189,9 @@ class Improvement(Base):
     
     improvement_instances = relationship("ImprovementInstance", backref=backref("improvement"))
     failures = relationship('Failure', secondary=FailureImprovementTable, back_populates="improvements")
+
+    def __repr__(self):
+        return f"Improvement-instance: {self.description}"
 
 
 class ImprovementInstance(Base):

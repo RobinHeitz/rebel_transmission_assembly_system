@@ -211,8 +211,13 @@ def set_listbox_current_selection(failure):
         failure = failure[0]
     
     if type(failure) == Failure:
-        failure = failure.description
-    
+        # failure = failure.description
+        ...
+    elif type(failure) == str:
+        ...
+        assembly_step = get_assembly_step_for_page_index(current_page_index)
+        failure = data_controller.get_failure_for_description_and_assembly_step(failure, assembly_step)
+
     global listbox_selected_failure
     listbox_selected_failure = failure
 
@@ -220,6 +225,12 @@ def set_listbox_current_selection(failure):
 def failure_selected(event, values, *args):
     """failure_selected() | executed by button click 'Fehler beheben'"""
     logger.info(f"Failure selected: {listbox_selected_failure}")
+
+    window[KeyDefs.FRAME_POSSIBLE_IMPROVEMENTS].update(visible=True)
+
+    improvements = data_controller.get_improvements_for_failure(listbox_selected_failure)
+
+    window[KeyDefs.LISTBOX_POSSIBLE_IMPROVEMENTS].update([i.description for i in improvements])
 
 
 ######################################################

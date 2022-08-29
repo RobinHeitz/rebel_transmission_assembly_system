@@ -45,8 +45,9 @@ layout_assembly_step_1 = [
                 sg.Button("Messung starten",enable_events=True, k=(KeyDefs.BTN_START_VELO_MODE, LayoutPageKeys.layout_assembly_step_1_page) ),
                 sg.Button("Abbrechen",enable_events=True, k=(KeyDefs.BTN_STOP_VELO_MODE, LayoutPageKeys.layout_assembly_step_1_page) ),
             ],
-            [sg.Canvas(key=(KeyDefs.CANVAS_GRAPH_PLOTTING, LayoutPageKeys.layout_assembly_step_1_page), )],
+            [sg.Canvas(key=(KeyDefs.CANVAS_GRAPH_PLOTTING, LayoutPageKeys.layout_assembly_step_1_page), size=(250,250))],
             [sg.Text("", font=font_normal, key=(KeyDefs.TEXT_MIN_MAX_CURRENT_VALUES, LayoutPageKeys.layout_assembly_step_1_page))],
+            
             [sg.Frame("Es wurde ein Fehler erkannt:",layout=[
                 [
                     sg.T("Fehler: "), 
@@ -63,6 +64,14 @@ layout_assembly_step_1 = [
                     sg.B("Fehler beheben", enable_events=True ,k=KeyDefs.BTN_SELECT_FAILURE)
                     ],
             ], visible=False, k=KeyDefs.FRAME_POSSIBLE_FAILURES)],
+           
+            [sg.Frame("Mögliche Fehlerbehebungen:", layout=[
+                [
+                    # sg.T("Ursache:"),
+                    sg.Listbox([], size=(50,8), enable_events=False, k=KeyDefs.LISTBOX_POSSIBLE_IMPROVEMENTS, ),
+                    # sg.B("Fehler beheben", enable_events=True ,k=KeyDefs.BTN_SELECT_FAILURE)
+                    ],
+            ], visible=False, k=KeyDefs.FRAME_POSSIBLE_IMPROVEMENTS)],
 
         ])
 

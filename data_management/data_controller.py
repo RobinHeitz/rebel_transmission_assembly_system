@@ -158,6 +158,15 @@ def get_indicators_for_assembly_step_and_IndicatorType(session:Session, assembly
 ###############
 
 @create_session
+def get_failure_for_description_and_assembly_step(session:Session, description:str, assembly_step:AssemblyStep):
+    query_result = session.query(Failure).filter_by(description = description, assembly_step = assembly_step)
+    if len(query_result.all()) > 1:
+        raise Exception("This should never be greater 1!")
+    return query_result.first()
+
+
+
+@create_session
 def create_failure(session:Session, assembly_step:AssemblyStep) -> Failure:
     ...
 
@@ -169,10 +178,22 @@ def get_failures_list_from_indicator(session:Session, indicator:Indicator):
     indicator = session.query(Indicator).get(indicator.id)
 
     if indicator == None:
-        return
-
+        return []
     failures = indicator.failures
-    
     return failures
 
 
+
+####################
+### IMPROVEMENTS ###
+####################
+
+@create_session
+def get_improvements_for_failure(session:Session, fail:Failure):
+    failure = session.query(Failure).get(fail.id)
+
+    if failure == None:
+        return []
+    
+    improvements = failure.improvements
+    return improvements
