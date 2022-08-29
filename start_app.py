@@ -182,7 +182,10 @@ def combo_failure_selection(event, values):
 def btn_failure_selection_clicked(event, values):
     logger.info("*"*10)
     logger.info(f"btn_failure_selection_clicked: {failure_selection}")
+    data_controller.create_failure_instance(failure_selection)
     improvements = data_controller.get_improvements_for_failure(failure_selection)
+
+
     window[KeyDefs.LISTBOX_POSSIBLE_IMPROVEMENTS].update(improvements)
     window[KeyDefs.FRAME_POSSIBLE_IMPROVEMENTS].update(visible=True)
 
@@ -200,7 +203,7 @@ def list_improvement_selected(event, values):
 def btn_improvement_selection_clicked(event, values):
     logger.info("*"*10)
     logger.info(f"btn_improvement_selection_clicked: {improvement_selection}")
-
+    data_controller.create_improvement_instance(improvement_selection)
     
 
 

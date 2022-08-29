@@ -190,11 +190,24 @@ def get_failures_list_for_assembly_step(session:Session, step:AssemblyStep):
         return []
     return failures
 
+@create_session
+def create_failure_instance(session:Session, failure:Failure):
+    f = FailureInstance(failure_id=failure.id, transmission = get_current_transmission(session))
+    session.add(f)
+    session.commit()
+    return f
 
 
 ####################
 ### IMPROVEMENTS ###
 ####################
+
+@create_session
+def create_improvement_instance(session:Session, imp:Improvement):
+    i = ImprovementInstance(improvement_id=imp.id, transmission=get_current_transmission(session))
+    session.add(i)
+    session.commit()
+
 
 @create_session
 def get_improvements_for_failure(session:Session, fail:Failure):

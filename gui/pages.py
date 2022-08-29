@@ -61,7 +61,7 @@ layout_assembly_step_1 = [
                 [
                     sg.T("Maßnahmen:"),
                     sg.Listbox([], size=(50,8), enable_events=True, k=KeyDefs.LISTBOX_POSSIBLE_IMPROVEMENTS, ),
-                    sg.B("Fehler beheben", enable_events=True ,k=KeyDefs.BTN_SELECT_FAILURE)
+                    sg.B("Fehler beheben", enable_events=True ,k=KeyDefs.BTN_SELECT_IMPROVEMENT)
                     ],
             ], visible=False, k=KeyDefs.FRAME_POSSIBLE_IMPROVEMENTS)],
            
