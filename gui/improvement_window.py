@@ -15,24 +15,31 @@ import enum
 
 class Key(enum.Enum):
     CANVAS = "-CANVAS-"
+    FINISHED_REPEATING_MEASUREMENT = "-FINISHED_REPEATING_MEASUREMENT-"
 
 
-def cancel_improvement_button_clicked(window, imp_instance):
+def cancel_improvement_button_clicked(window, ontroller:RebelAxisController,imp_instance):
     data_controller.delete_improvement_instance(imp_instance)
     window.write_event_value("Exit", "No")
 
 
-def repeat_measurement(window:sg.Window, imp_instance:ImprovementInstance):
+def repeat_measurement(window:sg.Window, controller:RebelAxisController, imp_instance:ImprovementInstance, ):
     ...
 
-    print("Repeating!", window, imp_instance)
+    print("Repeating!", window, imp_instance, controller)
+
+    stop_func = lambda: window.write_event_value(Key.FINISHED_REPEATING_MEASUREMENT, "Data")
+    controller.start_movement_velocity_mode(velocity=10, duration=3, invoke_stop_function = stop_func)
+
+
+def measurement_finished(event, values, window, imp_instance, controller):
+    print("measurement finished")
 
 
 
 
-def improvement_window(imp_instance:ImprovementInstance):
+def improvement_window(controller:RebelAxisController, imp_instance:ImprovementInstance):
     title, description = imp_instance.improvement.title, imp_instance.improvement.description
-
     description = """This is a very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very  long text"""
 
     c1 = sg.Col([
@@ -46,8 +53,8 @@ def improvement_window(imp_instance:ImprovementInstance):
         ], vertical_alignment="top", background_color="green")
 
     c3 = sg.Col([
-        [sg.Canvas(key=Key.CANVAS, size=(1,1))],
-    ], expand_x=True, expand_y=True, background_color="purple")
+        [sg.Canvas(key=Key.CANVAS, size=(200,200))],
+    ], expand_x=True, expand_y=True, background_color="purple", element_justification="center")
 
 
     bottom_button_bar = sg.Col([
@@ -61,9 +68,9 @@ def improvement_window(imp_instance:ImprovementInstance):
         
         ]
     
-    window = sg.Window("Fehler beheben", layout, modal=True, size=(1000,600),location=(0,0) , finalize=False)
+    window = sg.Window("Fehler beheben", layout, modal=True, size=(1000,600),location=(0,0) , finalize=True)
 
-    # plotter = GraphPlotter(window[Key.CANVAS])
+    plotter = GraphPlotter(window[Key.CANVAS])
     # plotter.plot_data([],[])
 
     
@@ -72,11 +79,11 @@ def improvement_window(imp_instance:ImprovementInstance):
         if event == "Exit" or event == sg.WIN_CLOSED:
             break
         elif callable(event):
-            event(window, imp_instance)
+            event(window, controller, imp_instance)
         else:
             try:
                 func = key_function_map.get(event)
-                func(event, values, window, imp_instance)
+                func(event, values, window, imp_instance, controller)
             except:
                 print("ERROR: Event = ", event)
                 print(traceback.format_exc())
@@ -87,10 +94,17 @@ def improvement_window(imp_instance:ImprovementInstance):
 
 
 key_function_map = {
+    Key.FINISHED_REPEATING_MEASUREMENT: measurement_finished
 
 }
 
 
 if __name__ == "__main__":
-    improvement_window()
+    imp = data_controller.get_random_improvement_instance()
+
+    controller = RebelAxisController()
+
+    # print("imp = ", imp, "controller = ", controller)
+
+    # improvement_window(controller, "Test")
 
