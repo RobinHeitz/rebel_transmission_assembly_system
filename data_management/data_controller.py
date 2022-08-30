@@ -274,14 +274,17 @@ def setup_improvement_start(failure:Failure, improvement:Improvement) -> Tuple[F
     session = get_session()
     t = get_current_transmission()
 
+    m = Measurement()
+    session.add(m)
+
     failure_instance = FailureInstance(failure = failure, transmission=t)
     session.add(failure_instance)
 
-    improvement_instance = ImprovementInstance(improvement = improvement, transmission = t, failure_instance=failure_instance)
+    improvement_instance = ImprovementInstance(improvement = improvement, transmission = t, failure_instance=failure_instance, measurement = m)
     session.add(improvement_instance)
 
     
 
     session.commit()
 
-    return failure_instance, improvement_instance
+    return m, failure_instance, improvement_instance
