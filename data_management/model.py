@@ -193,17 +193,18 @@ class Improvement(Base):
     __tablename__ = "improvement"
     id = Column(Integer, primary_key = True)
     created_at = Column(DateTime, default=datetime.now)
-    description = Column(String)
+    title = Column(String, nullable=False)
+    description = Column(String, nullable=False)
     assembly_step = Column(Enum(AssemblyStep))
     
     improvement_instances = relationship("ImprovementInstance", backref=backref("improvement"))
     failures = relationship('Failure', secondary=FailureImprovementTable, back_populates="improvements")
 
     def __repr__(self):
-        return f"Improvement-instance: {self.description}"
+        return f"Improvement-instance: {self.title}"
 
     def __str__(self):
-        return self.description
+        return self.title
 
 
 class ImprovementInstance(Base):
