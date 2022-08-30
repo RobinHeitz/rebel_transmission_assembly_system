@@ -243,11 +243,7 @@ def create_improvement_instance(imp:Improvement):
     i = ImprovementInstance(improvement_id=imp.id, transmission=get_current_transmission())
     session.add(i)
     session.commit()
-    return i, i.id
-
-def get_improvement_instance(imp_id):
-    session = get_session()
-    return session.query(ImprovementInstance).get(imp_id)
+    return i
 
 
 def get_improvements_for_failure(fail:Failure):
@@ -260,9 +256,9 @@ def get_improvements_for_failure(fail:Failure):
     improvements = failure.improvements
     return improvements
 
-def delete_improvement_instance(imp_id):
+def delete_improvement_instance(imp_instance):
     session = get_session()
 
-    imp = session.query(ImprovementInstance).get(imp_id)
-    session.delete(imp)
+    # imp = session.query(ImprovementInstance).get(imp_id)
+    session.delete(imp_instance)
     session.commit()

@@ -14,33 +14,28 @@ class Key(enum.Enum):
 
 
 # def cancel_improvement_button_clicked(event, values, window:sg.Window,imp_id):
-def cancel_improvement_button_clicked(*args):
+def cancel_improvement_button_clicked(window, imp_instance):
     ...
-    event, values, window, imp_id = args
-    print("###"*5, *args)
-    print("cancel_improvement_button_clicked() | Imp_ID = ", imp_id)
-    data_controller.delete_improvement_instance(imp_id)
+    data_controller.delete_improvement_instance(imp_instance)
     window.write_event_value("Exit", "No")
     
 def my_func(*args):
+    print("Function call without args")
     print(args)
 
-def improvement_window(imp_id, imp):
 
-    print("WE GOT IMPROVEMENT ISNTANCE: ", imp)
-
-    imp = data_controller.get_improvement_instance(imp_id)
+def improvement_window(imp_instance:ImprovementInstance):
 
     layout = [
         
         [sg.Col(layout=[
-            [sg.T("imp.improvement.description"),sg.T("TWi")]
+            [sg.T(imp_instance.improvement.description)]
 
         ]), sg.Image("gui/assembly_pictures/step_1_resize.png", size=(200,200))],
         
         
         
-        [sg.B("Abbrechen", k=Key.CANCEL_IMPROVEMENT), sg.B("TEST", k=lambda: my_func("BTN Pressed"))]
+        [sg.B("Abbrechen", k=lambda: cancel_improvement_button_clicked(window, imp_instance)), sg.B("TEST", k=my_func)],
         
         
         ]
@@ -56,7 +51,7 @@ def improvement_window(imp_id, imp):
         else:
             try:
                 func = key_function_map.get(event)
-                func(event, values, window, imp_id)
+                func(event, values, window, imp_instance)
             except:
                 print("ERROR: Event = ", event)
                 print(traceback.format_exc())
