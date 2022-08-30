@@ -206,7 +206,7 @@ def btn_improvement_selection_clicked(event, values):
     logger.info("*"*10)
     imp_instance = data_controller.create_improvement_instance(improvement_selection)
     logger.info(f"btn_improvement_selection_clicked: {improvement_selection} | ImprovementInstance - ID = {imp_instance.id}")
-    improvement_window.improvement_window(imp_instance)
+    improvement_window.improvement_window(controller ,imp_instance)
     
 
 ######################################################
