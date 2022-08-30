@@ -46,13 +46,8 @@ def improvement_window(controller:RebelAxisController, selected_failure:Failure,
     print("***"*5)
     print("improve_window() starting ||| controler = ", controller, "| selected failure:", selected_failure, " | selected_improvement = ", selected_improvement)
 
-
-    fail_instance, imp_instance = data_controller.setup_improvement_start()
+    fail_instance, imp_instance = data_controller.setup_improvement_start(selected_failure, selected_improvement)
     title, description = imp_instance.improvement.title, imp_instance.improvement.description
-
-
-
-    description = """This is a very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very  long text"""
 
     c1 = sg.Col([
         [sg.T(title, font=font_headline)], 
@@ -80,7 +75,7 @@ def improvement_window(controller:RebelAxisController, selected_failure:Failure,
         
         ]
     
-    window = sg.Window("Fehler beheben", layout, modal=True, size=(1000,600),location=(0,0) , finalize=False, resizable=True)
+    window = sg.Window("Fehler beheben", layout, modal=True, size=(1000,600),location=(0,0) , finalize=True, resizable=True)
 
     plotter = GraphPlotter(window[Key.CANVAS])
     plotter.plot_data([],[])

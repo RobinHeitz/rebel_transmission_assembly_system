@@ -76,6 +76,18 @@ def create_assembly_step_1(session:Session, t:Transmission, assembly_step:Assemb
     f5.improvements = [imp_1]
     
 
+def create_instances(session:Session,t:Transmission):
+
+    f = session.query(Failure).first()
+    i = f.improvements[0]
+
+
+    fail_instance = FailureInstance(transmission=t, failure=f)
+    session.add(fail_instance)
+
+    imp_instance = ImprovementInstance(transmission=t, failure_instance = fail_instance, improvement=i)
+    session.add(imp_instance)
+
 
 
 if __name__ == "__main__":
@@ -98,6 +110,7 @@ if __name__ == "__main__":
 
 
     create_assembly_step_1(session, t, AssemblyStep.step_1_no_flexring)
+    # create_instances(session, t)
     session.commit()
 
 

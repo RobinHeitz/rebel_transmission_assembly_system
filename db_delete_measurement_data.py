@@ -30,8 +30,13 @@ if __name__ == "__main__":
     objects_to_delete = [i for c in model_classes for i in session.query(c).all()]
     for i in objects_to_delete:
         session.delete(i)
-    
     session.flush()
+
+    t = Transmission()
+    session.add(t)
+
+
+
     session.commit()
 
 

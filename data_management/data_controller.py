@@ -269,11 +269,6 @@ def delete_improvement_instance(imp_instance):
     session.commit()
 
 
-def _get_random_improvement():
-    session = get_session()
-    return session.query(Improvement).first()
-
-
 def setup_improvement_start(failure:Failure, improvement:Improvement) -> Tuple[FailureInstance, ImprovementInstance]:
     """Setup all necessary objects for improvement!"""
     session = get_session()
@@ -282,8 +277,11 @@ def setup_improvement_start(failure:Failure, improvement:Improvement) -> Tuple[F
     failure_instance = FailureInstance(failure = failure, transmission=t)
     session.add(failure_instance)
 
-    improvement_instance = ImprovementInstance(improvement = improvement, transmission = t)
+    improvement_instance = ImprovementInstance(improvement = improvement, transmission = t, failure_instance=failure_instance)
     session.add(improvement_instance)
+
+    
+
     session.commit()
 
     return failure_instance, improvement_instance
