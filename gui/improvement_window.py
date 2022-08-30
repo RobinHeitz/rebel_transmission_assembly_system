@@ -1,5 +1,8 @@
+from tkinter import font
 import PySimpleGUI as sg
 import traceback
+
+from .definitions import font_headline, font_normal, font_small
 
 from data_management.model import Improvement, ImprovementInstance
 from data_management import data_controller
@@ -8,7 +11,7 @@ from data_management import data_controller
 import enum
 
 class Key(enum.Enum):
-    CANCEL_IMPROVEMENT = "-CANCEL_IMPROVEMENT-"
+    DUNNO = "-CANCEL_IMPROVEMENT-"
 
 
 
@@ -19,24 +22,22 @@ def cancel_improvement_button_clicked(window, imp_instance):
     data_controller.delete_improvement_instance(imp_instance)
     window.write_event_value("Exit", "No")
     
-def my_func(*args):
-    print("Function call without args")
-    print(args)
 
 
 def improvement_window(imp_instance:ImprovementInstance):
+    title, description = imp_instance.improvement.title, imp_instance.improvement.description
 
     layout = [
         
         [sg.Col(layout=[
-            [sg.T(imp_instance.improvement.description)]
+            [sg.T(title, font=font_headline)], 
+            [sg.T(description, font=font_normal)],
 
-        ]), sg.Image("gui/assembly_pictures/step_1_resize.png", size=(200,200))],
+        ], expand_x=True, vertical_alignment="top"), sg.Image("gui/assembly_pictures/step_1_resize.png", size=(300,300))],
         
         
         
-        [sg.B("Abbrechen", k=lambda: cancel_improvement_button_clicked(window, imp_instance)), sg.B("TEST", k=my_func)],
-        
+        [sg.B("Abbrechen", k=lambda: cancel_improvement_button_clicked(window, imp_instance)), ],
         
         ]
     
@@ -62,7 +63,7 @@ def improvement_window(imp_instance:ImprovementInstance):
 
 
 key_function_map = {
-    Key.CANCEL_IMPROVEMENT: cancel_improvement_button_clicked,
+
 }
 
 
