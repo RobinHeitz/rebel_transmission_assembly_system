@@ -110,13 +110,18 @@ def get_current_measurement_instance() -> Measurement:
 
 
 def create_measurement(assembly:Assembly) -> Measurement:
+    """Creates a measurement-obj.
+    Parameters:
+    - assembly:Assembly -> Assembly-instance measurement gets attached to."""
     session = get_session()
     new_measure = Measurement(assembly = assembly)
     
     session.add(new_measure)
     session.commit()
-
     return new_measure
+
+
+
 
 
 def update_current_measurement_fields():
@@ -246,7 +251,7 @@ def create_improvement_instance(imp:Improvement):
     return i
 
 
-def get_improvements_for_failure(fail:Failure):
+def get_improvements_for_failure(fail:Failure) -> List[Improvement]:
     session = get_session()
     failure = session.query(Failure).get(fail.id)
 
@@ -264,6 +269,11 @@ def delete_improvement_instance(imp_instance):
     session.commit()
 
 
-def get_random_improvement_instance():
+def _get_random_improvement():
     session = get_session()
-    return session.query(ImprovementInstance).first()
+    return session.query(Improvement).first()
+
+
+def setup_improvement_start():
+    """Setup all necessary objects for improvement!"""
+    ...

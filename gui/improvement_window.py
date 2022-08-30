@@ -7,7 +7,7 @@ from hw_interface.motor_controller import RebelAxisController
 from .definitions import font_headline, font_normal, font_small
 from .plotting import GraphPlotter
 
-from data_management.model import Improvement, ImprovementInstance
+from data_management.model import Improvement, ImprovementInstance, Failure, FailureInstance
 from data_management import data_controller
 
 
@@ -24,9 +24,9 @@ def cancel_improvement_button_clicked(window, ontroller:RebelAxisController,imp_
 
 
 def repeat_measurement(window:sg.Window, controller:RebelAxisController, imp_instance:ImprovementInstance, ):
-    ...
-
     print("Repeating!", window, imp_instance, controller)
+
+
 
     stop_func = lambda: window.write_event_value(Key.FINISHED_REPEATING_MEASUREMENT, "Data")
     controller.start_movement_velocity_mode(velocity=10, duration=3, invoke_stop_function = stop_func)
@@ -35,11 +35,24 @@ def repeat_measurement(window:sg.Window, controller:RebelAxisController, imp_ins
 def measurement_finished(event, values, window, imp_instance, controller):
     print("measurement finished")
 
+    data = data_controller.get_plot_data_for_current_measurement()
+    x_data, y_data = zip(*data)
+    # plotter.plot_data(x_data, y_data)
 
 
 
-def improvement_window(controller:RebelAxisController, imp_instance:ImprovementInstance):
-    title, description = imp_instance.improvement.title, imp_instance.improvement.description
+
+def improvement_window(controller:RebelAxisController, selected_failure:Failure, selected_improvement: Improvement):
+    print("***"*5)
+    print("improve_window() starting ||| controler = ", controller, "| selected failure:", selected_failure, " | selected_improvement = ", selected_improvement)
+
+
+    data_controller.setup_improvement_start()
+
+
+    title = "Test Title"
+    description = "Test Desc"
+    # title, description = imp_instance.improvement.title, imp_instance.improvement.description
     description = """This is a very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very  long text"""
 
     c1 = sg.Col([
@@ -53,7 +66,7 @@ def improvement_window(controller:RebelAxisController, imp_instance:ImprovementI
         ], vertical_alignment="top", background_color="green")
 
     c3 = sg.Col([
-        [sg.Canvas(key=Key.CANVAS, size=(200,200))],
+        [sg.Canvas(key=Key.CANVAS, size=(50,50))],
     ], expand_x=True, expand_y=True, background_color="purple", element_justification="center")
 
 
@@ -68,10 +81,10 @@ def improvement_window(controller:RebelAxisController, imp_instance:ImprovementI
         
         ]
     
-    window = sg.Window("Fehler beheben", layout, modal=True, size=(1000,600),location=(0,0) , finalize=True)
+    window = sg.Window("Fehler beheben", layout, modal=True, size=(1000,600),location=(0,0) , finalize=False, resizable=True)
 
     plotter = GraphPlotter(window[Key.CANVAS])
-    # plotter.plot_data([],[])
+    plotter.plot_data([],[])
 
     
     while True:
@@ -97,14 +110,4 @@ key_function_map = {
     Key.FINISHED_REPEATING_MEASUREMENT: measurement_finished
 
 }
-
-
-if __name__ == "__main__":
-    imp = data_controller.get_random_improvement_instance()
-
-    controller = RebelAxisController()
-
-    # print("imp = ", imp, "controller = ", controller)
-
-    # improvement_window(controller, "Test")
 

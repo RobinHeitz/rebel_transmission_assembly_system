@@ -184,7 +184,7 @@ def combo_failure_selection(event, values):
 def btn_failure_selection_clicked(event, values):
     logger.info("*"*10)
     logger.info(f"btn_failure_selection_clicked: {failure_selection}")
-    data_controller.create_failure_instance(failure_selection)
+    # data_controller.create_failure_instance(failure_selection)
     improvements = data_controller.get_improvements_for_failure(failure_selection)
 
 
@@ -204,9 +204,9 @@ def list_improvement_selected(event, values):
 
 def btn_improvement_selection_clicked(event, values):
     logger.info("*"*10)
-    imp_instance = data_controller.create_improvement_instance(improvement_selection)
-    logger.info(f"btn_improvement_selection_clicked: {improvement_selection} | ImprovementInstance - ID = {imp_instance.id}")
-    improvement_window.improvement_window(controller ,imp_instance)
+    logger.info(f"btn_improvement_selection_clicked: {improvement_selection}")
+    # imp_instance = data_controller.create_improvement_instance(improvement_selection)
+    improvement_window.improvement_window(controller, failure_selection, improvement_selection)
     
 
 ######################################################
@@ -287,7 +287,7 @@ def _disable_enable_nav_buttons():
 #################
 
 if __name__ == "__main__":
-    window = sg.Window("ReBeL Getriebe Montage & Kalibrierung", main_layout, size=(1200,1000), finalize=True, location=(0,0))
+    window = sg.Window("ReBeL Getriebe Montage & Kalibrierung", main_layout, size=(1200,1000), finalize=True, location=(0,0),resizable=True)
     controller = None
     try:
         controller = RebelAxisController(verbose=False)
