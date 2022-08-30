@@ -262,3 +262,8 @@ def delete_improvement_instance(imp_instance):
     # imp = session.query(ImprovementInstance).get(imp_id)
     session.delete(imp_instance)
     session.commit()
+
+
+def get_random_improvement_instance():
+    session = get_session()
+    return session.query(ImprovementInstance).first()

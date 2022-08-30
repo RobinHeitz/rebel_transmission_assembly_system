@@ -27,17 +27,32 @@ def cancel_improvement_button_clicked(window, imp_instance):
 def improvement_window(imp_instance:ImprovementInstance):
     title, description = imp_instance.improvement.title, imp_instance.improvement.description
 
-    layout = [
-        
-        [sg.Col(layout=[
-            [sg.T(title, font=font_headline)], 
-            [sg.T(description, font=font_normal)],
+    description = """This is a very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very  long text"""
 
-        ], expand_x=True, vertical_alignment="top"), sg.Image("gui/assembly_pictures/step_1_resize.png", size=(300,300))],
+    c1 = sg.Col([
+        [sg.T(title, font=font_headline)], 
+        [sg.Multiline(description, font=font_normal, no_scrollbar=True, write_only=True, expand_x=True, expand_y=True)],
         
-        
-        
+        ], expand_x=True, vertical_alignment="top",background_color="orange", size=(None, 300))
+    
+    c2 = sg.Col([
+        [sg.Image("gui/assembly_pictures/step_1_resize.png", size=(300,300))]
+        ], vertical_alignment="top", background_color="green")
+
+    c3 = sg.Col([
+        []
+    ], expand_x=True, expand_y=True, background_color="purple")
+
+
+    bottom_button_bar = sg.Col([
+        [sg.B("Test1"), sg.B("Test2")]
+    ], vertical_alignment="bottom", justification="bottom", element_justification="bottom", background_color="blue")
+
+    layout = [
+        [c1, c2],
         [sg.B("Abbrechen", k=lambda: cancel_improvement_button_clicked(window, imp_instance)), ],
+        [c3],
+        [bottom_button_bar]
         
         ]
     
