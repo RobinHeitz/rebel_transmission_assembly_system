@@ -76,7 +76,7 @@ def update_graph(plotter:GraphPlotter):
 
 
 
-def abort_movement(controller:RebelAxisController):
+def abort_movement(*args, controller:RebelAxisController, **kwargs):
     controller.stop_movement_velocity_mode()
     stop_current_thread()
 

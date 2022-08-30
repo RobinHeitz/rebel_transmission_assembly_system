@@ -84,16 +84,11 @@ def start_velocity_mode(event, values, controller:RebelAxisController):
     
     page_key = get_page_key_for_index(current_page_index)
     plotter = plotters[page_key]
-    
     start_measurement.start_measurement(controller, step, measurement_finished, plotter)
 
 
-def stop_velocity_mode(controller:RebelAxisController):
-    """Gets invoked by button click: Stop Measurement"""
-    ...
-    start_measurement.abort_movement(controller)
-
 def measurement_finished(m:Measurement):
+    """Invoked by start_measurement.start_measurement. Callback function for updating gui elements based on finished measurement."""
     text_field = window[(KeyDefs.TEXT_MIN_MAX_CURRENT_VALUES, LayoutPageKeys.layout_assembly_step_1_page)]
     text_field.update(f"Min current: {m.min_current} ||| Max. current: {m.max_current} || Mean current: {m.mean_current}")
     predict_failure(m)
@@ -283,7 +278,8 @@ if __name__ == "__main__":
         KeyDefs.BTN_CHECK_MOVEABILITY: (check_moveability, dict()),
 
         (KeyDefs.BTN_START_VELO_MODE, LayoutPageKeys.layout_assembly_step_1_page): (start_velocity_mode, dict(controller=controller)),
-        (KeyDefs.BTN_STOP_VELO_MODE, LayoutPageKeys.layout_assembly_step_1_page): (stop_velocity_mode, dict(controller=controller)),
+        # (KeyDefs.BTN_STOP_VELO_MODE, LayoutPageKeys.layout_assembly_step_1_page): (stop_velocity_mode, dict(controller=controller)),
+        (KeyDefs.BTN_STOP_VELO_MODE, LayoutPageKeys.layout_assembly_step_1_page): (start_measurement.abort_movement ,dict(controller=controller)),
         
         (KeyDefs.BTN_START_VELO_MODE, LayoutPageKeys.layout_assembly_step_2_page): (start_velocity_mode, dict(controller=controller)),
         (KeyDefs.BTN_STOP_VELO_MODE, LayoutPageKeys.layout_assembly_step_2_page): (stop_velocity_mode, dict(controller=controller)),
@@ -311,6 +307,8 @@ if __name__ == "__main__":
             controller.stop_movement()
             controller.shut_down()
             break
+        elif callable(event):
+            event()
 
         try:
             func, args = key_function_map.get(event)
