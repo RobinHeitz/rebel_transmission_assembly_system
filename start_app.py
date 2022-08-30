@@ -19,6 +19,8 @@ from gui.pages import get_headline_for_index, get_page_keys, get_page_key_for_in
 from gui.plotting import GraphPlotter
 import gui.improvement_window as improvement_window
 
+from gui import start_measurement
+
 
 
 logFormatter = logging.Formatter("'%(asctime)s - %(message)s")
@@ -77,80 +79,24 @@ def check_moveability(event, values):
 # VELOCITY MODE
 
 def start_velocity_mode(event, values, controller:RebelAxisController):
-
+    """Invoked by Btn click: Start Measurement"""
     step = get_assembly_step_for_page_index(current_page_index)
-    # assembly = data_controller.get_or_create_assembly_for_assembly_step(step)
-    assembly = data_controller.get_assembly_from_current_transmission(step)
-    data_controller.create_measurement(assembly)
-
-    global thread_graph_updater
-    thread_graph_updater = threading.Thread(target=graph_update_cycle, args=(window, controller, ), daemon=True)
-    thread_graph_updater.start()
-
-    # definition of stop-function that is invoked after the movement has stopped (e.g. duration is reached)
-    stop_func = lambda: window.write_event_value(KeyDefs.FINISHED_VELO_STOP_GRAPH_UPDATING, "Data")
-    controller.start_movement_velocity_mode(velocity=10, duration=3, invoke_stop_function = stop_func)
-
-
-def stop_velocity_mode(event, values, controller:RebelAxisController):
-    controller.stop_movement_velocity_mode()
-    thread_graph_updater.do_plot = False
-
-
-def graph_update_cycle(window:sg.Window, controller:RebelAxisController):
-    """Runs in a thread, ever few seconds it's raising an event for the graphical main queue to trigger graph updating."""
-    cur_thread = threading.current_thread()
-    while getattr(cur_thread, 'do_plot', True):
-        time.sleep(1)
-        logger.warning("graph_update_cycle()")
-
-        batch = controller.get_movement_cmd_reply_batch(batchsize=controller.frequency_hz)
-        logger.info(f"Batch generated: len = {len(batch)}")
-
-        if len(batch) > 10:
-            mean_current, pos, millis = data_transformation.sample_data(batch)
-            logger.info(f"Batch values: mean current = {mean_current} / middle position = {pos} / middle millis = {millis}")
-            
-            # send value to data controller for adding them into data base :)
-            data_controller.create_data_point_to_current_measurement(mean_current, millis)
-            data_controller.update_current_measurement_fields()
-
-            window.write_event_value(KeyDefs.UPDATE_GRAPH, "DATA")
-
-
-
-def update_graph(event, values):
-    """Updates graph. Gets called from a thread running graph_update_cycle()."""
-    page_key = get_page_key_for_index(current_page_index)
     
+    page_key = get_page_key_for_index(current_page_index)
     plotter = plotters[page_key]
-
-    data = data_controller.get_plot_data_for_current_measurement()
-    x_data, y_data = zip(*data)
-    plotter.plot_data(x_data, y_data)
+    
+    start_measurement.start_measurement(controller, step, measurement_finished, plotter)
 
 
-def stop_graph_update(event, values):
-    """
-    Gets called when the movement is finished and therefore the plotting update thread can be finished also.
-    Instance of 'window' is passed to motor_controller which then invokes event '-KEY_FINISHED_VELO_STOP_GRAPH_UPDATING-'.
-    """
-    logger.info("#"*10)
-    logger.info("Velocity finished; Stop graph updating thread!")
+def stop_velocity_mode(controller:RebelAxisController):
+    """Gets invoked by button click: Stop Measurement"""
+    ...
+    start_measurement.abort_movement(controller)
 
-    global thread_graph_updater
-    thread_graph_updater.do_plot = False
-
-    # page_key = get_page_key_for_index(current_page_index)
-
-    # Update min/ max fields in gui
+def measurement_finished(m:Measurement):
     text_field = window[(KeyDefs.TEXT_MIN_MAX_CURRENT_VALUES, LayoutPageKeys.layout_assembly_step_1_page)]
-    measurement = data_controller.get_current_measurement_instance()
-    min_val, max_val, mean_val = measurement.min_current, measurement.max_current, measurement.mean_current
-
-    text_field.update(f"Min current: {min_val} ||| Max. current: {max_val} || Mean current: {mean_val}")
-
-    predict_failure(measurement)
+    text_field.update(f"Min current: {m.min_current} ||| Max. current: {m.max_current} || Mean current: {m.mean_current}")
+    predict_failure(m)
 
 
 
@@ -345,8 +291,8 @@ if __name__ == "__main__":
         (KeyDefs.BTN_START_VELO_MODE, LayoutPageKeys.layout_assembly_step_3_page): (start_velocity_mode, dict(controller=controller)),
         (KeyDefs.BTN_STOP_VELO_MODE, LayoutPageKeys.layout_assembly_step_3_page): (stop_velocity_mode, dict(controller=controller)),
         
-        KeyDefs.UPDATE_GRAPH: (update_graph, dict()),
-        KeyDefs.FINISHED_VELO_STOP_GRAPH_UPDATING: (stop_graph_update, dict()),
+        # KeyDefs.UPDATE_GRAPH: (update_graph, dict()),
+        # KeyDefs.FINISHED_VELO_STOP_GRAPH_UPDATING: (stop_graph_update, dict()),
 
         KeyDefs.COMBO_FAILURE_SELECT: (combo_failure_selection, dict()),
         KeyDefs.BTN_FAILURE_DETECTION: (btn_failure_selection_clicked, dict()),
