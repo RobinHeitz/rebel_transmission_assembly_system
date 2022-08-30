@@ -47,12 +47,11 @@ def improvement_window(controller:RebelAxisController, selected_failure:Failure,
     print("improve_window() starting ||| controler = ", controller, "| selected failure:", selected_failure, " | selected_improvement = ", selected_improvement)
 
 
-    data_controller.setup_improvement_start()
+    fail_instance, imp_instance = data_controller.setup_improvement_start()
+    title, description = imp_instance.improvement.title, imp_instance.improvement.description
 
 
-    title = "Test Title"
-    description = "Test Desc"
-    # title, description = imp_instance.improvement.title, imp_instance.improvement.description
+
     description = """This is a very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very  long text"""
 
     c1 = sg.Col([

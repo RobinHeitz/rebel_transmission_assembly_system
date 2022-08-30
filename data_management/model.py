@@ -1,3 +1,4 @@
+from email.policy import default
 from sqlalchemy import Column, Integer, String, ForeignKey, Table, Enum, DateTime, Float, Boolean
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.ext.declarative import declarative_base
@@ -188,6 +189,10 @@ class FailureInstance(Base):
     failure_id = Column(Integer, ForeignKey("failure.id"))
     transmission_id = Column(Integer, ForeignKey("transmission.id"))
 
+    improvement_instance_id = relationship("ImprovementInstance", uselist=False, backref="failure_instance")
+
+
+
 
 class Improvement(Base):
     __tablename__ = "improvement"
@@ -212,7 +217,10 @@ class ImprovementInstance(Base):
     id = Column(Integer, primary_key = True)
     improvement_id = Column(Integer, ForeignKey("improvement.id"))
     transmission_id = Column(Integer, ForeignKey("transmission.id"))
-    successful = Column(Boolean)
+    successful = Column(Boolean, default=False)
+
+    failure_instance_id = Column(Integer, ForeignKey("failureinstance.id"))
+
 
     def __str__(self):
         return f"ImprovementInstance: Improvement-ID = {self.improvement_id} | Transmission-ID = {self.transmission_id}"
