@@ -9,8 +9,16 @@ from data_management.model import Failure, FailureInstance, Improvement, Improve
 
 import traceback
 import threading
+import logging
+
 
 from typing import List, Tuple
+
+# logger setup
+
+from logs.setup_logger import setup_logger
+logger = setup_logger("data_controller")
+
 
 engine = db.create_engine("sqlite:///rebel.sqlite", connect_args={'check_same_thread':False},)
 connection = engine.connect()
@@ -46,19 +54,16 @@ def  get_session() -> Session:
         return session
 
 
-
-
-
-def create_session(f):
-    def wrap(*args, **kwargs):
-        session_factory = sessionmaker(bind=engine,expire_on_commit=False)
-        Session = scoped_session(session_factory)
-        session = Session()
+# def create_session(f):
+#     def wrap(*args, **kwargs):
+#         session_factory = sessionmaker(bind=engine,expire_on_commit=False)
+#         Session = scoped_session(session_factory)
+#         session = Session()
         
-        return_val = f(session, *args, **kwargs)
-        Session.remove()
-        return return_val
-    return wrap
+#         return_val = f(session, *args, **kwargs)
+#         Session.remove()
+#         return return_val
+#     return wrap
 
 
 
@@ -68,6 +73,7 @@ def create_session(f):
 
 # @create_session
 def create_transmission(config:TransmissionConfiguration) -> Transmission:
+    logger.info("create_transmission()")
     session = get_session()
     if config == None:
         raise ValueError("Config shouldn't be None if Transmission gets created.")
@@ -85,7 +91,9 @@ def create_transmission(config:TransmissionConfiguration) -> Transmission:
 
 def get_current_transmission():
     session = get_session()
-    return session.query(Transmission).order_by(Transmission.id.desc()).first()
+    t = session.query(Transmission).order_by(Transmission.id.desc()).first()
+    logger.info(f"get_current_transmissio (): {t}")
+    return t
 
 
 ################
@@ -95,6 +103,7 @@ def get_current_transmission():
 
 def get_assembly_from_current_transmission(step:AssemblyStep) -> Assembly:
     """Returns assembly (filtered by param: Step) from current transmission."""
+    logger.info("get_assembly_from_current_transmission")
     session = get_session()
     t = session.query(Transmission).order_by(Transmission.id.desc()).first()
     return session.query(Assembly).filter_by(transmission=t, assembly_step=step).first()
@@ -105,6 +114,7 @@ def get_assembly_from_current_transmission(step:AssemblyStep) -> Assembly:
 ###################
 
 def get_current_measurement_instance() -> Measurement:
+    logger.info("get_current_measurement_instance")
     session = get_session()
     return session.query(Measurement).order_by(Measurement.id.desc()).first()
 
@@ -113,6 +123,7 @@ def create_measurement(assembly:Assembly) -> Measurement:
     """Creates a measurement-obj.
     Parameters:
     - assembly:Assembly -> Assembly-instance measurement gets attached to."""
+    logger.info("create_measurement")
     session = get_session()
     new_measure = Measurement(assembly = assembly)
     
@@ -125,6 +136,7 @@ def create_measurement(assembly:Assembly) -> Measurement:
 
 
 def update_current_measurement_fields():
+    logger.info("update_current_measurement_fields()")
     session = get_session()
     m = session.query(Measurement).order_by(Measurement.id.desc()).first()
     datapoints_ = session.query(DataPoint).filter_by(measurement=m)
@@ -138,6 +150,7 @@ def update_current_measurement_fields():
 
 def get_plot_data_for_current_measurement()-> List[Tuple]:
     """Returns list of (timestamp, current) of current measurement for plotting."""
+    logger.info("get_plot_data_for_current_measurement()")
     session = get_session()
     try:
         
@@ -155,6 +168,7 @@ def get_plot_data_for_current_measurement()-> List[Tuple]:
 
 
 def create_data_point(current, timestamp, measurement:Measurement):
+    logger.info("create_data_point()")
     session = get_session()
    
     dp = DataPoint(current = current, timestamp = timestamp, measurement = measurement)
@@ -165,66 +179,14 @@ def create_data_point(current, timestamp, measurement:Measurement):
 
 
 def create_data_point_to_current_measurement(current, timestamp):
+    logger.info("create_data_point_to_current_measurement()")
     session = get_session()
     return create_data_point(current, timestamp, get_current_measurement_instance())
 
 
 
-
-#################
-### Indicator ###
-#################
-
-# @create_session
-# def get_indicator_for_description_and_assembly_step(session:Session, description:str, assembly_step:AssemblyStep):
-#     query_result = session.query(Indicator).filter_by(description = description, assembly_step = assembly_step)
-#     if len(query_result.all()) > 1:
-#         raise Exception("This should never be greater 1!")
-#     return query_result.first()
-
-
-
-# @create_session
-# def get_indicators_for_assembly_step(session:Session, assembly_step:AssemblyStep):
-#     return  session.query(Indicator).filter_by(assembly_step = assembly_step).all()
-
-# @create_session
-# def get_indicators_for_assembly_step_and_IndicatorType(session:Session, assembly_step:AssemblyStep, indicator_type:IndicatorType):
-#     return session.query(Indicator).filter_by(assembly_step = assembly_step, indicator_type = indicator_type).all()
-
-
-
-
-###############
-### Failure ###
-###############
-
-# @create_session
-# def get_failure_for_description_and_assembly_step(session:Session, description:str, assembly_step:AssemblyStep):
-#     query_result = session.query(Failure).filter_by(description = description, assembly_step = assembly_step)
-#     if len(query_result.all()) > 1:
-#         raise Exception("This should never be greater 1!")
-#     return query_result.first()
-
-
-
-# @create_session
-# def create_failure(session:Session, assembly_step:AssemblyStep) -> Failure:
-#     ...
-
-#     f = Failure()
-
-
-# @create_session
-# def get_failures_list_from_indicator(session:Session, indicator:Indicator):
-#     indicator = session.query(Indicator).get(indicator.id)
-
-#     if indicator == None:
-#         return []
-#     failures = indicator.failures
-#     return failures
-
 def get_failures_list_for_assembly_step(step:AssemblyStep):
+    logger.info("get_failures_list_for_assembly_step()")
     session = get_session()
     failures = session.query(Failure).filter_by(assembly_step = step).all()
     if failures == None:
@@ -232,6 +194,7 @@ def get_failures_list_for_assembly_step(step:AssemblyStep):
     return failures
 
 def create_failure_instance(failure:Failure):
+    logger.info("create_failure_instance()")
     session = get_session()
     f = FailureInstance(failure_id=failure.id, transmission = get_current_transmission())
     session.add(f)
@@ -244,6 +207,7 @@ def create_failure_instance(failure:Failure):
 ####################
 
 def create_improvement_instance(imp:Improvement):
+    logger.info("create_improvement_instance()")
     session = get_session()
     i = ImprovementInstance(improvement_id=imp.id, transmission=get_current_transmission())
     session.add(i)
@@ -252,6 +216,7 @@ def create_improvement_instance(imp:Improvement):
 
 
 def get_improvements_for_failure(fail:Failure) -> List[Improvement]:
+    logger.info("get_improvements_for_failure()")
     session = get_session()
     failure = session.query(Failure).get(fail.id)
 
@@ -262,20 +227,18 @@ def get_improvements_for_failure(fail:Failure) -> List[Improvement]:
     return improvements
 
 def delete_improvement_instance(imp_instance):
+    logger.info("delete_improvement_instance()")
+    
     session = get_session()
-
-    # imp = session.query(ImprovementInstance).get(imp_id)
     session.delete(imp_instance)
     session.commit()
 
 
 def setup_improvement_start(failure:Failure, improvement:Improvement) -> Tuple[FailureInstance, ImprovementInstance]:
     """Setup all necessary objects for improvement!"""
+    logger.info("setup_improvement_start()")
     session = get_session()
     t = get_current_transmission()
-
-    # m = Measurement()
-    # session.add(m)
 
     failure_instance = FailureInstance(failure = failure, transmission=t)
     session.add(failure_instance)

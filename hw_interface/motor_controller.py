@@ -20,14 +20,9 @@ from .definitions import Exception_PCAN_Connection_Failed, Exception_Controller_
 
 from threading import Thread, Lock
 
-logFormatter = logging.Formatter("'%(asctime)s - %(message)s")
-logger = logging.getLogger("motor_controller")
-logger.setLevel(logging.DEBUG)
 
-fileHandler = logging.FileHandler("motor_controller.log", mode="w")
-fileHandler.setFormatter(logFormatter)
-logger.addHandler(fileHandler)
-
+from logs.setup_logger import setup_logger
+logger = setup_logger("motor_controller")
 
 
 ####################

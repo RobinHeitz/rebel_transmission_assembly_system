@@ -63,6 +63,9 @@ class Transmission(Base):
     # indicator_instances = relationship("IndicatorInstance", backref=backref("transmission"))
     failure_instances = relationship("FailureInstance", backref=backref("transmission"))
     improvement_instances = relationship("ImprovementInstance", backref=backref("transmission"))
+
+    def __repr__(self) -> str:
+        return f"Transmission: id={self.id} / config={self.transmission_configuration}"
     
 
 class Assembly(Base):

@@ -20,20 +20,8 @@ import gui.improvement_window as improvement_window
 
 from gui import start_measurement
 
-
-
-logFormatter = logging.Formatter("'%(asctime)s - %(message)s")
-logger = logging.getLogger("start_app")
-logger.setLevel(logging.DEBUG)
-
-fileHandler = logging.FileHandler("gui.log", mode="w")
-fileHandler.setFormatter(logFormatter)
-logger.addHandler(fileHandler)
-
-consolerHandler = logging.StreamHandler()
-consolerHandler.setFormatter(logFormatter)
-logger.addHandler(consolerHandler)
-
+from logs.setup_logger import setup_logger
+logger = setup_logger("start_app")
 
 #######################
 ### FUNCTIONS  ########

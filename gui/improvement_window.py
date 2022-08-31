@@ -13,6 +13,9 @@ from data_management import data_controller
 from gui import start_measurement
 import enum
 
+from logs.setup_logger import setup_logger
+logger = setup_logger("improvemet_window")
+
 ###################
 ### DEFINITIONS ###
 ###################
