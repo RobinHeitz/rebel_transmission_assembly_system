@@ -1,4 +1,3 @@
-from math import comb
 import random
 import traceback 
 import PySimpleGUI as sg
@@ -282,10 +281,10 @@ if __name__ == "__main__":
         (KeyDefs.BTN_STOP_VELO_MODE, LayoutPageKeys.layout_assembly_step_1_page): (start_measurement.abort_movement ,dict(controller=controller)),
         
         (KeyDefs.BTN_START_VELO_MODE, LayoutPageKeys.layout_assembly_step_2_page): (start_velocity_mode, dict(controller=controller)),
-        (KeyDefs.BTN_STOP_VELO_MODE, LayoutPageKeys.layout_assembly_step_2_page): (stop_velocity_mode, dict(controller=controller)),
+        # (KeyDefs.BTN_STOP_VELO_MODE, LayoutPageKeys.layout_assembly_step_2_page): (stop_velocity_mode, dict(controller=controller)),
         
         (KeyDefs.BTN_START_VELO_MODE, LayoutPageKeys.layout_assembly_step_3_page): (start_velocity_mode, dict(controller=controller)),
-        (KeyDefs.BTN_STOP_VELO_MODE, LayoutPageKeys.layout_assembly_step_3_page): (stop_velocity_mode, dict(controller=controller)),
+        # (KeyDefs.BTN_STOP_VELO_MODE, LayoutPageKeys.layout_assembly_step_3_page): (stop_velocity_mode, dict(controller=controller)),
         
         # KeyDefs.UPDATE_GRAPH: (update_graph, dict()),
         # KeyDefs.FINISHED_VELO_STOP_GRAPH_UPDATING: (stop_graph_update, dict()),

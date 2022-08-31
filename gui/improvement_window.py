@@ -7,46 +7,57 @@ from hw_interface.motor_controller import RebelAxisController
 from .definitions import font_headline, font_normal, font_small
 from .plotting import GraphPlotter
 
-from data_management.model import Improvement, ImprovementInstance, Failure, FailureInstance
+from data_management.model import AssemblyStep, Improvement, ImprovementInstance, Failure, FailureInstance, Measurement
 from data_management import data_controller
 
-
+from gui import start_measurement
 import enum
+
+###################
+### DEFINITIONS ###
+###################
+
 
 class Key(enum.Enum):
     CANVAS = "-CANVAS-"
     FINISHED_REPEATING_MEASUREMENT = "-FINISHED_REPEATING_MEASUREMENT-"
 
 
-def cancel_improvement_button_clicked(window, ontroller:RebelAxisController,imp_instance):
+window = None
+controller = None
+plotter = None
+
+fail_instance = None
+imp_instance = None
+
+
+
+#################
+### FUNCTIONS ###
+#################
+
+def cancel_improvement_button_clicked(imp_instance):
     data_controller.delete_improvement_instance(imp_instance)
     window.write_event_value("Exit", "No")
 
 
-def repeat_measurement(window:sg.Window, controller:RebelAxisController, imp_instance:ImprovementInstance, ):
-    print("Repeating!", window, imp_instance, controller)
+def start_repeat_measurement(imp_instance:ImprovementInstance, ):
+    print("Repeating Measurement")
+    start_measurement.start_measurement(controller, AssemblyStep.step_1_no_flexring, measurement_finished, plotter)
+
+
+def measurement_finished(m:Measurement):
+    print("measurement finished: M = ", m)
 
 
 
-    stop_func = lambda: window.write_event_value(Key.FINISHED_REPEATING_MEASUREMENT, "Data")
-    controller.start_movement_velocity_mode(velocity=10, duration=3, invoke_stop_function = stop_func)
-
-
-def measurement_finished(event, values, window, imp_instance, controller):
-    print("measurement finished")
-
-    data = data_controller.get_plot_data_for_current_measurement()
-    x_data, y_data = zip(*data)
-    # plotter.plot_data(x_data, y_data)
-
-
-
-
-def improvement_window(controller:RebelAxisController, selected_failure:Failure, selected_improvement: Improvement):
+def improvement_window(c:RebelAxisController, selected_failure:Failure, selected_improvement: Improvement, invalid_measurement:Measurement):
     print("***"*5)
-    print("improve_window() starting ||| controler = ", controller, "| selected failure:", selected_failure, " | selected_improvement = ", selected_improvement)
+    print("improve_window() starting ||| controler = ", c, "| selected failure:", selected_failure, " | selected_improvement = ", selected_improvement)
 
-    measurement, fail_instance, imp_instance = data_controller.setup_improvement_start(selected_failure, selected_improvement)
+    global controller, fail_instance, imp_instance, window, plotter
+    controller = c
+    fail_instance, imp_instance = data_controller.setup_improvement_start(selected_failure, selected_improvement)
     title, description = imp_instance.improvement.title, imp_instance.improvement.description
 
     c1 = sg.Col([
@@ -65,7 +76,7 @@ def improvement_window(controller:RebelAxisController, selected_failure:Failure,
 
 
     bottom_button_bar = sg.Col([
-        [sg.B("Messung starten", size=(20,2), k=repeat_measurement), sg.B("Abbrechen", k=cancel_improvement_button_clicked, size=(20,2)), ]
+        [sg.B("Messung starten", size=(20,2), k=start_repeat_measurement), sg.B("Abbrechen", k=cancel_improvement_button_clicked, size=(20,2)), ]
     ], vertical_alignment="bottom", justification="center", element_justification="center", background_color="blue", expand_x=True, )
 
     layout = [
@@ -74,9 +85,8 @@ def improvement_window(controller:RebelAxisController, selected_failure:Failure,
         [bottom_button_bar],
         
         ]
-    
-    window = sg.Window("Fehler beheben", layout, modal=True, size=(1000,600),location=(0,0) , finalize=True, resizable=True)
 
+    window = sg.Window("Fehler beheben", layout, modal=True, size=(1000,600),location=(0,0) , finalize=True, resizable=True)
     plotter = GraphPlotter(window[Key.CANVAS])
     plotter.plot_data([],[])
 
@@ -86,11 +96,11 @@ def improvement_window(controller:RebelAxisController, selected_failure:Failure,
         if event == "Exit" or event == sg.WIN_CLOSED:
             break
         elif callable(event):
-            event(window, controller, imp_instance)
+            event(imp_instance)
         else:
             try:
                 func = key_function_map.get(event)
-                func(event, values, window, imp_instance, controller)
+                func(event, values, imp_instance)
             except:
                 print("ERROR: Event = ", event)
                 print(traceback.format_exc())
