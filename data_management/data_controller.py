@@ -1,4 +1,5 @@
 from cmath import exp
+from xmlrpc.client import Boolean
 from sqlalchemy.orm.session import Session
 from sqlalchemy.orm import sessionmaker, scoped_session
 import sqlalchemy as db
@@ -202,6 +203,17 @@ def create_failure_instance(failure:Failure):
     return f
 
 
+################
+### FAILURES ###
+################
+
+def delete_failure_instance(fail_instance: FailureInstance):
+    logger.info("delete_failure_instance()")
+    session = get_session()
+    session.delete(fail_instance)
+    session.commit()
+
+
 ####################
 ### IMPROVEMENTS ###
 ####################
@@ -232,11 +244,6 @@ def delete_improvement_instance(imp_instance: ImprovementInstance):
     session.delete(imp_instance)
     session.commit()
 
-def delete_failure_instance(fail_instance: FailureInstance):
-    logger.info("delete_failure_instance()")
-    session = get_session()
-    session.delete(fail_instance)
-    session.commit()
 
 
 def setup_improvement_start(failure:Failure, improvement:Improvement) -> Tuple[FailureInstance, ImprovementInstance]:
@@ -250,9 +257,13 @@ def setup_improvement_start(failure:Failure, improvement:Improvement) -> Tuple[F
 
     improvement_instance = ImprovementInstance(improvement = improvement, transmission = t, failure_instance=failure_instance)
     session.add(improvement_instance)
-
-    
-
     session.commit()
 
     return failure_instance, improvement_instance
+
+def set_success_status(imp_instance:ImprovementInstance, status:bool):
+    logger.info(f"set_success_status() | improvement-instance to set: {imp_instance} / new status: {status}")
+    session = get_session()
+    imp_instance.successful = status
+    session.commit()
+    return imp_instance

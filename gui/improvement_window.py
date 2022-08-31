@@ -1,3 +1,4 @@
+from fileinput import close
 from tkinter import font
 import PySimpleGUI as sg
 import traceback
@@ -24,6 +25,9 @@ logger = setup_logger("improvemet_window")
 class Key(enum.Enum):
     CANVAS = "-CANVAS-"
     FINISHED_REPEATING_MEASUREMENT = "-FINISHED_REPEATING_MEASUREMENT-"
+    BTN_FAILURE_FIXED = "-BTN_FAILURE_FIXED-"
+    BTN_FAILURE_STILL_EXISTS = "-BTN_FAILURE_STILL_EXISTS-"
+    BTN_CLOSE_IMPROVEMENT_WINDOW = "-BTN_CLOSE_IMPROVEMENT_WINDOW-"
 
 
 window = None
@@ -39,12 +43,16 @@ imp_instance = None
 ### FUNCTIONS ###
 #################
 
+def close_window():
+    window.write_event_value("Exit", None)
+
+
 def cancel_improvement_button_clicked(imp_instance):
     logger.debug(f"cancel_improvement_button_clicked()")
     data_controller.delete_improvement_instance(imp_instance)
     data_controller.data_controller.delete_failure_instance(fail_instance)
-    window.write_event_value("Exit", None)
-
+    # window.write_event_value("Exit", None)
+    close_window()
 
 def start_repeat_measurement(imp_instance:ImprovementInstance, ):
     logger.debug(f"start_repeat_measurement() | imp_instance: {imp_instance}")
@@ -54,21 +62,38 @@ def start_repeat_measurement(imp_instance:ImprovementInstance, ):
 def measurement_finished(m:Measurement):
     logger.debug(f"measurement_finished() | measurement: {m} | failure={fail_instance.failure}")
     if fail_instance.failure.failure_type == FailureType.overcurrent:
-        passed = measurement_passed(m)
+        passed = is_measurement_ok(m)
         if passed == True:
             window["-result-"].update("green")
+            data_controller.set_success_status(imp_instance, True)
         else:
             window["-result-"].update("red")
+            data_controller.set_success_status(imp_instance, False)
+        
+        window[Key.BTN_CLOSE_IMPROVEMENT_WINDOW].update(visible=True)
     
     else:
         logger.info(f"Failure is not measurable; Therefore personal feedback necessary")
+        window[Key.BTN_FAILURE_FIXED].update(visible=True)
+        window[Key.BTN_FAILURE_STILL_EXISTS].update(visible=True)
 
 
-def measurement_passed(m:Measurement):
+def is_measurement_ok(m:Measurement):
     logger.debug(f"evaluate_measurable_failures()")
     if m.max_current > 400:
         return False
     return True
+
+def user_selected_failure_is_fixed():
+    logger.debug(f"user_selected_failure_is_fixed")
+    data_controller.set_success_status(imp_instance, True)
+    close_window()
+
+
+def user_selected_failure_still_exists():
+    logger.debug(f"user_selected_failure_still_exists")
+    data_controller.set_success_status(imp_instance, False)
+    close_window()
     
     
 
@@ -100,7 +125,14 @@ def improvement_window(c:RebelAxisController, selected_failure:Failure, selected
 
 
     bottom_button_bar = sg.Col([
-        [sg.B("Messung starten", size=(20,2), k=start_repeat_measurement), sg.B("Abbrechen", k=cancel_improvement_button_clicked, size=(20,2)), ]
+        [
+            sg.B("Messung starten", size=(20,2), k=start_repeat_measurement), 
+            sg.B("Abbrechen", k=cancel_improvement_button_clicked, size=(20,2)),
+            sg.B("Fehler behoben", size=(20,2), button_color="green", k=Key.BTN_FAILURE_FIXED, visible=False),
+            sg.B("Fehler besteht weiterhin", size=(20,2), button_color="red", k=Key.BTN_FAILURE_STILL_EXISTS, visible=False),
+            sg.B("Schließen", size=(20,2), button_color="red", k=Key.BTN_CLOSE_IMPROVEMENT_WINDOW, visible=False),
+            
+            ]
     ], vertical_alignment="bottom", justification="center", element_justification="center", background_color="blue", expand_x=True, )
 
     layout = [
@@ -110,7 +142,7 @@ def improvement_window(c:RebelAxisController, selected_failure:Failure, selected
         
         ]
 
-    window = sg.Window("Fehler beheben", layout, modal=True, size=(1000,600),location=(0,0) , finalize=True, resizable=True)
+    window = sg.Window(f"Fehler beheben: {selected_failure}", layout, modal=True, size=(1000,600),location=(0,0) , finalize=True, resizable=True)
     plotter = GraphPlotter(window[Key.CANVAS])
     plotter.plot_data([],[])
 
@@ -135,7 +167,10 @@ def improvement_window(c:RebelAxisController, selected_failure:Failure, selected
 
 
 key_function_map = {
-    Key.FINISHED_REPEATING_MEASUREMENT: measurement_finished
+    Key.FINISHED_REPEATING_MEASUREMENT: measurement_finished,
+    Key.BTN_FAILURE_STILL_EXISTS: lambda *args: user_selected_failure_still_exists(),
+    Key.BTN_FAILURE_FIXED: lambda *args: user_selected_failure_is_fixed(),
+    Key.BTN_CLOSE_IMPROVEMENT_WINDOW: lambda *args: close_window(),
 
 }
 
