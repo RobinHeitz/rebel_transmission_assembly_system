@@ -45,18 +45,18 @@ def cancel_improvement_button_clicked(imp_instance):
 
 
 def start_repeat_measurement(imp_instance:ImprovementInstance, ):
-    print("Repeating Measurement")
+    logger.debug(f"start_repeat_measurement() | imp_instance: {imp_instance}")
     start_measurement.start_measurement(controller, AssemblyStep.step_1_no_flexring, measurement_finished, plotter)
 
 
 def measurement_finished(m:Measurement):
-    print("measurement finished: M = ", m)
+    logger.debug(f"measurement_finished() | measurement: {m}")
 
 
 
 def improvement_window(c:RebelAxisController, selected_failure:Failure, selected_improvement: Improvement, invalid_measurement:Measurement):
-    print("***"*5)
-    print("improve_window() starting ||| controler = ", c, "| selected failure:", selected_failure, " | selected_improvement = ", selected_improvement)
+    logger.debug(f"""improvement_window() | selected failure: {selected_failure} / 
+    selected improvement: {selected_improvement} / (invalid) measurement: {invalid_measurement}""")
 
     global controller, fail_instance, imp_instance, window, plotter
     controller = c
