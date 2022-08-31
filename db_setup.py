@@ -9,6 +9,8 @@ from data_management.model import Failure, FailureInstance, Improvement, Improve
 
 import random
 
+from data_management import data_controller
+
 engine, connection, metadata, session = None, None, None, None
 
 def add_to_session(session:Session, *args):
@@ -104,10 +106,9 @@ if __name__ == "__main__":
     session.flush()
 
 
-    # Transmission
-    t = Transmission(transmission_configuration = TransmissionConfiguration.config_105_break_encoder)
-    session.add(t)
-
+    # Transmission & Assembly:
+    data_controller.create_transmission(TransmissionConfiguration.config_105_break_encoder)
+    t = data_controller.get_current_transmission()
 
     create_assembly_step_1(session, t, AssemblyStep.step_1_no_flexring)
     # create_instances(session, t)

@@ -226,11 +226,16 @@ def get_improvements_for_failure(fail:Failure) -> List[Improvement]:
     improvements = failure.improvements
     return improvements
 
-def delete_improvement_instance(imp_instance):
+def delete_improvement_instance(imp_instance: ImprovementInstance):
     logger.info("delete_improvement_instance()")
-    
     session = get_session()
     session.delete(imp_instance)
+    session.commit()
+
+def delete_failure_instance(fail_instance: FailureInstance):
+    logger.info("delete_failure_instance()")
+    session = get_session()
+    session.delete(fail_instance)
     session.commit()
 
 

@@ -40,8 +40,10 @@ imp_instance = None
 #################
 
 def cancel_improvement_button_clicked(imp_instance):
+    logger.debug(f"cancel_improvement_button_clicked()")
     data_controller.delete_improvement_instance(imp_instance)
-    window.write_event_value("Exit", "No")
+    data_controller.data_controller.delete_failure_instance(fail_instance)
+    window.write_event_value("Exit", None)
 
 
 def start_repeat_measurement(imp_instance:ImprovementInstance, ):
