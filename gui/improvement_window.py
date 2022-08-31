@@ -7,7 +7,7 @@ from hw_interface.motor_controller import RebelAxisController
 from .definitions import font_headline, font_normal, font_small
 from .plotting import GraphPlotter
 
-from data_management.model import AssemblyStep, Improvement, ImprovementInstance, Failure, FailureInstance, Measurement
+from data_management.model import AssemblyStep, FailureType, Improvement, ImprovementInstance, Failure, FailureInstance, Measurement
 from data_management import data_controller
 
 from gui import start_measurement
@@ -50,7 +50,25 @@ def start_repeat_measurement(imp_instance:ImprovementInstance, ):
 
 
 def measurement_finished(m:Measurement):
-    logger.debug(f"measurement_finished() | measurement: {m}")
+    logger.debug(f"measurement_finished() | measurement: {m} | failure={fail_instance.failure}")
+    if fail_instance.failure.failure_type == FailureType.overcurrent:
+        passed = measurement_passed(m)
+        if passed == True:
+            window["-result-"].update("green")
+        else:
+            window["-result-"].update("red")
+    
+    else:
+        logger.info(f"Failure is not measurable; Therefore personal feedback necessary")
+
+
+def measurement_passed(m:Measurement):
+    logger.debug(f"evaluate_measurable_failures()")
+    if m.max_current > 400:
+        return False
+    return True
+    
+    
 
 
 
@@ -75,6 +93,7 @@ def improvement_window(c:RebelAxisController, selected_failure:Failure, selected
 
     c3 = sg.Col([
         [sg.Canvas(key=Key.CANVAS, size=(50,50))],
+        [sg.T("", k="-result-")],
     ], expand_x=True, expand_y=True, background_color="purple", element_justification="center")
 
 
@@ -105,8 +124,8 @@ def improvement_window(c:RebelAxisController, selected_failure:Failure, selected
                 func = key_function_map.get(event)
                 func(event, values, imp_instance)
             except:
-                print("ERROR: Event = ", event)
-                print(traceback.format_exc())
+                logger.error(f"Error while executing function from key-function-dict: Event={event}")
+                logger.error(traceback.format_exc())
         
         
         
