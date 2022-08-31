@@ -1,5 +1,3 @@
-from cmath import exp
-from xmlrpc.client import Boolean
 from sqlalchemy.orm.session import Session
 from sqlalchemy.orm import sessionmaker, scoped_session
 import sqlalchemy as db
@@ -10,9 +8,6 @@ from data_management.model import Failure, FailureInstance, Improvement, Improve
 
 import traceback
 import threading
-import logging
-
-
 from typing import List, Tuple
 
 # logger setup
@@ -36,23 +31,37 @@ current_assemblies = dict()
 
 sessions = {}
 
+session = None
 ######################
 #### helper functions
 ######################
 
 def  get_session() -> Session:
     ...
-    thread_id = threading.get_ident()
+    # thread_id = threading.get_ident()
 
-    try:
-        session = sessions[thread_id]
-        return session
-    except KeyError:
+    # other_thread_keys = list(sessions.keys())
+
+    global session
+    if session == None:
         factory = sessionmaker(bind=engine, expire_on_commit=False)
         session = scoped_session(factory)()
 
-        sessions[thread_id] = session
-        return session
+    return session
+
+
+    # try:
+    #     session = sessions[thread_id]
+    #     return session
+    
+    # except KeyError:
+    #     factory = sessionmaker(bind=engine, expire_on_commit=False)
+    #     session = scoped_session(factory)()
+
+    #     sessions[thread_id] = session
+    
+    # finally:
+    #     return session
 
 
 # def create_session(f):

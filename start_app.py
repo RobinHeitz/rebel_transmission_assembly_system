@@ -93,8 +93,9 @@ def predict_failure(measurement: Measurement):
     failures = data_controller.get_failures_list_for_assembly_step(assembly_step)
 
     f = failures[0]
-    global failure_selection 
+    global failure_selection, current_measurement
     failure_selection = f
+    current_measurement = measurement
 
     window[KeyDefs.FRAME_FAILURE_DETECTION].update(visible=True)
     window[KeyDefs.COMBO_FAILURE_SELECT].update(values = failures, value=f)
@@ -112,7 +113,6 @@ def combo_failure_selection(event, values):
 def btn_failure_selection_clicked(event, values):
     logger.info("*"*10)
     logger.info(f"btn_failure_selection_clicked: {failure_selection}")
-    # data_controller.create_failure_instance(failure_selection)
     improvements = data_controller.get_improvements_for_failure(failure_selection)
 
 
@@ -133,8 +133,7 @@ def list_improvement_selected(event, values):
 def btn_improvement_selection_clicked(event, values):
     logger.info("*"*10)
     logger.info(f"btn_improvement_selection_clicked: {improvement_selection}")
-    # imp_instance = data_controller.create_improvement_instance(improvement_selection)
-    improvement_window.improvement_window(controller, failure_selection, improvement_selection)
+    improvement_window.improvement_window(controller, failure_selection, improvement_selection, current_measurement)
     
 
 ######################################################
@@ -236,6 +235,7 @@ if __name__ == "__main__":
 
     failure_selection = None
     improvement_selection = None
+    current_measurement = None
 
 
     plotters = {
@@ -246,6 +246,7 @@ if __name__ == "__main__":
         p.plot_data([],[])
 
 
+    window.maximize()
     key_function_map = {
         KeyDefs.BTN_NAV_NEXT_PAGE: (_nav_next_page, dict()),
         KeyDefs.BTN_NAV_PREVIOUS_PAGE: (_nav_previous_page, dict()),

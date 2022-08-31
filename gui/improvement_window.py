@@ -146,6 +146,7 @@ def improvement_window(c:RebelAxisController, selected_failure:Failure, selected
     plotter = GraphPlotter(window[Key.CANVAS])
     plotter.plot_data([],[])
 
+    window.maximize()
     
     while True:
         event, values = window.read()
