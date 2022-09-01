@@ -69,6 +69,8 @@ def check_moveability(event, values):
 
 def start_velocity_mode(event, values, controller:RebelAxisController):
     """Invoked by Btn click: Start Measurement"""
+    _hide_failure_and_improvement_items()
+
     step = get_assembly_step_for_page_index(current_page_index)
     
     page_key = get_page_key_for_index(current_page_index)
@@ -79,13 +81,10 @@ def start_velocity_mode(event, values, controller:RebelAxisController):
 def measurement_finished(m:Measurement):
     """Invoked by start_measurement.start_measurement. Callback function for updating gui elements based on finished measurement."""
     text_field = window[(KeyDefs.TEXT_MIN_MAX_CURRENT_VALUES, LayoutPageKeys.layout_assembly_step_1_page)]
-    text_field.update(f"Min current: {m.min_current} ||| Max. current: {m.max_current} || Mean current: {m.mean_current}")
-
-
-    # change color
-    window["-B-"].update(button_color='red')
-
+    text_field.update(f"Min current: {m.min_current} ||| Max. current: {m.max_current} || Mean current: {m.mean_current}", visible=True)
     predict_failure(m)
+
+
 
 def predict_failure(measurement: Measurement):
     """Tries to predict < Indicator > (e.g. Overcurrent) based on currently measurement taken. Gets called after graph updating has stopped. """
@@ -95,7 +94,7 @@ def predict_failure(measurement: Measurement):
     assembly_step = get_assembly_step_for_page_index(current_page_index)
     limit = get_current_limit_for_assembly_step(assembly_step)
     
-    global failure_selection, current_measurement
+    global current_measurement
     current_measurement = measurement
 
     if measurement.max_current > limit:
@@ -103,18 +102,19 @@ def predict_failure(measurement: Measurement):
         if len(failures) != 1: raise Exception("DataStruture is corrupt! There should be only 1 instance of failure for a given AssemblyStep with FailureType overcurrent.")
         session.close()
         window[KeyDefs.TEXT_HIGH_CURRENT_FAILRE_DETECTED].update(f"Es wurde ein Fehler erkannt: {failures[0]}", text_color="red", visible=True)
-        
+        window[KeyDefs.COMBO_FAILURE_SELECT].update(values=failures, value=failures[0])
         show_improvements(failures[0])
     else:
 
         window[KeyDefs.BTN_DETECT_FAILURE_MANUAL].update(visible=True)
 
 
+
 def show_improvements(f:Failure):
     """Shows Frame + Listbox with possible Improvements."""
     improvements = data_controller.get_improvements_for_failure(f)
+    window[KeyDefs.FRAME_FAILURE_DETECTION].update(visible=True)
     window[KeyDefs.LISTBOX_POSSIBLE_IMPROVEMENTS].update(improvements, set_to_index=[0,])
-    window[KeyDefs.FRAME_POSSIBLE_IMPROVEMENTS].update(visible=True)
 
 
 def show_combo_failure_selection(*args, **kwargs):
@@ -125,20 +125,11 @@ def show_combo_failure_selection(*args, **kwargs):
     window[KeyDefs.FRAME_FAILURE_DETECTION].update(visible=True)
     window[KeyDefs.COMBO_FAILURE_SELECT].update(values=failures, value=failures[0])
 
+    show_improvements(failures[0])
 
 def combo_value_changes(event, values):
     """If combo's selected value changes, Possible Improvement Window should hide."""
-    window[KeyDefs.FRAME_POSSIBLE_IMPROVEMENTS].update(visible=False)
-
-
-### Selected Failure
-# def combo_failure_selection(event, values):
-    # f = values[event]
-    # logger.info("*"*10)
-    # logger.info(f"combo_failure_selection(): {f}")
-    # global failure_selection
-    # failure_selection = f
-    
+    show_improvements(values[event])
 
 def btn_failure_selection_clicked(event, values):
     logger.info("*"*10)
@@ -148,29 +139,18 @@ def btn_failure_selection_clicked(event, values):
     show_improvements(combo_selected_failure)
 
 
-
-
-    # improvements = data_controller.get_improvements_for_failure(failure_selection)
-
-
-    # window[KeyDefs.LISTBOX_POSSIBLE_IMPROVEMENTS].update(improvements)
-    # window[KeyDefs.FRAME_POSSIBLE_IMPROVEMENTS].update(visible=True)
-
-
-# selected improvement from list
-def list_improvement_selected(event, values):
-    logger.info("*"*10)
-    selected_improvement = values[event][0]
-    logger.info(f"list_improvement_selected: {selected_improvement}")
-
-    global improvement_selection
-    improvement_selection = selected_improvement
-    
-
 def btn_improvement_selection_clicked(event, values):
     logger.info("*"*10)
-    logger.info(f"btn_improvement_selection_clicked: {improvement_selection}")
-    improvement_window.improvement_window(controller, failure_selection, improvement_selection, current_measurement)
+    selected_improvement = values[KeyDefs.LISTBOX_POSSIBLE_IMPROVEMENTS]
+    selected_failure = values[KeyDefs.COMBO_FAILURE_SELECT]
+    logger.info(f"btn_improvement_selection_clicked: {selected_improvement}")
+    improvement_window.improvement_window(controller, selected_failure, selected_improvement, current_measurement)
+
+def _hide_failure_and_improvement_items():
+    window[KeyDefs.FRAME_FAILURE_DETECTION].update(visible=False)
+    window[KeyDefs.BTN_DETECT_FAILURE_MANUAL].update(visible=False)
+    window[KeyDefs.TEXT_HIGH_CURRENT_FAILRE_DETECTED].update(visible=False)
+    window[(KeyDefs.TEXT_MIN_MAX_CURRENT_VALUES, LayoutPageKeys.layout_assembly_step_1_page)].update(visible=False)
     
 
 ######################################################
@@ -270,8 +250,6 @@ if __name__ == "__main__":
 
     current_page_index = 0
 
-    failure_selection = None
-    improvement_selection = None
     current_measurement = None
 
 
@@ -318,10 +296,10 @@ if __name__ == "__main__":
         KeyDefs.BTN_DETECT_FAILURE_MANUAL: (show_combo_failure_selection, dict()),
 
         KeyDefs.COMBO_FAILURE_SELECT: (combo_value_changes, dict()),
-        KeyDefs.BTN_FAILURE_DETECTION: (btn_failure_selection_clicked, dict()),
+        # KeyDefs.BTN_FAILURE_DETECTION: (btn_failure_selection_clicked, dict()),
         
         
-        KeyDefs.LISTBOX_POSSIBLE_IMPROVEMENTS: (list_improvement_selected, dict()),
+        # KeyDefs.LISTBOX_POSSIBLE_IMPROVEMENTS: (list_improvement_selected, dict()),
         KeyDefs.BTN_SELECT_IMPROVEMENT: (btn_improvement_selection_clicked, dict()),
 
 

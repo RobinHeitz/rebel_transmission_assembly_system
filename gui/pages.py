@@ -49,32 +49,35 @@ layout_assembly_step_1 = [
             ],
             [
                 sg.Canvas(key=(KeyDefs.CANVAS_GRAPH_PLOTTING, LayoutPageKeys.layout_assembly_step_1_page), size=(250,250)),
-                sg.B("", button_color="yellow", disabled=True, k="-B-", size=(20,10))],
-            
-            [sg.Text("", font=font_normal, key=(KeyDefs.TEXT_MIN_MAX_CURRENT_VALUES, LayoutPageKeys.layout_assembly_step_1_page))],
+                
+                
+                sg.Frame("Fehler beheben:",font=font_headline,layout=[
+                    [sg.T("Fehler: ", font=font_normal)],
+                    [sg.Combo(["A", "B", "C"], default_value="B", s=(50,25), enable_events=True, readonly=True, k=KeyDefs.COMBO_FAILURE_SELECT, font=font_normal),],
+                    [sg.T("Mögliche Maßnahmen:", font=font_normal),],
+                    [sg.Listbox([], size=(50,8), enable_events=True, k=KeyDefs.LISTBOX_POSSIBLE_IMPROVEMENTS, font=font_normal ),],
+                    [sg.B("Maßnahme anwenden", enable_events=True ,k=KeyDefs.BTN_SELECT_IMPROVEMENT, font=font_normal)],
+                    
+                ], visible=False, k=KeyDefs.FRAME_FAILURE_DETECTION, vertical_alignment="top"),
 
-            [sg.T("Es wurde ein Fehler erkannt: ", k=KeyDefs.TEXT_HIGH_CURRENT_FAILRE_DETECTED, font=font_normal, visible=False)],
+                ],
             
+            [sg.Text("", font=font_normal, key=(KeyDefs.TEXT_MIN_MAX_CURRENT_VALUES, LayoutPageKeys.layout_assembly_step_1_page), visible=False)],
+            [sg.T("Es wurde ein Fehler erkannt: ", k=KeyDefs.TEXT_HIGH_CURRENT_FAILRE_DETECTED, font=font_normal, visible=False)],
             [sg.B("Fehler manuell erkennen", size=(20,1), k=KeyDefs.BTN_DETECT_FAILURE_MANUAL, visible=False)],
 
             
-            [sg.Frame("Es wurde ein Fehler erkannt:",layout=[
-                [
-                    sg.T("Fehler: "), 
-                    sg.Combo(["A", "B", "C"], default_value="B", s=(50,25), enable_events=True, readonly=True, k=KeyDefs.COMBO_FAILURE_SELECT),
-                    sg.B("Fehler auswählen", k=KeyDefs.BTN_FAILURE_DETECTION),
-                    ],
-                
-            ], visible=False, k=KeyDefs.FRAME_FAILURE_DETECTION) ],
-
-            [sg.Frame("Behebungsmaßnahmen:", layout=[
-                [
-                    sg.T("Maßnahmen:"),
-                    sg.Listbox([], size=(50,8), enable_events=True, k=KeyDefs.LISTBOX_POSSIBLE_IMPROVEMENTS, ),
-                    sg.B("Fehler beheben", enable_events=True ,k=KeyDefs.BTN_SELECT_IMPROVEMENT)
-                    ],
-            ], visible=False, k=KeyDefs.FRAME_POSSIBLE_IMPROVEMENTS)],
-           
+            [
+                sg.Frame("Fehler beheben:",layout=[
+                    [sg.T("Fehler: ")],
+                    [sg.Combo(["A", "B", "C"], default_value="B", s=(50,25), enable_events=True, readonly=True, k=KeyDefs.COMBO_FAILURE_SELECT),],
+                    [sg.T("Mögliche Maßnahmen:"),],
+                    [sg.Listbox([], size=(50,8), enable_events=True, k=KeyDefs.LISTBOX_POSSIBLE_IMPROVEMENTS, ),],
+                    [sg.B("Maßnahme anwenden", enable_events=True ,k=KeyDefs.BTN_SELECT_IMPROVEMENT)],
+                    
+                ], visible=False, k=KeyDefs.FRAME_FAILURE_DETECTION) 
+            
+            ],
 
         ])
 
