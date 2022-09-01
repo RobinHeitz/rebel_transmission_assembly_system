@@ -277,9 +277,6 @@ def setup_improvement_start(session:Session, failure:Failure, improvement:Improv
     """Setup all necessary objects for improvement!"""
     # session = get_session()
 
-    import pdb
-    pdb.set_trace()
-
     t = get_current_transmission()
 
     failure_instance = FailureInstance(failure = failure, transmission=t, measurement=m)

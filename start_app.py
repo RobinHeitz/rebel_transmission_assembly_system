@@ -94,8 +94,8 @@ def predict_failure(measurement: Measurement):
     assembly_step = get_assembly_step_for_page_index(current_page_index)
     limit = get_current_limit_for_assembly_step(assembly_step)
     
-    global current_measurement_id
-    current_measurement_id = measurement.id
+    global current_measurement
+    current_measurement = measurement
 
     if measurement.max_current > limit:
         failures = session.query(Failure).filter_by(assembly_step = assembly_step, failure_type = FailureType.overcurrent).all()
@@ -143,10 +143,10 @@ def btn_improvement_selection_clicked(event, values):
     logger.info("*"*10)
     selected_improvement = values[KeyDefs.LISTBOX_POSSIBLE_IMPROVEMENTS][0]
     selected_failure = values[KeyDefs.COMBO_FAILURE_SELECT]
-    logger.info(f"btn_improvement_selection_clicked: {selected_improvement} | selected_failure = {selected_failure} | measurement_id = {current_measurement_id}")
+    logger.info(f"btn_improvement_selection_clicked: {selected_improvement} | selected_failure = {selected_failure} | measurement = {current_measurement}")
 
 
-    improvement_window.improvement_window(controller, selected_failure, selected_improvement, current_measurement_id)
+    improvement_window.improvement_window(controller, selected_failure, selected_improvement, current_measurement)
 
 def _hide_failure_and_improvement_items():
     window[KeyDefs.FRAME_FAILURE_DETECTION].update(visible=False)
@@ -252,7 +252,7 @@ if __name__ == "__main__":
 
     current_page_index = 0
 
-    current_measurement_id = None
+    current_measurement = None
 
 
     plotters = {

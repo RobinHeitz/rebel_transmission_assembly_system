@@ -98,7 +98,7 @@ class Measurement(Base):
     improvement_instance_id = relationship("ImprovementInstance", uselist=False, backref=backref("measurement"))
 
     def __repr__(self):
-        return f"Measurement-Instance: id={self.id} | mean current = {self.mean_current} | # DataPoints: {len(self.datapoints)} "
+        return f"Measurement-Instance: id={self.id} | mean current = {self.mean_current}"
 
 
 
