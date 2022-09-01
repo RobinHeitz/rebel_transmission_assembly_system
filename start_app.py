@@ -80,7 +80,22 @@ def measurement_finished(m:Measurement):
     """Invoked by start_measurement.start_measurement. Callback function for updating gui elements based on finished measurement."""
     text_field = window[(KeyDefs.TEXT_MIN_MAX_CURRENT_VALUES, LayoutPageKeys.layout_assembly_step_1_page)]
     text_field.update(f"Min current: {m.min_current} ||| Max. current: {m.max_current} || Mean current: {m.mean_current}")
+
+    # col = window["-KEY-"]
+
+    # print(col)
+
+    # col.Widget.config(background="red")
+
+    # window["-KEY-"].Widget.config(background='red')
+    # window["-KEY-"].Widget.config(highlightbackground='red')
+    # window["-KEY-"].Widget.config(highlightcolor='red')
+
+
     predict_failure(m)
+
+    # change color
+    # # window[(KeyDefs.CANVAS_GRAPH_PLOTTING, LayoutPageKeys.layout_assembly_step_1_page)].ParentRowFrame.config(background='red')
 
 
 

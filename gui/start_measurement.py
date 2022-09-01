@@ -48,6 +48,7 @@ def start_measurement(controller: RebelAxisController, assembly_step:AssemblySte
 
 def graph_update_cycle(controller:RebelAxisController, plotter:GraphPlotter):
     """Runs in a thread, ever few seconds it's raising an event for the graphical main queue to trigger graph updating."""
+
     cur_thread = threading.current_thread()
     while getattr(cur_thread, 'do_plot', True):
         time.sleep(1)
@@ -62,10 +63,9 @@ def graph_update_cycle(controller:RebelAxisController, plotter:GraphPlotter):
             
             # send value to data controller for adding them into data base :)
             data_controller.create_data_point_to_current_measurement(mean_current, millis)
-            data_controller.update_current_measurement_fields()
+            # data_controller.update_current_measurement_fields()
 
             update_graph(plotter)
-
 
 def update_graph(plotter:GraphPlotter):
     ...
@@ -91,6 +91,7 @@ def stop_graph_update(stop_func):
 
     stop_current_thread()
 
-    measurement = data_controller.get_current_measurement_instance()
-    stop_func(measurement)
+    # measurement = data_controller.get_current_measurement_instance()
+    m = data_controller.update_current_measurement_fields()
+    stop_func(m)
     

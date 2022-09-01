@@ -1,6 +1,7 @@
 from sqlalchemy.orm.session import Session
 from sqlalchemy.orm import sessionmaker, scoped_session
 import sqlalchemy as db
+from sqlalchemy.exc import InvalidRequestError
 
 from data_management.model import Transmission, TransmissionConfiguration
 from data_management.model import Measurement, Assembly, AssemblyStep, DataPoint
@@ -36,13 +37,37 @@ def  get_session() -> Session:
 
     return session
 
+def catch_exceptions(f):
+    
+    def _log_e(f, e):
+        logger.error(f"Exception occured while doing db operations: {f.__name__}.")
+        logger.error(traceback.format_exc())
+
+    
+    def wrap(*args, **kwargs):
+        try:
+            logger.info(f"--- {f.__name__}() called")
+            return_val = f(*args, **kwargs)
+            return return_val
+        except InvalidRequestError as e:
+            logger.error("++++++++++++ INVALID REQUEST ERROR")
+            _log_e(f,e)
+            ...
+
+        except Exception as e:
+            _log_e(f,e)
+            # logger.error(f"Exception occured while doing db operations: {f.__name__}.")
+            # logger.error(traceback.format_exc())
+    return wrap
+
+
+
 #####################
 ###  Transmission ###
 #####################
 
-# @create_session
+@catch_exceptions
 def create_transmission(config:TransmissionConfiguration) -> Transmission:
-    logger.info("create_transmission()")
     session = get_session()
     if config == None:
         raise ValueError("Config shouldn't be None if Transmission gets created.")
@@ -58,6 +83,7 @@ def create_transmission(config:TransmissionConfiguration) -> Transmission:
     return t
 
 
+@catch_exceptions
 def get_current_transmission():
     session = get_session()
     t = session.query(Transmission).order_by(Transmission.id.desc()).first()
@@ -70,9 +96,9 @@ def get_current_transmission():
 ################
 
 
+@catch_exceptions
 def get_assembly_from_current_transmission(step:AssemblyStep) -> Assembly:
     """Returns assembly (filtered by param: Step) from current transmission."""
-    logger.info("get_assembly_from_current_transmission")
     session = get_session()
     t = session.query(Transmission).order_by(Transmission.id.desc()).first()
     return session.query(Assembly).filter_by(transmission=t, assembly_step=step).first()
@@ -82,17 +108,22 @@ def get_assembly_from_current_transmission(step:AssemblyStep) -> Assembly:
 ### Measurement ###
 ###################
 
+@catch_exceptions
 def get_current_measurement_instance() -> Measurement:
-    logger.info("get_current_measurement_instance")
-    session = get_session()
-    return session.query(Measurement).order_by(Measurement.id.desc()).first()
+    try:
+        session = get_session()
+        returnVal =  session.query(Measurement).order_by(Measurement.id.desc()).first()
+        return returnVal
+        
+    except Exception as e:
+        logger.error(e)
+        
 
-
+@catch_exceptions
 def create_measurement(assembly:Assembly) -> Measurement:
     """Creates a measurement-obj.
     Parameters:
     - assembly:Assembly -> Assembly-instance measurement gets attached to."""
-    logger.info("create_measurement")
     session = get_session()
     new_measure = Measurement(assembly = assembly)
     
@@ -104,8 +135,8 @@ def create_measurement(assembly:Assembly) -> Measurement:
 
 
 
+@catch_exceptions
 def update_current_measurement_fields():
-    logger.info("update_current_measurement_fields()")
     session = get_session()
     m = session.query(Measurement).order_by(Measurement.id.desc()).first()
     datapoints_ = session.query(DataPoint).filter_by(measurement=m)
@@ -116,10 +147,12 @@ def update_current_measurement_fields():
     m.mean_current = round(sum(current_values) / len(current_values) ,2)
     session.commit()
 
+    return m
 
+
+@catch_exceptions
 def get_plot_data_for_current_measurement()-> List[Tuple]:
     """Returns list of (timestamp, current) of current measurement for plotting."""
-    logger.info("get_plot_data_for_current_measurement()")
     session = get_session()
     try:
         
@@ -137,7 +170,6 @@ def get_plot_data_for_current_measurement()-> List[Tuple]:
 
 
 def create_data_point(current, timestamp, measurement:Measurement):
-    logger.info("create_data_point()")
     session = get_session()
    
     dp = DataPoint(current = current, timestamp = timestamp, measurement = measurement)
@@ -147,9 +179,8 @@ def create_data_point(current, timestamp, measurement:Measurement):
     return dp
 
 
+@catch_exceptions
 def create_data_point_to_current_measurement(current, timestamp):
-    logger.info("create_data_point_to_current_measurement()")
-    session = get_session()
     return create_data_point(current, timestamp, get_current_measurement_instance())
 
 
@@ -160,10 +191,10 @@ def create_data_point_to_current_measurement(current, timestamp):
 #     failures = session.query(Failure).filter_by(assembly_step = step).all()
 #     if failures == None:
 #         return []
-    return failures
+    # return failures
 
+@catch_exceptions
 def create_failure_instance(failure:Failure):
-    logger.info("create_failure_instance()")
     session = get_session()
     f = FailureInstance(failure_id=failure.id, transmission = get_current_transmission())
     session.add(f)
@@ -175,16 +206,16 @@ def create_failure_instance(failure:Failure):
 ### FAILURES ###
 ################
 
+@catch_exceptions
 def delete_failure_instance(fail_instance: FailureInstance):
-    logger.info("delete_failure_instance()")
     session = get_session()
     session.delete(fail_instance)
     session.commit()
 
 
 
+@catch_exceptions
 def sorted_failures_by_incidents(step:AssemblyStep):
-    logger.info("rank_failures(): Should return a list of failures with ranked positions by probability of occurrence.")
     session = get_session()
     
     # total_failure_occurences = session.query(FailureInstance).filter_by(assembly_step = step).count() 
@@ -206,8 +237,8 @@ def sorted_failures_by_incidents(step:AssemblyStep):
 ### IMPROVEMENTS ###
 ####################
 
+@catch_exceptions
 def create_improvement_instance(imp:Improvement):
-    logger.info("create_improvement_instance()")
     session = get_session()
     i = ImprovementInstance(improvement_id=imp.id, transmission=get_current_transmission())
     session.add(i)
@@ -215,8 +246,8 @@ def create_improvement_instance(imp:Improvement):
     return i
 
 
+@catch_exceptions
 def get_improvements_for_failure(fail:Failure) -> List[Improvement]:
-    logger.info("get_improvements_for_failure()")
     session = get_session()
     failure = session.query(Failure).get(fail.id)
 
@@ -226,17 +257,17 @@ def get_improvements_for_failure(fail:Failure) -> List[Improvement]:
     improvements = failure.improvements
     return improvements
 
+@catch_exceptions
 def delete_improvement_instance(imp_instance: ImprovementInstance):
-    logger.info("delete_improvement_instance()")
     session = get_session()
     session.delete(imp_instance)
     session.commit()
 
 
 
+@catch_exceptions
 def setup_improvement_start(failure:Failure, improvement:Improvement, m:Measurement) -> Tuple[FailureInstance, ImprovementInstance]:
     """Setup all necessary objects for improvement!"""
-    logger.info("setup_improvement_start()")
     session = get_session()
     t = get_current_transmission()
 
@@ -249,15 +280,15 @@ def setup_improvement_start(failure:Failure, improvement:Improvement, m:Measurem
 
     return failure_instance, improvement_instance
 
+@catch_exceptions
 def set_success_status(imp_instance:ImprovementInstance, status:bool):
-    logger.info(f"set_success_status() | improvement-instance to set: {imp_instance} / new status: {status}")
     session = get_session()
     imp_instance.successful = status
     session.commit()
     return imp_instance
 
+@catch_exceptions
 def update_improvement_measurement_relation(m:Measurement, imp_instance:ImprovementInstance):
-    logger.info(f"update_improvement_measurement_relation()")
     session = get_session()
     imp_instance.measurement = m
     session.flush()

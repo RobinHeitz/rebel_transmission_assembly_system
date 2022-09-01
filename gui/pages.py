@@ -23,7 +23,7 @@ layout_config_page = [
         [
             sg.Checkbox("Bremse vorhanden:", default=False, auto_size_text=False, font=font_normal, enable_events=True,disabled=True, key=KeyDefs.CHECKBOX_HAS_BRAKE) 
         ],
-    ], background_color="purple")],
+    ])],
     
     [
         sg.Button("Software updaten", key=KeyDefs.BTN_SOFTWARE_UPDATE, enable_events=True, font=font_normal, size=(20,1)), 
@@ -46,6 +46,11 @@ layout_assembly_step_1 = [
                 sg.Button("Abbrechen",enable_events=True, k=(KeyDefs.BTN_STOP_VELO_MODE, LayoutPageKeys.layout_assembly_step_1_page) ),
             ],
             [sg.Canvas(key=(KeyDefs.CANVAS_GRAPH_PLOTTING, LayoutPageKeys.layout_assembly_step_1_page), size=(250,250))],
+            
+            [sg.Col(layout=[
+            ], key="-KEY-", size=(200,200), background_color="yellow"),
+                
+            ],
             [sg.Text("", font=font_normal, key=(KeyDefs.TEXT_MIN_MAX_CURRENT_VALUES, LayoutPageKeys.layout_assembly_step_1_page))],
             
             [sg.Frame("Es wurde ein Fehler erkannt:",layout=[
