@@ -71,7 +71,8 @@ def start_repeat_measurement(imp_instance:ImprovementInstance, ):
 
 def measurement_finished(m:Measurement):
     logger.debug(f"measurement_finished() | measurement: {m} | failure={fail_instance.failure}")
-    data_controller.append_measurement_to_improvment_instance(m, imp_instance)
+    data_controller.update_improvement_measurement_relation(m, imp_instance)    
+    
     if fail_instance.failure.failure_type == FailureType.overcurrent:
         passed = is_measurement_ok(m)
         if passed == True:

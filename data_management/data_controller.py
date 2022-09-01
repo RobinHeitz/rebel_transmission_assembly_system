@@ -22,14 +22,6 @@ metadata = db.MetaData()
 
 current_transmission = None
 
-current_assemblies = dict()
-
-# testing:
-
-# factory = sessionmaker(bind=engine, expire_on_commit=False)
-# session = scoped_session(factory)()
-
-sessions = {}
 
 session = None
 ######################
@@ -37,45 +29,12 @@ session = None
 ######################
 
 def  get_session() -> Session:
-    ...
-    # thread_id = threading.get_ident()
-
-    # other_thread_keys = list(sessions.keys())
-
     global session
     if session == None:
         factory = sessionmaker(bind=engine, expire_on_commit=False)
         session = scoped_session(factory)()
 
     return session
-
-
-    # try:
-    #     session = sessions[thread_id]
-    #     return session
-    
-    # except KeyError:
-    #     factory = sessionmaker(bind=engine, expire_on_commit=False)
-    #     session = scoped_session(factory)()
-
-    #     sessions[thread_id] = session
-    
-    # finally:
-    #     return session
-
-
-# def create_session(f):
-#     def wrap(*args, **kwargs):
-#         session_factory = sessionmaker(bind=engine,expire_on_commit=False)
-#         Session = scoped_session(session_factory)
-#         session = Session()
-        
-#         return_val = f(session, *args, **kwargs)
-#         Session.remove()
-#         return return_val
-#     return wrap
-
-
 
 #####################
 ###  Transmission ###
@@ -277,15 +236,8 @@ def set_success_status(imp_instance:ImprovementInstance, status:bool):
     session.commit()
     return imp_instance
 
-def append_measurement_to_improvment_instance(m:Measurement, imp:ImprovementInstance):
-    logger.info(f"append_measurement_to_improvment_instance() | measure.id = {m.id} / imp.id = {imp.id}")
+def update_improvement_measurement_relation(m:Measurement, imp_instance:ImprovementInstance):
+    logger.info(f"update_improvement_measurement_relation()")
     session = get_session()
-
-    measure = session.query(Measurement).get(m.id)
-    improve_instance = session.query(Improvement).get(imp.id)
-
-    logger.info(f"Got new session instances: {measure} / {improve_instance}")
-
-    improve_instance.measurement = measure
-    logger.info(f"--- imp.measure = new_measure---")
+    imp_instance.measurement = m
     session.flush()
