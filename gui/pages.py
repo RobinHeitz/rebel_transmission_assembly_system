@@ -38,20 +38,25 @@ layout_config_page = [
 
 layout_assembly_step_1 = [
     [
-        sg.Image("gui/assembly_pictures/step_1_resize.png", size=(300,300)),
+        sg.Col(layout=[
+            [ sg.Image("gui/assembly_pictures/step_1_resize.png", size=(300,300)),]
+        ], vertical_alignment="top"),
         sg.VSeparator(pad=(5,5,5,5,)),
         sg.Column([
             [
                 sg.Button("Messung starten",enable_events=True, k=(KeyDefs.BTN_START_VELO_MODE, LayoutPageKeys.layout_assembly_step_1_page) ),
                 sg.Button("Abbrechen",enable_events=True, k=(KeyDefs.BTN_STOP_VELO_MODE, LayoutPageKeys.layout_assembly_step_1_page) ),
             ],
-            [sg.Canvas(key=(KeyDefs.CANVAS_GRAPH_PLOTTING, LayoutPageKeys.layout_assembly_step_1_page), size=(250,250))],
+            [
+                sg.Canvas(key=(KeyDefs.CANVAS_GRAPH_PLOTTING, LayoutPageKeys.layout_assembly_step_1_page), size=(250,250)),
+                sg.B("", button_color="yellow", disabled=True, k="-B-", size=(20,10))],
             
-            [sg.Col(layout=[
-            ], key="-KEY-", size=(200,200), background_color="yellow"),
-                
-            ],
             [sg.Text("", font=font_normal, key=(KeyDefs.TEXT_MIN_MAX_CURRENT_VALUES, LayoutPageKeys.layout_assembly_step_1_page))],
+
+            [sg.T("Es wurde ein Fehler erkannt: ", k=KeyDefs.TEXT_HIGH_CURRENT_FAILRE_DETECTED, font=font_normal, visible=False)],
+            
+            [sg.B("Fehler manuell erkennen", size=(20,1), k=KeyDefs.BTN_DETECT_FAILURE_MANUAL, visible=False)],
+
             
             [sg.Frame("Es wurde ein Fehler erkannt:",layout=[
                 [
@@ -70,13 +75,6 @@ layout_assembly_step_1 = [
                     ],
             ], visible=False, k=KeyDefs.FRAME_POSSIBLE_IMPROVEMENTS)],
            
-            # [sg.Frame("Mögliche Fehlerbehebungen:", layout=[
-            #     [
-            #         # sg.T("Ursache:"),
-            #         sg.Listbox([], size=(50,8), enable_events=False, k=KeyDefs.LISTBOX_POSSIBLE_IMPROVEMENTS, ),
-            #         # sg.B("Fehler beheben", enable_events=True ,k=KeyDefs.BTN_SELECT_FAILURE)
-            #         ],
-            # ], visible=False, k=KeyDefs.FRAME_POSSIBLE_IMPROVEMENTS)],
 
         ])
 
