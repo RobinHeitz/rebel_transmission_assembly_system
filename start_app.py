@@ -102,7 +102,7 @@ def measurement_finished(m:Measurement):
 def predict_failure(measurement: Measurement):
     """Tries to predict < Indicator > (e.g. Overcurrent) based on currently measurement taken. Gets called after graph updating has stopped. """
     logger.info("### predict_failure()")
-    session:Session = data_controller.get_session()
+    session:Session = data_controller.create_session()
 
     assembly_step = get_assembly_step_for_page_index(current_page_index)
     limit = get_current_limit_for_assembly_step(assembly_step)
@@ -110,6 +110,8 @@ def predict_failure(measurement: Measurement):
     if measurement.max_current > limit:
         failures = session.query(Failure).filter_by(assembly_step = assembly_step, failure_type = FailureType.overcurrent).all()
         if len(failures) != 1: raise Exception("DataStruture is corrupt! There should be only 1 instance of failure for a given AssemblyStep with FailureType overcurrent.")
+        session.close()
+    
     else:
         failures = data_controller.sorted_failures_by_incidents(assembly_step)
     

@@ -63,7 +63,7 @@ def graph_update_cycle(controller:RebelAxisController, plotter:GraphPlotter):
             
             # send value to data controller for adding them into data base :)
             data_controller.create_data_point_to_current_measurement(mean_current, millis)
-            # data_controller.update_current_measurement_fields()
+            data_controller.update_current_measurement_fields()
 
             update_graph(plotter)
 
@@ -91,7 +91,7 @@ def stop_graph_update(stop_func):
 
     stop_current_thread()
 
-    # measurement = data_controller.get_current_measurement_instance()
-    m = data_controller.update_current_measurement_fields()
-    stop_func(m)
+    measurement = data_controller.get_current_measurement_instance()
+    # data_controller.update_current_measurement_fields()
+    stop_func(measurement)
     

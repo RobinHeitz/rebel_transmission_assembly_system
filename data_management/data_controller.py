@@ -1,7 +1,7 @@
 from sqlalchemy.orm.session import Session
 from sqlalchemy.orm import sessionmaker, scoped_session
 import sqlalchemy as db
-from sqlalchemy.exc import InvalidRequestError
+from sqlalchemy.exc import InvalidRequestError, ResourceClosedError
 
 from data_management.model import Transmission, TransmissionConfiguration
 from data_management.model import Measurement, Assembly, AssemblyStep, DataPoint
@@ -29,12 +29,10 @@ session = None
 #### helper functions
 ######################
 
-def  get_session() -> Session:
-    global session
-    if session == None:
-        factory = sessionmaker(bind=engine, expire_on_commit=False)
-        session = scoped_session(factory)()
 
+def create_session() -> Session:
+    factory = sessionmaker(bind=engine, expire_on_commit=True)
+    session = scoped_session(factory)()
     return session
 
 def catch_exceptions(f):
@@ -47,17 +45,19 @@ def catch_exceptions(f):
     def wrap(*args, **kwargs):
         try:
             logger.info(f"--- {f.__name__}() called")
-            return_val = f(*args, **kwargs)
+           
+            session_obj = create_session()
+           
+            return_val = f(session_obj, *args, **kwargs)
+            # session_obj.close()
             return return_val
-        except InvalidRequestError as e:
-            logger.error("++++++++++++ INVALID REQUEST ERROR")
-            _log_e(f,e)
-            ...
 
         except Exception as e:
             _log_e(f,e)
-            # logger.error(f"Exception occured while doing db operations: {f.__name__}.")
-            # logger.error(traceback.format_exc())
+        
+        finally:
+            session_obj.close()
+
     return wrap
 
 
@@ -67,8 +67,8 @@ def catch_exceptions(f):
 #####################
 
 @catch_exceptions
-def create_transmission(config:TransmissionConfiguration) -> Transmission:
-    session = get_session()
+def create_transmission(session:Session, config:TransmissionConfiguration) -> Transmission:
+    # session = get_session()
     if config == None:
         raise ValueError("Config shouldn't be None if Transmission gets created.")
 
@@ -84,8 +84,8 @@ def create_transmission(config:TransmissionConfiguration) -> Transmission:
 
 
 @catch_exceptions
-def get_current_transmission():
-    session = get_session()
+def get_current_transmission(session:Session, ):
+    # session = get_session()
     t = session.query(Transmission).order_by(Transmission.id.desc()).first()
     logger.info(f"get_current_transmissio (): {t}")
     return t
@@ -97,9 +97,9 @@ def get_current_transmission():
 
 
 @catch_exceptions
-def get_assembly_from_current_transmission(step:AssemblyStep) -> Assembly:
+def get_assembly_from_current_transmission(session:Session, step:AssemblyStep) -> Assembly:
     """Returns assembly (filtered by param: Step) from current transmission."""
-    session = get_session()
+    # session = get_session()
     t = session.query(Transmission).order_by(Transmission.id.desc()).first()
     return session.query(Assembly).filter_by(transmission=t, assembly_step=step).first()
 
@@ -109,22 +109,19 @@ def get_assembly_from_current_transmission(step:AssemblyStep) -> Assembly:
 ###################
 
 @catch_exceptions
-def get_current_measurement_instance() -> Measurement:
-    try:
-        session = get_session()
-        returnVal =  session.query(Measurement).order_by(Measurement.id.desc()).first()
-        return returnVal
-        
-    except Exception as e:
-        logger.error(e)
+def get_current_measurement_instance(session:Session, ) -> Measurement:
+        # session = get_session()
+    returnVal =  session.query(Measurement).order_by(Measurement.id.desc()).first()
+    return returnVal
+    
         
 
 @catch_exceptions
-def create_measurement(assembly:Assembly) -> Measurement:
+def create_measurement(session:Session, assembly:Assembly) -> Measurement:
     """Creates a measurement-obj.
     Parameters:
     - assembly:Assembly -> Assembly-instance measurement gets attached to."""
-    session = get_session()
+    # session = get_session()
     new_measure = Measurement(assembly = assembly)
     
     session.add(new_measure)
@@ -136,8 +133,8 @@ def create_measurement(assembly:Assembly) -> Measurement:
 
 
 @catch_exceptions
-def update_current_measurement_fields():
-    session = get_session()
+def update_current_measurement_fields(session:Session, ):
+    # session = get_session()
     m = session.query(Measurement).order_by(Measurement.id.desc()).first()
     datapoints_ = session.query(DataPoint).filter_by(measurement=m)
     
@@ -147,30 +144,26 @@ def update_current_measurement_fields():
     m.mean_current = round(sum(current_values) / len(current_values) ,2)
     session.commit()
 
-    return m
+    # return m
 
 
 @catch_exceptions
-def get_plot_data_for_current_measurement()-> List[Tuple]:
+def get_plot_data_for_current_measurement(session:Session, )-> List[Tuple]:
     """Returns list of (timestamp, current) of current measurement for plotting."""
-    session = get_session()
-    try:
-        
-        m = get_current_measurement_instance()
+    # session = get_session()
+    m = get_current_measurement_instance()
 
-        datapoints = session.query(DataPoint).filter_by(measurement=m)
-        return [(d.timestamp, d.current) for d in datapoints]
-    except Exception as e:
-        print(traceback.format_exc(e))
+    datapoints = session.query(DataPoint).filter_by(measurement=m)
+    return [(d.timestamp, d.current) for d in datapoints]
 
 
 ##################
 ### DataPoints ###
 ##################
 
-
-def create_data_point(current, timestamp, measurement:Measurement):
-    session = get_session()
+@catch_exceptions
+def create_data_point(session:Session, current, timestamp, measurement:Measurement):
+    # session = get_session()
    
     dp = DataPoint(current = current, timestamp = timestamp, measurement = measurement)
     session.add(dp)
@@ -180,7 +173,7 @@ def create_data_point(current, timestamp, measurement:Measurement):
 
 
 @catch_exceptions
-def create_data_point_to_current_measurement(current, timestamp):
+def create_data_point_to_current_measurement(session:Session, current, timestamp):
     return create_data_point(current, timestamp, get_current_measurement_instance())
 
 
@@ -194,8 +187,8 @@ def create_data_point_to_current_measurement(current, timestamp):
     # return failures
 
 @catch_exceptions
-def create_failure_instance(failure:Failure):
-    session = get_session()
+def create_failure_instance(session:Session, failure:Failure):
+    # session = get_session()
     f = FailureInstance(failure_id=failure.id, transmission = get_current_transmission())
     session.add(f)
     session.commit()
@@ -207,16 +200,16 @@ def create_failure_instance(failure:Failure):
 ################
 
 @catch_exceptions
-def delete_failure_instance(fail_instance: FailureInstance):
-    session = get_session()
+def delete_failure_instance(session:Session, fail_instance: FailureInstance):
+    # session = get_session()
     session.delete(fail_instance)
     session.commit()
 
 
 
 @catch_exceptions
-def sorted_failures_by_incidents(step:AssemblyStep):
-    session = get_session()
+def sorted_failures_by_incidents(session:Session, step:AssemblyStep):
+    # session = get_session()
     
     # total_failure_occurences = session.query(FailureInstance).filter_by(assembly_step = step).count() 
     
@@ -238,8 +231,8 @@ def sorted_failures_by_incidents(step:AssemblyStep):
 ####################
 
 @catch_exceptions
-def create_improvement_instance(imp:Improvement):
-    session = get_session()
+def create_improvement_instance(session:Session, imp:Improvement):
+    # session = get_session()
     i = ImprovementInstance(improvement_id=imp.id, transmission=get_current_transmission())
     session.add(i)
     session.commit()
@@ -247,8 +240,8 @@ def create_improvement_instance(imp:Improvement):
 
 
 @catch_exceptions
-def get_improvements_for_failure(fail:Failure) -> List[Improvement]:
-    session = get_session()
+def get_improvements_for_failure(session:Session, fail:Failure) -> List[Improvement]:
+    # session = get_session()
     failure = session.query(Failure).get(fail.id)
 
     if failure == None:
@@ -258,17 +251,17 @@ def get_improvements_for_failure(fail:Failure) -> List[Improvement]:
     return improvements
 
 @catch_exceptions
-def delete_improvement_instance(imp_instance: ImprovementInstance):
-    session = get_session()
+def delete_improvement_instance(session:Session, imp_instance: ImprovementInstance):
+    # session = get_session()
     session.delete(imp_instance)
     session.commit()
 
 
 
 @catch_exceptions
-def setup_improvement_start(failure:Failure, improvement:Improvement, m:Measurement) -> Tuple[FailureInstance, ImprovementInstance]:
+def setup_improvement_start(session:Session, failure:Failure, improvement:Improvement, m:Measurement) -> Tuple[FailureInstance, ImprovementInstance]:
     """Setup all necessary objects for improvement!"""
-    session = get_session()
+    # session = get_session()
     t = get_current_transmission()
 
     failure_instance = FailureInstance(failure = failure, transmission=t, measurement=m)
@@ -281,14 +274,14 @@ def setup_improvement_start(failure:Failure, improvement:Improvement, m:Measurem
     return failure_instance, improvement_instance
 
 @catch_exceptions
-def set_success_status(imp_instance:ImprovementInstance, status:bool):
-    session = get_session()
+def set_success_status(session:Session, imp_instance:ImprovementInstance, status:bool):
+    # session = get_session()
     imp_instance.successful = status
     session.commit()
     return imp_instance
 
 @catch_exceptions
-def update_improvement_measurement_relation(m:Measurement, imp_instance:ImprovementInstance):
-    session = get_session()
+def update_improvement_measurement_relation(session:Session, m:Measurement, imp_instance:ImprovementInstance):
+    # session = get_session()
     imp_instance.measurement = m
     session.flush()
