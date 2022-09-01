@@ -4,7 +4,7 @@ import sqlalchemy as db
 
 from data_management.model import Transmission, TransmissionConfiguration
 from data_management.model import Measurement, Assembly, AssemblyStep, DataPoint
-from data_management.model import Failure, FailureInstance, Improvement, ImprovementInstance
+from data_management.model import Failure, FailureInstance, Improvement, ImprovementInstance, FailureType
 
 import traceback
 import threading
@@ -154,12 +154,12 @@ def create_data_point_to_current_measurement(current, timestamp):
 
 
 
-def get_failures_list_for_assembly_step(step:AssemblyStep):
-    logger.info("get_failures_list_for_assembly_step()")
-    session = get_session()
-    failures = session.query(Failure).filter_by(assembly_step = step).all()
-    if failures == None:
-        return []
+# def get_failures_list_for_assembly_step(step:AssemblyStep):
+#     logger.info("get_failures_list_for_assembly_step()")
+#     session = get_session()
+#     failures = session.query(Failure).filter_by(assembly_step = step).all()
+#     if failures == None:
+#         return []
     return failures
 
 def create_failure_instance(failure:Failure):
@@ -180,6 +180,26 @@ def delete_failure_instance(fail_instance: FailureInstance):
     session = get_session()
     session.delete(fail_instance)
     session.commit()
+
+
+
+def ranked_failures_by_incidents(step:AssemblyStep):
+    logger.info("rank_failures(): Should return a list of failures with ranked positions by probability of occurrence.")
+    session = get_session()
+    
+    # total_failure_occurences = session.query(FailureInstance).filter_by(assembly_step = step).count() 
+    
+    logger.info("##"*5)
+    logger.info("Testing sorting of failures by number of incidents")
+
+    failures_without_oc: List[Failure] = session.query(Failure).filter(Failure.failure_type != FailureType.overcurrent, Failure.assembly_step == step).all()
+    failures_sorted = sorted(failures_without_oc, key=lambda f: len(f.failure_instances), reverse=True)
+
+    logger.info(f"Before: {failures_without_oc}")
+    logger.info(f"After: {failures_sorted}")
+
+    return failures_sorted
+
 
 
 ####################

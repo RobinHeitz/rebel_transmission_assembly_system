@@ -143,7 +143,7 @@ class Failure(Base):
     improvements = relationship('Improvement', secondary=FailureImprovementTable, back_populates="failures")
 
     def __repr__(self):
-        return f"Failure-instance: {self.description}"
+        return f"Failure: {self.description}"
     def __str__(self):
         return self.description
 

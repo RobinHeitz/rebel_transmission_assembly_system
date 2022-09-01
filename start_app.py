@@ -3,12 +3,14 @@ import traceback
 import PySimpleGUI as sg
 import logging, time, threading
 
-from data_management.model import AssemblyStep, Failure, Measurement
+from sqlalchemy.orm.session import Session
+
+from data_management.model import AssemblyStep, Failure, FailureType, Measurement
 from data_management import data_controller, data_transformation
 
 from hw_interface.motor_controller import RebelAxisController
 from hw_interface.definitions import Exception_Controller_No_CAN_ID, Exception_PCAN_Connection_Failed
-from hw_interface import current_limits
+from current_limits import get_current_limit_for_assembly_step
 
 from gui.definitions import KeyDefs, LayoutPageKeys
 from gui.definitions import TransmissionConfigHelper, TransmissionSize
@@ -84,15 +86,19 @@ def measurement_finished(m:Measurement):
 
 def predict_failure(measurement: Measurement):
     """Tries to predict < Indicator > (e.g. Overcurrent) based on currently measurement taken. Gets called after graph updating has stopped. """
+    logger.info("### predict_failure()")
+    session:Session = data_controller.get_session()
 
-    logger.info("#"*10)
-    logger.info("predict_failure")
-
-    # global combo_indicators
     assembly_step = get_assembly_step_for_page_index(current_page_index)
-    failures = data_controller.get_failures_list_for_assembly_step(assembly_step)
-
-    f = failures[0]
+    limit = get_current_limit_for_assembly_step(assembly_step)
+    
+    if measurement.max_current > limit:
+        failures = session.query(Failure).filter_by(assembly_step = assembly_step, failure_type = FailureType.overcurrent).all()
+        if len(failures) != 1: raise Exception("DataStruture is corrupt! There should be only 1 instance of failure for a given AssemblyStep with FailureType overcurrent.")
+    else:
+        failures = data_controller.ranked_failures_by_incidents(assembly_step)
+    
+    f = failures [0]
     global failure_selection, current_measurement
     failure_selection = f
     current_measurement = measurement
@@ -226,7 +232,7 @@ if __name__ == "__main__":
         can_connection_functions.update_connect_btn_status("ERROR_NO_CAN_ID_FOUND", window, controller)
 
     transmission_config = TransmissionConfigHelper()
-    current_limits = current_limits.load_config()
+    # current_limits = current_limits.load_config()
     
     thread_velocity = None
     thread_graph_updater = None
