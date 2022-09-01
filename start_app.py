@@ -245,8 +245,8 @@ if __name__ == "__main__":
     for p in plotters.values():
         p.plot_data([],[])
 
-
     window.maximize()
+
     key_function_map = {
         KeyDefs.BTN_NAV_NEXT_PAGE: (_nav_next_page, dict()),
         KeyDefs.BTN_NAV_PREVIOUS_PAGE: (_nav_previous_page, dict()),

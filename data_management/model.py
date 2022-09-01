@@ -1,8 +1,6 @@
-from email.policy import default
 from sqlalchemy import Column, Integer, String, ForeignKey, Table, Enum, DateTime, Float, Boolean
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import func 
 import enum
 from datetime import datetime
 from sqlalchemy.orm import session 
@@ -192,4 +190,3 @@ class ImprovementInstance(Base):
 
     def __str__(self):
         return f"ImprovementInstance: Improvement-ID = {self.improvement_id} | Transmission-ID = {self.transmission_id}"
-

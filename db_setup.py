@@ -26,7 +26,7 @@ def setup_session():
     session = sessionmaker(bind = engine)()
 
 
-def create_assembly_step_1(session:Session, t:Transmission, assembly_step:AssemblyStep):
+def create_assembly_step_1(session:Session, assembly_step:AssemblyStep):
     f1 = Failure(description="Strom > Nennwert", assembly_step = assembly_step, failure_type = FailureType.overcurrent)
     f2 = Failure(description="Encoderfehler", assembly_step = assembly_step, failure_type = FailureType.not_measurable)
     f3 = Failure(description="Ruckeln beim Anfahren", assembly_step = assembly_step, failure_type = FailureType.not_measurable)
@@ -106,11 +106,11 @@ if __name__ == "__main__":
     session.flush()
 
 
-    # Transmission & Assembly:
-    data_controller.create_transmission(TransmissionConfiguration.config_105_break_encoder)
-    t = data_controller.get_current_transmission()
+    # # Transmission & Assembly:
+    # data_controller.create_transmission(TransmissionConfiguration.config_105_break_encoder)
+    # t = data_controller.get_current_transmission()
 
-    create_assembly_step_1(session, t, AssemblyStep.step_1_no_flexring)
+    create_assembly_step_1(session, AssemblyStep.step_1_no_flexring)
     # create_instances(session, t)
     session.commit()
 

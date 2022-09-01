@@ -255,13 +255,13 @@ def delete_improvement_instance(imp_instance: ImprovementInstance):
 
 
 
-def setup_improvement_start(failure:Failure, improvement:Improvement) -> Tuple[FailureInstance, ImprovementInstance]:
+def setup_improvement_start(failure:Failure, improvement:Improvement, m:Measurement) -> Tuple[FailureInstance, ImprovementInstance]:
     """Setup all necessary objects for improvement!"""
     logger.info("setup_improvement_start()")
     session = get_session()
     t = get_current_transmission()
 
-    failure_instance = FailureInstance(failure = failure, transmission=t)
+    failure_instance = FailureInstance(failure = failure, transmission=t, measurement=m)
     session.add(failure_instance)
 
     improvement_instance = ImprovementInstance(improvement = improvement, transmission = t, failure_instance=failure_instance)
@@ -276,3 +276,16 @@ def set_success_status(imp_instance:ImprovementInstance, status:bool):
     imp_instance.successful = status
     session.commit()
     return imp_instance
+
+def append_measurement_to_improvment_instance(m:Measurement, imp:ImprovementInstance):
+    logger.info(f"append_measurement_to_improvment_instance() | measure.id = {m.id} / imp.id = {imp.id}")
+    session = get_session()
+
+    measure = session.query(Measurement).get(m.id)
+    improve_instance = session.query(Improvement).get(imp.id)
+
+    logger.info(f"Got new session instances: {measure} / {improve_instance}")
+
+    improve_instance.measurement = measure
+    logger.info(f"--- imp.measure = new_measure---")
+    session.flush()
