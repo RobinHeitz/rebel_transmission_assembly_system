@@ -1,8 +1,8 @@
 """init
 
-Revision ID: e8a1a0bbb98a
+Revision ID: 896e40ad2099
 Revises: 
-Create Date: 2022-09-01 08:52:07.105370
+Create Date: 2022-09-01 20:21:33.874236
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'e8a1a0bbb98a'
+revision = '896e40ad2099'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -81,6 +81,7 @@ def upgrade() -> None:
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('failure_id', sa.Integer(), nullable=True),
     sa.Column('transmission_id', sa.Integer(), nullable=True),
+    sa.Column('assembly_step', sa.Enum('step_1_no_flexring', 'step_2_with_flexring', 'step_3_gearoutput_not_screwed', 'step_4_gearoutput_screwed', name='assemblystep'), nullable=True),
     sa.Column('measurement_id', sa.Integer(), nullable=True),
     sa.ForeignKeyConstraint(['failure_id'], ['failure.id'], ),
     sa.ForeignKeyConstraint(['measurement_id'], ['measurement.id'], ),
@@ -92,6 +93,7 @@ def upgrade() -> None:
     sa.Column('improvement_id', sa.Integer(), nullable=True),
     sa.Column('transmission_id', sa.Integer(), nullable=True),
     sa.Column('successful', sa.Boolean(), nullable=True),
+    sa.Column('assembly_step', sa.Enum('step_1_no_flexring', 'step_2_with_flexring', 'step_3_gearoutput_not_screwed', 'step_4_gearoutput_screwed', name='assemblystep'), nullable=True),
     sa.Column('measurement_id', sa.Integer(), nullable=True),
     sa.Column('failure_instance_id', sa.Integer(), nullable=True),
     sa.ForeignKeyConstraint(['failure_instance_id'], ['failureinstance.id'], ),

@@ -41,7 +41,7 @@ def create_session() -> Session:
 
 #Alternative: Using context-manager
 @contextmanager
-def session_scope():
+def session_context():
     session = SessionCreate()
     try:
         yield session
@@ -254,14 +254,46 @@ def create_improvement_instance(session:Session, imp:Improvement):
 
 
 @catch_exceptions
-def get_improvements_for_failure(session:Session, fail:Failure) -> List[Improvement]:
+def get_improvements_for_failure(session:Session, fail:Failure, *args, **kwargs) -> List[Improvement]:
     # session = get_session()
-    failure = session.query(Failure).get(fail.id)
+    # TODO:
+    import pdb
+    pdb.set_trace()
 
-    if failure == None:
-        return []
+    assembly_step = kwargs.get("assembly_step")
+    fail = session.query(Failure).get(fail.id)
+    improvements:List[Improvement] = fail.improvements
+
+    if assembly_step != None:
+
+        ...
+
+        done_imp_instances: List[ImprovementInstance] = session.query(ImprovementInstance).filter_by(transmission = get_current_transmission(), assembly_step = assembly_step).all()
+        done_improvements = [d.improvement for d in done_imp_instances]
+
+        filtered = filter(lambda e:e not in done_improvements, improvements)
+        improvements = list(filtered)
+
+
+
+
+        
     
-    improvements = failure.improvements
+    return improvements
+        
+
+
+
+    # failure = session.query(Failure).get(fail.id)
+
+    # if failure == None:
+    #     return []
+    
+    # improvements = failure.improvements
+    
+    
+    
+    
     return improvements
 
 @catch_exceptions
@@ -273,16 +305,16 @@ def delete_improvement_instance(session:Session, imp_instance: ImprovementInstan
 
 
 @catch_exceptions
-def setup_improvement_start(session:Session, failure:Failure, improvement:Improvement, m:Measurement) -> Tuple[FailureInstance, ImprovementInstance]:
+def setup_improvement_start(session:Session, failure:Failure, improvement:Improvement, m:Measurement, assembly_step:AssemblyStep) -> Tuple[FailureInstance, ImprovementInstance]:
     """Setup all necessary objects for improvement!"""
     # session = get_session()
 
     t = get_current_transmission()
 
-    failure_instance = FailureInstance(failure = failure, transmission=t, measurement=m)
+    failure_instance = FailureInstance(failure = failure, transmission=t, measurement=m, assembly_step = assembly_step)
     session.add(failure_instance)
 
-    improvement_instance = ImprovementInstance(improvement = improvement, transmission = t, failure_instance=failure_instance)
+    improvement_instance = ImprovementInstance(improvement = improvement, transmission = t, failure_instance=failure_instance, assembly_step = assembly_step)
     session.add(improvement_instance)
     session.commit()
 

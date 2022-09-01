@@ -96,7 +96,7 @@ def user_selected_failure_still_exists():
     
     
 
-def improvement_window(c:RebelAxisController, selected_failure:Failure, selected_improvement: Improvement, invalid_measurement:Measurement):
+def improvement_window(c:RebelAxisController, selected_failure:Failure, selected_improvement: Improvement, invalid_measurement:Measurement, assembly_step:AssemblyStep):
     # session = data_controller.create_session()
     # invalid_measurement = session.query(Measurement).get(invalid_measurement)
     
@@ -104,7 +104,7 @@ def improvement_window(c:RebelAxisController, selected_failure:Failure, selected
 
     global controller, fail_instance, imp_instance, window, plotter
     controller = c
-    fail_instance, imp_instance = data_controller.setup_improvement_start(selected_failure, selected_improvement, invalid_measurement)
+    fail_instance, imp_instance = data_controller.setup_improvement_start(selected_failure, selected_improvement, invalid_measurement, assembly_step)
     title, description = imp_instance.improvement.title, imp_instance.improvement.description
     
     layout = pages.generate_improvement_window_layout(title, description, start_repeat_measurement, cancel_improvement_button_clicked)
@@ -132,6 +132,8 @@ def improvement_window(c:RebelAxisController, selected_failure:Failure, selected
         
         
     window.close()
+
+    return fail_instance, imp_instance
 
 
 key_function_map = {

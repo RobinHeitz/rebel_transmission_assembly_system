@@ -128,22 +128,23 @@ if __name__ == "__main__":
 
     # setup_session()
 
-    session = data_controller.get_session()
+    # session = data_controller.create_session()
 
-    model_classes = [Transmission, Assembly, Measurement, DataPoint, Failure, FailureInstance, Improvement, ImprovementInstance]
+    with data_controller.session_context() as session:
+        model_classes = [Transmission, Assembly, Measurement, DataPoint, Failure, FailureInstance, Improvement, ImprovementInstance]
 
-    objects_to_delete = [i for c in model_classes for i in session.query(c).all()]
-    for i in objects_to_delete:
-        session.delete(i)
-    
-    session.flush()
-    session.commit()
+        objects_to_delete = [i for c in model_classes for i in session.query(c).all()]
+        for i in objects_to_delete:
+            session.delete(i)
+        
+        session.flush()
+        session.commit()
 
-    create_assembly_step_1(session, AssemblyStep.step_1_no_flexring)
+        create_assembly_step_1(session, AssemblyStep.step_1_no_flexring)
 
 
-    # test_sort_failures(session)
-    session.commit()
+        # test_sort_failures(session)
+        session.commit()
 
 
 

@@ -110,9 +110,9 @@ def predict_failure(measurement: Measurement):
 
 
 
-def show_improvements(f:Failure):
+def show_improvements(f:Failure, *args, **kwargs):
     """Shows Frame + Listbox with possible Improvements."""
-    improvements = data_controller.get_improvements_for_failure(f)
+    improvements = data_controller.get_improvements_for_failure(f, *args, **kwargs)
     window[KeyDefs.FRAME_FAILURE_DETECTION].update(visible=True)
     window[KeyDefs.LISTBOX_POSSIBLE_IMPROVEMENTS].update(improvements, set_to_index=[0,])
 
@@ -145,8 +145,12 @@ def btn_improvement_selection_clicked(event, values):
     selected_failure = values[KeyDefs.COMBO_FAILURE_SELECT]
     logger.info(f"btn_improvement_selection_clicked: {selected_improvement} | selected_failure = {selected_failure} | measurement = {current_measurement}")
 
+    assembly_step = step = get_assembly_step_for_page_index(current_page_index)
+    fail_instance, imp_instance = improvement_window.improvement_window(controller, selected_failure, selected_improvement, current_measurement, assembly_step)
 
-    improvement_window.improvement_window(controller, selected_failure, selected_improvement, current_measurement)
+    # TODO: 
+    show_improvements(selected_failure, assembly_step = assembly_step)
+
 
 def _hide_failure_and_improvement_items():
     window[KeyDefs.FRAME_FAILURE_DETECTION].update(visible=False)

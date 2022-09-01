@@ -98,7 +98,7 @@ class Measurement(Base):
     improvement_instance_id = relationship("ImprovementInstance", uselist=False, backref=backref("measurement"))
 
     def __repr__(self):
-        return f"Measurement-Instance: id={self.id} | mean current = {self.mean_current}"
+        return f"Measurement id={self.id} | mean current = {self.mean_current}"
 
 
 
@@ -154,6 +154,8 @@ class FailureInstance(Base):
     failure_id = Column(Integer, ForeignKey("failure.id"))
     transmission_id = Column(Integer, ForeignKey("transmission.id"))
 
+    assembly_step = Column(Enum(AssemblyStep))
+
     measurement_id = Column(Integer, ForeignKey("measurement.id"))
     improvement_instance_id = relationship("ImprovementInstance", uselist=False, backref="failure_instance")
 
@@ -171,7 +173,7 @@ class Improvement(Base):
     failures = relationship('Failure', secondary=FailureImprovementTable, back_populates="improvements")
 
     def __repr__(self):
-        return f"Improvement-instance: {self.title}"
+        return f"Improvement: {self.title}"
 
     def __str__(self):
         return self.title
@@ -183,6 +185,8 @@ class ImprovementInstance(Base):
     improvement_id = Column(Integer, ForeignKey("improvement.id"))
     transmission_id = Column(Integer, ForeignKey("transmission.id"))
     successful = Column(Boolean, default=False)
+
+    assembly_step = Column(Enum(AssemblyStep))
 
     measurement_id = Column(Integer, ForeignKey("measurement.id"))
     failure_instance_id = Column(Integer, ForeignKey("failureinstance.id"))
