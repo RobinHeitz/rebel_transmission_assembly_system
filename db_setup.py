@@ -17,13 +17,13 @@ def add_to_session(session:Session, *args):
     for i in args:
         session.add(i)
 
-def setup_session():
-    global engine, connection, metadata, session
+# def setup_session():
+#     global engine, connection, metadata, session
 
-    engine = db.create_engine('sqlite:///rebel.sqlite')
-    connection = engine.connect()
-    metadata = db.MetaData()
-    session = sessionmaker(bind = engine)()
+#     engine = db.create_engine('sqlite:///rebel.sqlite')
+#     connection = engine.connect()
+#     metadata = db.MetaData()
+#     session = sessionmaker(bind = engine)()
 
 
 def create_assembly_step_1(session:Session, assembly_step:AssemblyStep):
@@ -91,11 +91,44 @@ def create_instances(session:Session,t:Transmission):
     session.add(imp_instance)
 
 
+def test_sort_failures(session:Session):
+    __dummy_failure_instances(session)
+    __test_method(session)
+
+def __dummy_failure_instances(session:Session):
+    session = data_controller.get_session()
+
+    failures = session.query(Failure).filter_by(assembly_step = AssemblyStep.step_1_no_flexring).all()
+
+    for f in failures:
+        for i in range(random.randint(5,50)):
+            fi = FailureInstance(failure = f)
+            session.add(fi)
+    
+    session.commit()
+    
+
+
+
+def __test_method(session):
+    print("*"*10)
+    print("Testing method!!!")
+
+    failures = session.query(Failure).filter_by(assembly_step = AssemblyStep.step_1_no_flexring).all()
+    for f in failures:
+        q = session.query(FailureInstance).filter_by(failure=f)
+
+        print("For Failure: ", f, " we have quantity: ", q.count())
+
+    
+    sorted_failures = data_controller.sorted_failures_by_incidents(AssemblyStep.step_1_no_flexring)
+
 
 if __name__ == "__main__":
 
-    setup_session()
+    # setup_session()
 
+    session = data_controller.get_session()
 
     model_classes = [Transmission, Assembly, Measurement, DataPoint, Failure, FailureInstance, Improvement, ImprovementInstance]
 
@@ -104,14 +137,12 @@ if __name__ == "__main__":
         session.delete(i)
     
     session.flush()
-
-
-    # # Transmission & Assembly:
-    # data_controller.create_transmission(TransmissionConfiguration.config_105_break_encoder)
-    # t = data_controller.get_current_transmission()
+    session.commit()
 
     create_assembly_step_1(session, AssemblyStep.step_1_no_flexring)
-    # create_instances(session, t)
+
+
+    # test_sort_failures(session)
     session.commit()
 
 

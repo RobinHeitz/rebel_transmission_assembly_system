@@ -96,7 +96,7 @@ def predict_failure(measurement: Measurement):
         failures = session.query(Failure).filter_by(assembly_step = assembly_step, failure_type = FailureType.overcurrent).all()
         if len(failures) != 1: raise Exception("DataStruture is corrupt! There should be only 1 instance of failure for a given AssemblyStep with FailureType overcurrent.")
     else:
-        failures = data_controller.ranked_failures_by_incidents(assembly_step)
+        failures = data_controller.sorted_failures_by_incidents(assembly_step)
     
     f = failures [0]
     global failure_selection, current_measurement

@@ -183,7 +183,7 @@ def delete_failure_instance(fail_instance: FailureInstance):
 
 
 
-def ranked_failures_by_incidents(step:AssemblyStep):
+def sorted_failures_by_incidents(step:AssemblyStep):
     logger.info("rank_failures(): Should return a list of failures with ranked positions by probability of occurrence.")
     session = get_session()
     
