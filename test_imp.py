@@ -9,7 +9,7 @@ import random
 def main():
     controller = RebelAxisController()
 
-    session = data_controller.get_session()
+    session = data_controller.create_session()
 
     failures = session.query(Failure).all()
     selected_fail = random.choice(failures)

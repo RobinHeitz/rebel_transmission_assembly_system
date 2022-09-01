@@ -1,8 +1,8 @@
 import PySimpleGUI as sg
 
 from data_management.model import AssemblyStep
-from .definitions import KeyDefs, font_headline, font_normal, font_small, LayoutPageKeys
-
+from .definitions import KeyDefs, font_headline, font_normal, font_small, LayoutPageKeys, ImprovementWindowKeys as Key
+import random
 
 #####################################################
 # LAYOUTS of different 'pages' within the application
@@ -55,7 +55,7 @@ layout_assembly_step_1 = [
                     [sg.T("Fehler: ", font=font_normal)],
                     [sg.Combo(["A", "B", "C"], default_value="B", s=(50,25), enable_events=True, readonly=True, k=KeyDefs.COMBO_FAILURE_SELECT, font=font_normal),],
                     [sg.T("Mögliche Maßnahmen:", font=font_normal),],
-                    [sg.Listbox([], size=(50,8), enable_events=True, k=KeyDefs.LISTBOX_POSSIBLE_IMPROVEMENTS, font=font_normal ),],
+                    [sg.Listbox([], size=(50,8), enable_events=False, k=KeyDefs.LISTBOX_POSSIBLE_IMPROVEMENTS, font=font_normal ),],
                     [sg.B("Maßnahme anwenden", enable_events=True ,k=KeyDefs.BTN_SELECT_IMPROVEMENT, font=font_normal)],
                     
                 ], visible=False, k=KeyDefs.FRAME_FAILURE_DETECTION, vertical_alignment="top"),
@@ -67,18 +67,6 @@ layout_assembly_step_1 = [
             [sg.B("Fehler manuell erkennen", size=(20,1), k=KeyDefs.BTN_DETECT_FAILURE_MANUAL, visible=False)],
 
             
-            [
-                sg.Frame("Fehler beheben:",layout=[
-                    [sg.T("Fehler: ")],
-                    [sg.Combo(["A", "B", "C"], default_value="B", s=(50,25), enable_events=True, readonly=True, k=KeyDefs.COMBO_FAILURE_SELECT),],
-                    [sg.T("Mögliche Maßnahmen:"),],
-                    [sg.Listbox([], size=(50,8), enable_events=True, k=KeyDefs.LISTBOX_POSSIBLE_IMPROVEMENTS, ),],
-                    [sg.B("Maßnahme anwenden", enable_events=True ,k=KeyDefs.BTN_SELECT_IMPROVEMENT)],
-                    
-                ], visible=False, k=KeyDefs.FRAME_FAILURE_DETECTION) 
-            
-            ],
-
         ])
 
     ],
@@ -159,7 +147,14 @@ pages_config = [
 #######################################################
 # HELPER Functions for returning data from pages_config
 #######################################################
+COLS_WITH_COLOR = True
 
+def get_color_arg():
+    if COLS_WITH_COLOR == True:
+        colors = ["red", "blue", "green", "purple", "orange", "brown", "yellow"]
+        return random.choice(colors)
+    else:
+        return None
 
 def get_headline_for_index(index: int):
     return pages_config[index].get("headline", f"Es ist leider ein Fehler aufgetreten: Page-index = {index}")
@@ -204,3 +199,45 @@ main_layout = [
     *render_sub_layouts(),
 
 ]
+
+
+# IMPROVEMENT WINDOW 
+
+def generate_improvement_window_layout(title, description, start, cancel ):
+
+
+
+    c1 = sg.Col([
+            [sg.T(title, font=font_headline)], 
+            [sg.Multiline(description, font=font_normal, no_scrollbar=True, write_only=True, expand_x=True, expand_y=True)],
+            
+            ], expand_x=True, expand_y=True, vertical_alignment="top",background_color=get_color_arg())
+        
+    c2 = sg.Col([
+        [sg.Image("gui/assembly_pictures/step_1_resize.png", size=(300,300))]
+        ], vertical_alignment="top", background_color=get_color_arg())
+
+    c3 = sg.Col([
+        [sg.Canvas(key=Key.CANVAS, size=(50,50))],
+        [sg.T("", k="-result-")],
+    ], expand_x=True, expand_y=True, background_color=get_color_arg())
+
+
+    bottom_button_bar = sg.Col([
+        [
+            sg.B("Messung starten", size=(20,2), k=start), 
+            sg.B("Abbrechen", k=cancel, size=(20,2)),
+            sg.B("Fehler behoben", size=(20,2), button_color="green", k=Key.BTN_FAILURE_FIXED, visible=False),
+            sg.B("Fehler besteht weiterhin", size=(20,2), button_color="red", k=Key.BTN_FAILURE_STILL_EXISTS, visible=False),
+            sg.B("Schließen", size=(20,2), button_color="red", k=Key.BTN_CLOSE_IMPROVEMENT_WINDOW, visible=False),
+            
+            ]
+    ], vertical_alignment="bottom", justification="center", element_justification="center", background_color=get_color_arg(), expand_x=True, )
+
+    layout = [
+        [c1, c2],
+        [c3],
+        [bottom_button_bar],
+        
+    ]
+    return layout

@@ -10,6 +10,14 @@ font_normal = "Helvetica 15"
 font_small = "Helvetica 13"
 
 
+class ImprovementWindowKeys(enum.Enum):
+    """Keys in improvement window"""
+    CANVAS = "-CANVAS-"
+    FINISHED_REPEATING_MEASUREMENT = "-FINISHED_REPEATING_MEASUREMENT-"
+    BTN_FAILURE_FIXED = "-BTN_FAILURE_FIXED-"
+    BTN_FAILURE_STILL_EXISTS = "-BTN_FAILURE_STILL_EXISTS-"
+    BTN_CLOSE_IMPROVEMENT_WINDOW = "-BTN_CLOSE_IMPROVEMENT_WINDOW-"
+
 
 class KeyDefs(enum.Enum):
     """Represents all needed Keys as Enum-Class."""
@@ -34,7 +42,7 @@ class KeyDefs(enum.Enum):
     # FRAME_INDICATOR = "-FRAME_INDICATOR-"
     # COMBO_INDICATOR_SELECT = "-COMBO_INDICATOR_SELECT"
 
-    BTN_FAILURE_DETECTION = "-BTN_FAILURE_DETECTION-"
+    # BTN_FAILURE_DETECTION = "-BTN_FAILURE_DETECTION-"
     FRAME_FAILURE_DETECTION = "-FRAME_FAILURE_DETECTION-"
     COMBO_FAILURE_SELECT = "-COMBO_FAILURE_SELECT-"
     
