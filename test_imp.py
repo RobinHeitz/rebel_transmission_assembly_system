@@ -25,8 +25,7 @@ def main():
 
     m = session.query(Measurement).order_by(Measurement.id.desc()).first()
 
-    print("+++"*5)
-    print(selected_fail, selected_imp)
+    session.close()
 
     improvement_window(controller, selected_fail, selected_imp, m)
 

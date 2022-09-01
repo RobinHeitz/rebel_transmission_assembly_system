@@ -7,6 +7,8 @@ from data_management.model import Transmission, TransmissionConfiguration
 from data_management.model import Measurement, Assembly, AssemblyStep, DataPoint
 from data_management.model import Failure, FailureInstance, Improvement, ImprovementInstance, FailureType
 
+from contextlib import contextmanager
+
 import traceback
 import threading
 from typing import List, Tuple
@@ -28,12 +30,24 @@ session = None
 ######################
 #### helper functions
 ######################
+factory = sessionmaker(bind=engine, expire_on_commit=False)
+SessionCreate = scoped_session(factory)
 
 
 def create_session() -> Session:
-    factory = sessionmaker(bind=engine, expire_on_commit=True)
-    session = scoped_session(factory)()
+    # factory = sessionmaker(bind=engine, expire_on_commit=True)
+    session = SessionCreate()
     return session
+
+#Alternative: Using context-manager
+@contextmanager
+def session_scope():
+    session = SessionCreate()
+    try:
+        yield session
+    finally:
+      session.close()
+
 
 def catch_exceptions(f):
     
@@ -262,6 +276,10 @@ def delete_improvement_instance(session:Session, imp_instance: ImprovementInstan
 def setup_improvement_start(session:Session, failure:Failure, improvement:Improvement, m:Measurement) -> Tuple[FailureInstance, ImprovementInstance]:
     """Setup all necessary objects for improvement!"""
     # session = get_session()
+
+    import pdb
+    pdb.set_trace()
+
     t = get_current_transmission()
 
     failure_instance = FailureInstance(failure = failure, transmission=t, measurement=m)
