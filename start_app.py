@@ -178,6 +178,9 @@ def _hide_failure_and_improvement_items():
 # FUNCTIONS FOR ENABLING / DISABLING NAVIGATION BUTTONS
 ######################################################
 
+def update_next_page_btn(next_page_is_allowed):
+    ...
+
 def _update_headline(index):
     new_headline = get_headline_for_index(index)
     window["-headline-"].update(new_headline)
@@ -228,7 +231,6 @@ def _show_next_page():
     next_page.update(visible=True)
 
     _update_headline(current_page_index)
-    # next_page.unhide_row()
 
 def _disable_enable_nav_buttons():
     
