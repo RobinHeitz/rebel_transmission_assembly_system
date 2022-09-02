@@ -178,6 +178,10 @@ class Improvement(Base):
     def __str__(self):
         return self.title
 
+    def __eq__(self, anotherItem):
+        if self.id == anotherItem.id: return True
+        return False
+
 
 class ImprovementInstance(Base):
     __tablename__ = "improvementinstance"

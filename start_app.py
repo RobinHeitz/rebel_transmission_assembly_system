@@ -112,6 +112,8 @@ def predict_failure(measurement: Measurement):
 
 def show_improvements(f:Failure, *args, **kwargs):
     """Shows Frame + Listbox with possible Improvements."""
+    import pdb
+    pdb.set_trace()
     improvements = data_controller.get_improvements_for_failure(f, *args, **kwargs)
     window[KeyDefs.FRAME_FAILURE_DETECTION].update(visible=True)
     window[KeyDefs.LISTBOX_POSSIBLE_IMPROVEMENTS].update(improvements, set_to_index=[0,])

@@ -255,45 +255,27 @@ def create_improvement_instance(session:Session, imp:Improvement):
 
 @catch_exceptions
 def get_improvements_for_failure(session:Session, fail:Failure, *args, **kwargs) -> List[Improvement]:
-    # session = get_session()
-    # TODO:
-    import pdb
-    pdb.set_trace()
-
     assembly_step = kwargs.get("assembly_step")
     fail = session.query(Failure).get(fail.id)
     improvements:List[Improvement] = fail.improvements
 
     if assembly_step != None:
+        logger.debug("AssemblyStep != None")
 
-        ...
+        def __item_not_in_list(item, list_):
+            for i in list_:
+                if i == item: return False
+            return True
 
-        done_imp_instances: List[ImprovementInstance] = session.query(ImprovementInstance).filter_by(transmission = get_current_transmission(), assembly_step = assembly_step).all()
-        done_improvements = [d.improvement for d in done_imp_instances]
+        t = get_current_transmission()
 
-        filtered = filter(lambda e:e not in done_improvements, improvements)
+        imp_instances: List[ImprovementInstance] = session.query(ImprovementInstance).filter_by(assembly_step = assembly_step, transmission = t).all()
+        done_improvements = [i.improvement for i in imp_instances]
+        filtered = filter(lambda item: __item_not_in_list(item, done_improvements) ,improvements)
         improvements = list(filtered)
 
+        logger.debug(f"Improvements are filtered now: {improvements}")
 
-
-
-        
-    
-    return improvements
-        
-
-
-
-    # failure = session.query(Failure).get(fail.id)
-
-    # if failure == None:
-    #     return []
-    
-    # improvements = failure.improvements
-    
-    
-    
-    
     return improvements
 
 @catch_exceptions
