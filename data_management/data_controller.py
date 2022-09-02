@@ -101,7 +101,7 @@ def create_transmission(session:Session, config:TransmissionConfiguration) -> Tr
 def get_current_transmission(session:Session, ):
     # session = get_session()
     t = session.query(Transmission).order_by(Transmission.id.desc()).first()
-    logger.info(f"get_current_transmissio (): {t}")
+    # logger.info(f"get_current_transmissio (): {t}")
     return t
 
 
@@ -287,19 +287,17 @@ def delete_improvement_instance(session:Session, imp_instance: ImprovementInstan
 
 
 @catch_exceptions
-def setup_improvement_start(session:Session, failure:Failure, improvement:Improvement, m:Measurement, assembly_step:AssemblyStep) -> Tuple[FailureInstance, ImprovementInstance]:
+def setup_improvement_start(session:Session, t:Transmission, failure:Failure, improvement:Improvement, m:Measurement, assembly_step:AssemblyStep) -> Tuple[FailureInstance, ImprovementInstance]:
     """Setup all necessary objects for improvement!"""
-    t = get_current_transmission()
+    t = session.query(Transmission).get(t.id)
+    failure = session.query(Failure).get(failure.id)
+    m = session.query(Measurement).get(m.id)
 
-    # t = session.query(Transmission).order_by(Transmission.id.desc()).first()
-
-    failure_instance = FailureInstance(failure = failure, transmission=t, measurement=m, assembly_step = assembly_step)
-    session.add(failure_instance)
-
+    failure_instance = FailureInstance(failure = failure, measurement=m, assembly_step = assembly_step)
+    t.failure_instances.append(failure_instance)
     improvement_instance = ImprovementInstance(improvement = improvement, failure_instance=failure_instance, assembly_step = assembly_step)
-    session.add(improvement_instance)
+    t.improvement_instances.append(improvement_instance)
     session.commit()
-
     return failure_instance, improvement_instance
 
 @catch_exceptions

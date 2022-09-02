@@ -146,7 +146,7 @@ def btn_improvement_selection_clicked(event, values):
     logger.info(f"btn_improvement_selection_clicked: {selected_improvement} | selected_failure = {selected_failure} | measurement = {current_measurement}")
 
     assembly_step = step = get_assembly_step_for_page_index(current_page_index)
-    fail_instance, imp_instance = improvement_window.improvement_window(controller, selected_failure, selected_improvement, current_measurement, assembly_step)
+    fail_instance, imp_instance = improvement_window.improvement_window(controller, current_transmission, selected_failure, selected_improvement, current_measurement, assembly_step)
 
     # TODO: 
     show_improvements(selected_failure, assembly_step = assembly_step)
@@ -170,7 +170,7 @@ def _update_headline(index):
 
 def _nav_next_page(event, values):
     """Called when user clicks on "Next"-Button. Manages hide/show of layouts etc."""
-    global current_page_index
+    global current_page_index, current_transmission
 
     _hide_current_page()
 
@@ -182,7 +182,7 @@ def _nav_next_page(event, values):
    
     if page_key == LayoutPageKeys.layout_assembly_step_1_page:
         config = transmission_config.get_transmission_config()
-        data_controller.create_transmission(config)
+        current_transmission = data_controller.create_transmission(config)
             
     elif page_key == LayoutPageKeys.layout_assembly_step_2_page:
         ...
@@ -257,6 +257,7 @@ if __name__ == "__main__":
     current_page_index = 0
 
     current_measurement = None
+    current_transmission = None
 
 
     plotters = {

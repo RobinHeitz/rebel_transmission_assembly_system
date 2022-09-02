@@ -8,7 +8,7 @@ from hw_interface.motor_controller import RebelAxisController
 from .definitions import font_headline, font_normal, font_small
 from .plotting import GraphPlotter
 
-from data_management.model import AssemblyStep, FailureType, Improvement, ImprovementInstance, Failure, FailureInstance, Measurement
+from data_management.model import AssemblyStep, FailureType, Improvement, ImprovementInstance, Failure, FailureInstance, Measurement, Transmission
 from data_management import data_controller
 
 from gui import start_measurement
@@ -96,7 +96,7 @@ def user_selected_failure_still_exists():
     
     
 
-def improvement_window(c:RebelAxisController, selected_failure:Failure, selected_improvement: Improvement, invalid_measurement:Measurement, assembly_step:AssemblyStep):
+def improvement_window(c:RebelAxisController, t:Transmission, selected_failure:Failure, selected_improvement: Improvement, invalid_measurement:Measurement, assembly_step:AssemblyStep):
     # session = data_controller.create_session()
     # invalid_measurement = session.query(Measurement).get(invalid_measurement)
     
@@ -107,7 +107,7 @@ def improvement_window(c:RebelAxisController, selected_failure:Failure, selected
 
     global controller, fail_instance, imp_instance, window, plotter
     controller = c
-    fail_instance, imp_instance = data_controller.setup_improvement_start(selected_failure, selected_improvement, invalid_measurement, assembly_step)
+    fail_instance, imp_instance = data_controller.setup_improvement_start(t, selected_failure, selected_improvement, invalid_measurement, assembly_step)
     title, description = imp_instance.improvement.title, imp_instance.improvement.description
     
     layout = pages.generate_improvement_window_layout(title, description, start_repeat_measurement, cancel_improvement_button_clicked)
