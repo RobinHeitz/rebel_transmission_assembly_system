@@ -110,11 +110,10 @@ def predict_failure(measurement: Measurement):
         session.close()
         window[KeyDefs.TEXT_HIGH_CURRENT_FAILURE_DETECTED].update(f"Es wurde ein Fehler erkannt: {failures[0]}", text_color="red", visible=True)
         window[KeyDefs.COMBO_FAILURE_SELECT].update(values=failures, value=failures[0])
-        change_display_status_combo_failure(True)
+        change_combo_failures_visibility(False)
         show_improvements(failures[0])
 
     else:
-        ...
         answer  = sg.popup_yes_no("Strom ist nicht zu hoch", "Der Strom ist nicht zu hoch. Ist dir sonst noch ein Fehler aufgefallen?")
         if answer == "Yes":
             show_combo_failure_selection()
@@ -132,7 +131,7 @@ def show_combo_failure_selection(*args, **kwargs):
     window[KeyDefs.FRAME_FAILURE_DETECTION].update(visible=True)
     window[KeyDefs.COMBO_FAILURE_SELECT].update(values=failures, value=failures[0])
 
-    change_display_status_combo_failure(False)
+    change_combo_failures_visibility(True)
     show_improvements(failures[0])
 
 def combo_value_changes(event, values):
@@ -140,18 +139,24 @@ def combo_value_changes(event, values):
     show_improvements(values[event])
 
 
-def change_display_status_combo_failure(hide):
+def change_combo_failures_visibility(visible):
     t = window[KeyDefs.COL_FAILURE_SELECTION_CONTAINER]
-    show = not hide
-    t.update(visible=show)
+    t.update(visible=visible)
         
 
 def show_improvements(f:Failure, *args, **kwargs):
     """Shows Frame + Listbox with possible Improvements."""
     assembly_step = get_assembly_step_for_page_index(current_page_index)
     improvements = data_controller.get_improvements_for_failure(f, assembly_step, *args, **kwargs)
-    window[KeyDefs.FRAME_FAILURE_DETECTION].update(visible=True)
-    window[KeyDefs.LISTBOX_POSSIBLE_IMPROVEMENTS].update(improvements, set_to_index=[0,])
+    
+    if len(improvements) > 0:
+        window[KeyDefs.FRAME_FAILURE_DETECTION].update(visible=True)
+        window[KeyDefs.LISTBOX_POSSIBLE_IMPROVEMENTS].update(improvements, set_to_index=[0,])
+
+    else:
+        window[KeyDefs.FRAME_FAILURE_DETECTION].update(visible=False)
+        sg.popup("Keine weitere Behebungsmaßnahme","Es ist keine weitere Fehlerbehebungsmaßnahme hinterlegt. Wenn du eine weiter findest, füge sie bitte hinzu. Solltest du den Fehler nicht finden können, ist das Getriebe Ausschuss.")
+
 
 def btn_improvement_selection_clicked(event, values):
     logger.info("*"*10)
@@ -169,17 +174,15 @@ def btn_improvement_selection_clicked(event, values):
 
     if imp_instance.successful == True:
         window[KeyDefs.FRAME_FAILURE_DETECTION].update(visible=False)
-        # window[KeyDefs.BTN_DETECT_FAILURE_MANUAL].update(visible=False)
         update_next_page_btn(True)
     else:
         show_improvements(selected_failure)
-        change_display_status_combo_failure(True)
+        change_combo_failures_visibility(False)
 
     
 
 def _hide_failure_and_improvement_items():
     window[KeyDefs.FRAME_FAILURE_DETECTION].update(visible=False)
-    # window[KeyDefs.BTN_DETECT_FAILURE_MANUAL].update(visible=False)
     window[KeyDefs.TEXT_HIGH_CURRENT_FAILURE_DETECTED].update(visible=False)
     window[(KeyDefs.TEXT_MIN_MAX_CURRENT_VALUES, LayoutPageKeys.layout_assembly_step_1_page)].update(visible=False)
     
