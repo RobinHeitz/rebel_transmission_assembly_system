@@ -147,7 +147,7 @@ pages_config = [
 #######################################################
 # HELPER Functions for returning data from pages_config
 #######################################################
-COLS_WITH_COLOR = True
+COLS_WITH_COLOR = False
 
 def get_color_arg():
     if COLS_WITH_COLOR == True:

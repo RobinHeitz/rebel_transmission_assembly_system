@@ -79,6 +79,9 @@ def start_velocity_mode(event, values, controller:RebelAxisController):
 
 
 def measurement_finished(m:Measurement):
+    logger.error("***"*15)
+    logger.error("Measurement_finished()")
+    logger.error(f"measurement = {m} / id = {m.id}")
     """Invoked by start_measurement.start_measurement. Callback function for updating gui elements based on finished measurement."""
     text_field = window[(KeyDefs.TEXT_MIN_MAX_CURRENT_VALUES, LayoutPageKeys.layout_assembly_step_1_page)]
     text_field.update(f"Min current: {m.min_current} ||| Max. current: {m.max_current} || Mean current: {m.mean_current}", visible=True)
@@ -89,15 +92,13 @@ def measurement_finished(m:Measurement):
 def predict_failure(measurement: Measurement):
     """Tries to predict < Indicator > (e.g. Overcurrent) based on currently measurement taken. Gets called after graph updating has stopped. """
     logger.info("### predict_failure()")
-    session:Session = data_controller.create_session()
 
     assembly_step = get_assembly_step_for_page_index(current_page_index)
     limit = get_current_limit_for_assembly_step(assembly_step)
     
-    global current_measurement
-    current_measurement = measurement
-
     if measurement.max_current > limit:
+        
+        session:Session = data_controller.create_session()
         failures = session.query(Failure).filter_by(assembly_step = assembly_step, failure_type = FailureType.overcurrent).all()
         if len(failures) != 1: raise Exception("DataStruture is corrupt! There should be only 1 instance of failure for a given AssemblyStep with FailureType overcurrent.")
         session.close()
@@ -143,10 +144,11 @@ def btn_improvement_selection_clicked(event, values):
     logger.info("*"*10)
     selected_improvement = values[KeyDefs.LISTBOX_POSSIBLE_IMPROVEMENTS][0]
     selected_failure = values[KeyDefs.COMBO_FAILURE_SELECT]
-    logger.info(f"btn_improvement_selection_clicked: {selected_improvement} | selected_failure = {selected_failure} | measurement = {current_measurement}")
+    latest_measure = data_controller.get_current_measurement_instance()
+    logger.info(f"btn_improvement_selection_clicked: {selected_improvement} | selected_failure = {selected_failure} | measurement = {latest_measure}")
 
     assembly_step = step = get_assembly_step_for_page_index(current_page_index)
-    fail_instance, imp_instance = improvement_window.improvement_window(controller, current_transmission, selected_failure, selected_improvement, current_measurement, assembly_step)
+    fail_instance, imp_instance = improvement_window.improvement_window(controller, current_transmission, selected_failure, selected_improvement, latest_measure, assembly_step)
 
     # TODO: 
     show_improvements(selected_failure, assembly_step = assembly_step)
@@ -256,7 +258,6 @@ if __name__ == "__main__":
 
     current_page_index = 0
 
-    current_measurement = None
     current_transmission = None
 
 

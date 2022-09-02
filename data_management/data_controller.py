@@ -298,17 +298,20 @@ def setup_improvement_start(session:Session, t:Transmission, failure:Failure, im
     improvement_instance = ImprovementInstance(improvement = improvement, failure_instance=failure_instance, assembly_step = assembly_step)
     t.improvement_instances.append(improvement_instance)
     session.commit()
+    logger.warning("IS FAILURE_INSTANCE.MEASUREMENT == NULL???")
+    logger.warning(failure_instance.measurement)
+
     return failure_instance, improvement_instance
 
 @catch_exceptions
 def set_success_status(session:Session, imp_instance:ImprovementInstance, status:bool):
-    # session = get_session()
+    imp_instance = session.query(ImprovementInstance).get(imp_instance.id)
     imp_instance.successful = status
     session.commit()
     return imp_instance
 
 @catch_exceptions
 def update_improvement_measurement_relation(session:Session, m:Measurement, imp_instance:ImprovementInstance):
-    # session = get_session()
+    imp_instance = session.query(ImprovementInstance).get(imp_instance.id)
     imp_instance.measurement = m
-    session.flush()
+    session.commit()
