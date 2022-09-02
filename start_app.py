@@ -30,6 +30,7 @@ logger = setup_logger("start_app")
 #######################
 
 def radio_size_is_clicked(event, values, size:TransmissionSize):
+    update_next_page_btn(next_page_is_allowed=True)
     transmission_config.set_size(size)
     if size == TransmissionSize.size_80:
         window[KeyDefs.CHECKBOX_HAS_BRAKE].update(disabled=True)
@@ -75,7 +76,12 @@ def start_velocity_mode(event, values, controller:RebelAxisController):
     
     page_key = get_page_key_for_index(current_page_index)
     plotter = plotters[page_key]
-    start_measurement.start_measurement(controller, step, measurement_finished, plotter)
+    start_measurement.start_measurement(controller, step, measurement_finished_callback, plotter)
+
+
+def measurement_finished_callback(m:Measurement):
+    """Gets called from thread. To get this into main thread, call window.write_event_value."""
+    window.write_event_value(KeyDefs.EVENT_INITIAL_MEASUREMENT_FINISHED, m)
 
 
 def measurement_finished(m:Measurement):
@@ -108,8 +114,25 @@ def predict_failure(measurement: Measurement):
         show_improvements(failures[0])
 
     else:
+        ...
+        answer  = sg.popup_yes_no("Strom ist nicht zu hoch", "Der Strom ist nicht zu hoch. Ist dir sonst noch ein Fehler aufgefallen?")
+        if answer == "Yes":
+            show_combo_failure_selection()
+        elif answer == "No":
+            update_next_page_btn(True)
+        else:
+            raise NotImplementedError("This Button Label is not checked against (yet)!")
 
-        window[KeyDefs.BTN_DETECT_FAILURE_MANUAL].update(visible=True)
+
+
+
+        # answer = sg.popup_yes_no("Strom ist in Ordnung", "Der Strom ist nicht zu hoch. Ist dir ein anderer Fehler aufgefallen?")
+
+        # btn_clicked = sg.popup_yes_no("Tessssssst",title="Ist ein Fehler aufgetreten?", keep_on_top=True, modal=True, auto_close=False, )
+
+        # raise Exception(btn_clicked)
+
+        # window[KeyDefs.BTN_DETECT_FAILURE_MANUAL].update(visible=True)
 
 
 
@@ -160,7 +183,8 @@ def btn_improvement_selection_clicked(event, values):
 
     if imp_instance.successful == True:
         window[KeyDefs.FRAME_FAILURE_DETECTION].update(visible=False)
-        window[KeyDefs.BTN_DETECT_FAILURE_MANUAL].update(visible=False)
+        # window[KeyDefs.BTN_DETECT_FAILURE_MANUAL].update(visible=False)
+        update_next_page_btn(True)
     else:
         show_improvements(selected_failure)
         change_display_status_combo_failure(True)
@@ -169,7 +193,7 @@ def btn_improvement_selection_clicked(event, values):
 
 def _hide_failure_and_improvement_items():
     window[KeyDefs.FRAME_FAILURE_DETECTION].update(visible=False)
-    window[KeyDefs.BTN_DETECT_FAILURE_MANUAL].update(visible=False)
+    # window[KeyDefs.BTN_DETECT_FAILURE_MANUAL].update(visible=False)
     window[KeyDefs.TEXT_HIGH_CURRENT_FAILRE_DETECTED].update(visible=False)
     window[(KeyDefs.TEXT_MIN_MAX_CURRENT_VALUES, LayoutPageKeys.layout_assembly_step_1_page)].update(visible=False)
     
@@ -179,7 +203,13 @@ def _hide_failure_and_improvement_items():
 ######################################################
 
 def update_next_page_btn(next_page_is_allowed):
-    ...
+    btn = window[KeyDefs.BTN_NAV_NEXT_PAGE]
+    if next_page_is_allowed == True:
+        btn.update(button_color="green", disabled=False)
+    else:
+        btn.update(button_color="darkblue", disabled=True)
+
+
 
 def _update_headline(index):
     new_headline = get_headline_for_index(index)
@@ -194,7 +224,8 @@ def _nav_next_page(event, values):
 
     current_page_index += 1
     _show_next_page()
-    _disable_enable_nav_buttons()
+    # _disable_enable_nav_buttons()
+    update_next_page_btn(False)
    
     page_key = get_page_key_for_index(current_page_index)
    
@@ -215,7 +246,8 @@ def _nav_previous_page(event, values):
 
     current_page_index -= 1
     _show_next_page()
-    _disable_enable_nav_buttons()
+    # _disable_enable_nav_buttons()
+    update_next_page_btn(False)
 
 
 def _hide_current_page():
@@ -233,6 +265,7 @@ def _show_next_page():
     _update_headline(current_page_index)
 
 def _disable_enable_nav_buttons():
+    # First version of nav button handling
     
     btn_next = window[KeyDefs.BTN_NAV_NEXT_PAGE]
     btn_prev = window[KeyDefs.BTN_NAV_PREVIOUS_PAGE]
@@ -303,26 +336,26 @@ if __name__ == "__main__":
         KeyDefs.BTN_CHECK_MOVEABILITY: (check_moveability, dict()),
 
         (KeyDefs.BTN_START_VELO_MODE, LayoutPageKeys.layout_assembly_step_1_page): (start_velocity_mode, dict(controller=controller)),
-        # (KeyDefs.BTN_STOP_VELO_MODE, LayoutPageKeys.layout_assembly_step_1_page): (stop_velocity_mode, dict(controller=controller)),
-        (KeyDefs.BTN_STOP_VELO_MODE, LayoutPageKeys.layout_assembly_step_1_page): (start_measurement.abort_movement ,dict(controller=controller)),
-        
         (KeyDefs.BTN_START_VELO_MODE, LayoutPageKeys.layout_assembly_step_2_page): (start_velocity_mode, dict(controller=controller)),
+        (KeyDefs.BTN_START_VELO_MODE, LayoutPageKeys.layout_assembly_step_3_page): (start_velocity_mode, dict(controller=controller)),
+        # (KeyDefs.BTN_STOP_VELO_MODE, LayoutPageKeys.layout_assembly_step_1_page): (stop_velocity_mode, dict(controller=controller)),
+        # (KeyDefs.BTN_STOP_VELO_MODE, LayoutPageKeys.layout_assembly_step_1_page): (start_measurement.abort_movement ,dict(controller=controller)),
+        
         # (KeyDefs.BTN_STOP_VELO_MODE, LayoutPageKeys.layout_assembly_step_2_page): (stop_velocity_mode, dict(controller=controller)),
         
-        (KeyDefs.BTN_START_VELO_MODE, LayoutPageKeys.layout_assembly_step_3_page): (start_velocity_mode, dict(controller=controller)),
         # (KeyDefs.BTN_STOP_VELO_MODE, LayoutPageKeys.layout_assembly_step_3_page): (stop_velocity_mode, dict(controller=controller)),
         
         # KeyDefs.UPDATE_GRAPH: (update_graph, dict()),
         # KeyDefs.FINISHED_VELO_STOP_GRAPH_UPDATING: (stop_graph_update, dict()),
 
-        KeyDefs.BTN_DETECT_FAILURE_MANUAL: (show_combo_failure_selection, dict()),
+        # KeyDefs.BTN_DETECT_FAILURE_MANUAL: (show_combo_failure_selection, dict()),
 
         KeyDefs.COMBO_FAILURE_SELECT: (combo_value_changes, dict()),
         # KeyDefs.BTN_FAILURE_DETECTION: (btn_failure_selection_clicked, dict()),
         
         
-        # KeyDefs.LISTBOX_POSSIBLE_IMPROVEMENTS: (list_improvement_selected, dict()),
         KeyDefs.BTN_SELECT_IMPROVEMENT: (btn_improvement_selection_clicked, dict()),
+        KeyDefs.EVENT_INITIAL_MEASUREMENT_FINISHED: (lambda event, values: measurement_finished(values[event]), dict()),
 
 
 
@@ -335,7 +368,7 @@ if __name__ == "__main__":
             controller.shut_down()
             break
         elif callable(event):
-            event()
+            event(values[event])
 
         try:
             func, args = key_function_map.get(event)
