@@ -289,14 +289,14 @@ def delete_improvement_instance(session:Session, imp_instance: ImprovementInstan
 @catch_exceptions
 def setup_improvement_start(session:Session, failure:Failure, improvement:Improvement, m:Measurement, assembly_step:AssemblyStep) -> Tuple[FailureInstance, ImprovementInstance]:
     """Setup all necessary objects for improvement!"""
-    # session = get_session()
-
     t = get_current_transmission()
+
+    # t = session.query(Transmission).order_by(Transmission.id.desc()).first()
 
     failure_instance = FailureInstance(failure = failure, transmission=t, measurement=m, assembly_step = assembly_step)
     session.add(failure_instance)
 
-    improvement_instance = ImprovementInstance(improvement = improvement, transmission = t, failure_instance=failure_instance, assembly_step = assembly_step)
+    improvement_instance = ImprovementInstance(improvement = improvement, failure_instance=failure_instance, assembly_step = assembly_step)
     session.add(improvement_instance)
     session.commit()
 

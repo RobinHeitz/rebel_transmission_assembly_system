@@ -100,6 +100,9 @@ def improvement_window(c:RebelAxisController, selected_failure:Failure, selected
     # session = data_controller.create_session()
     # invalid_measurement = session.query(Measurement).get(invalid_measurement)
     
+    # import pdb
+    # pdb.set_trace()
+
     logger.debug(f"improvement_window() ")
 
     global controller, fail_instance, imp_instance, window, plotter
