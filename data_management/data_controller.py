@@ -326,6 +326,7 @@ def set_success_status(session:Session, imp_instance:ImprovementInstance, status
     imp_instance = session.query(ImprovementInstance).get(imp_instance.id)
     imp_instance.successful = status
     session.commit()
+    session.flush()
     return imp_instance
 
 @catch_exceptions

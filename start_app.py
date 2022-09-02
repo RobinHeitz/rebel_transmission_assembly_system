@@ -5,7 +5,7 @@ import logging, time, threading
 
 from sqlalchemy.orm.session import Session
 
-from data_management.model import AssemblyStep, Failure, FailureType, Measurement
+from data_management.model import AssemblyStep, Failure, FailureType, ImprovementInstance, Measurement
 from data_management import data_controller, data_transformation
 
 from hw_interface.motor_controller import RebelAxisController
@@ -150,8 +150,18 @@ def btn_improvement_selection_clicked(event, values):
 
     assembly_step = step = get_assembly_step_for_page_index(current_page_index)
     fail_instance, imp_instance = improvement_window.improvement_window(controller, current_transmission, selected_failure, selected_improvement, latest_measure, assembly_step)
-    show_improvements(selected_failure)
+    
+    # for some reason; need to create anothger sesseion since this value is wrooong
+    session = data_controller.create_session()
+    imp_instance = session.query(ImprovementInstance).get(imp_instance.id)
 
+    if imp_instance.successful == True:
+        window[KeyDefs.FRAME_FAILURE_DETECTION].update(visible=False)
+        window[KeyDefs.BTN_DETECT_FAILURE_MANUAL].update(visible=False)
+    else:
+        show_improvements(selected_failure)
+
+    
 
 def _hide_failure_and_improvement_items():
     window[KeyDefs.FRAME_FAILURE_DETECTION].update(visible=False)
