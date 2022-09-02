@@ -52,8 +52,11 @@ layout_assembly_step_1 = [
                 
                 
                 sg.Frame("Fehler beheben:",font=font_headline,layout=[
-                    [sg.T("Fehler: ", font=font_normal)],
-                    [sg.Combo(["A", "B", "C"], default_value="B", s=(50,25), enable_events=True, readonly=True, k=KeyDefs.COMBO_FAILURE_SELECT, font=font_normal),],
+                    [sg.Col([
+                        [sg.T("Fehler: ", font=font_normal)],
+                        [sg.Combo(["A", "B", "C"], default_value="B", s=(50,25), enable_events=True, readonly=True, k=KeyDefs.COMBO_FAILURE_SELECT, font=font_normal),],
+
+                    ], k=KeyDefs.COL_FAILURE_SELECTION_CONTAINER)],
                     [sg.T("Mögliche Maßnahmen:", font=font_normal),],
                     [sg.Listbox([], size=(50,8), enable_events=False, k=KeyDefs.LISTBOX_POSSIBLE_IMPROVEMENTS, font=font_normal ),],
                     [sg.B("Maßnahme anwenden", enable_events=True ,k=KeyDefs.BTN_SELECT_IMPROVEMENT, font=font_normal)],
@@ -186,7 +189,7 @@ main_layout = [
     [
         sg.Column(expand_x=True, element_justification="center",layout=[
         [
-            sg.Button("Zurück", k=KeyDefs.BTN_NAV_PREVIOUS_PAGE,enable_events=True,font=font_normal, disabled=True),
+            sg.Button("Zurück", k=KeyDefs.BTN_NAV_PREVIOUS_PAGE,enable_events=True,font=font_normal, disabled=True, visible=False),
             sg.Push(),
             sg.Text("Getriebe konfigurieren:", key="-headline-", font=font_headline),
             sg.Push(),

@@ -104,19 +104,15 @@ def predict_failure(measurement: Measurement):
         session.close()
         window[KeyDefs.TEXT_HIGH_CURRENT_FAILRE_DETECTED].update(f"Es wurde ein Fehler erkannt: {failures[0]}", text_color="red", visible=True)
         window[KeyDefs.COMBO_FAILURE_SELECT].update(values=failures, value=failures[0])
+        change_display_status_combo_failure(True)
         show_improvements(failures[0])
+
     else:
 
         window[KeyDefs.BTN_DETECT_FAILURE_MANUAL].update(visible=True)
 
 
 
-def show_improvements(f:Failure, *args, **kwargs):
-    """Shows Frame + Listbox with possible Improvements."""
-    assembly_step = get_assembly_step_for_page_index(current_page_index)
-    improvements = data_controller.get_improvements_for_failure(f, assembly_step, *args, **kwargs)
-    window[KeyDefs.FRAME_FAILURE_DETECTION].update(visible=True)
-    window[KeyDefs.LISTBOX_POSSIBLE_IMPROVEMENTS].update(improvements, set_to_index=[0,])
 
 
 def show_combo_failure_selection(*args, **kwargs):
@@ -127,19 +123,26 @@ def show_combo_failure_selection(*args, **kwargs):
     window[KeyDefs.FRAME_FAILURE_DETECTION].update(visible=True)
     window[KeyDefs.COMBO_FAILURE_SELECT].update(values=failures, value=failures[0])
 
+    change_display_status_combo_failure(False)
     show_improvements(failures[0])
 
 def combo_value_changes(event, values):
     """If combo's selected value changes, Possible Improvement Window should hide."""
     show_improvements(values[event])
 
-def btn_failure_selection_clicked(event, values):
-    logger.info("*"*10)
-    combo_selected_failure = values[KeyDefs.COMBO_FAILURE_SELECT]
-    logger.info(f"btn_failure_selection_clicked: | combo's selected failure = {combo_selected_failure}")
-    
-    show_improvements(combo_selected_failure)
 
+def change_display_status_combo_failure(hide):
+    t = window[KeyDefs.COL_FAILURE_SELECTION_CONTAINER]
+    show = not hide
+    t.update(visible=show)
+        
+
+def show_improvements(f:Failure, *args, **kwargs):
+    """Shows Frame + Listbox with possible Improvements."""
+    assembly_step = get_assembly_step_for_page_index(current_page_index)
+    improvements = data_controller.get_improvements_for_failure(f, assembly_step, *args, **kwargs)
+    window[KeyDefs.FRAME_FAILURE_DETECTION].update(visible=True)
+    window[KeyDefs.LISTBOX_POSSIBLE_IMPROVEMENTS].update(improvements, set_to_index=[0,])
 
 def btn_improvement_selection_clicked(event, values):
     logger.info("*"*10)
@@ -160,6 +163,7 @@ def btn_improvement_selection_clicked(event, values):
         window[KeyDefs.BTN_DETECT_FAILURE_MANUAL].update(visible=False)
     else:
         show_improvements(selected_failure)
+        change_display_status_combo_failure(True)
 
     
 
@@ -260,7 +264,6 @@ if __name__ == "__main__":
         can_connection_functions.update_connect_btn_status("ERROR_NO_CAN_ID_FOUND", window, controller)
 
     transmission_config = TransmissionConfigHelper()
-    # current_limits = current_limits.load_config()
     
     thread_velocity = None
     thread_graph_updater = None

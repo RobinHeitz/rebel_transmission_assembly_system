@@ -15,6 +15,8 @@ from gui import start_measurement
 from gui import pages
 from gui.definitions import ImprovementWindowKeys as Key
 
+from current_limits import get_current_limit_for_assembly_step
+
 import enum
 import random
 
@@ -33,7 +35,7 @@ plotter = None
 
 fail_instance = None
 imp_instance = None
-
+assembly_step = None
 
 #################
 ### FUNCTIONS ###
@@ -77,29 +79,33 @@ def measurement_finished(m:Measurement):
 
 
 def is_measurement_ok(m:Measurement):
-    # TODO: Check against YAML-Config-File
     logger.debug(f"evaluate_measurable_failures()")
-    if m.max_current > 400:
+    limit = get_current_limit_for_assembly_step(assembly_step)
+    if m.max_current > limit:
         return False
     return True
 
 def user_selected_failure_is_fixed():
+    """Btn click: For not-measureable failures, user decides whether failure is fixed or not."""
     logger.debug(f"user_selected_failure_is_fixed")
     data_controller.set_success_status(imp_instance, True)
     close_window()
 
 
 def user_selected_failure_still_exists():
+    """Btn click: For not-measureable failures, user decides whether failure is fixed or not."""
     logger.debug(f"user_selected_failure_still_exists")
     data_controller.set_success_status(imp_instance, False)
     close_window()
     
     
 
-def improvement_window(c:RebelAxisController, t:Transmission, selected_failure:Failure, selected_improvement: Improvement, invalid_measurement:Measurement, assembly_step:AssemblyStep):
+def improvement_window(c:RebelAxisController, t:Transmission, selected_failure:Failure, selected_improvement: Improvement, invalid_measurement:Measurement, step:AssemblyStep):
     logger.debug(f"improvement_window() ")
 
-    global controller, fail_instance, imp_instance, window, plotter
+    global controller, fail_instance, imp_instance, window, plotter, assembly_step
+    assembly_step = step
+
     controller = c
     fail_instance, imp_instance = data_controller.setup_improvement_start(t, selected_failure, selected_improvement, invalid_measurement, assembly_step)
     title, description = imp_instance.improvement.title, imp_instance.improvement.description
