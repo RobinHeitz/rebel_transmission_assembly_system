@@ -30,7 +30,7 @@ def create_assembly_step_1(session:Session, assembly_step:AssemblyStep):
     f1 = Failure(description="Strom > Nennwert", assembly_step = assembly_step, failure_type = FailureType.overcurrent)
     f2 = Failure(description="Encoderfehler", assembly_step = assembly_step, failure_type = FailureType.not_measurable)
     f3 = Failure(description="Ruckeln beim Anfahren", assembly_step = assembly_step, failure_type = FailureType.not_measurable)
-    f4 = Failure(description="OC beim Anfahren", assembly_step = assembly_step, failure_type = FailureType.not_measurable)
+    f4 = Failure(description="OC beim Anfahren", assembly_step = assembly_step, failure_type = FailureType.overcurrent_not_moving)
     f5 = Failure(description="Module Dead: Wicklungsfehler??", assembly_step = assembly_step, failure_type = FailureType.not_measurable)
 
     add_to_session(session, f1, f2, f3, f4, f5)

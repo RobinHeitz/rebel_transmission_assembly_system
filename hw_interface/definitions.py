@@ -10,8 +10,8 @@ class RESPONSE_ERROR_CODES:
     ERR_CODE_COM = 3
     ERR_CODE_LAG = 4
     ERR_CODE_ENC = 5
-    ERR_CODE_DRV = 6
-    ERR_CODE_OC = 7
+    ERR_CODE_OC = 6
+    ERR_CODE_DRV = 7
 
 RESPONSE_ERROR_CODES_DICT = {
     RESPONSE_ERROR_CODES.ERR_CODE_TEMP : ("TEMP","Temperatur des Motorcontrollers/ des Motors zu hoch",),

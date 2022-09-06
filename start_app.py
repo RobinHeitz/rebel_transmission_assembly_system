@@ -27,6 +27,25 @@ from gui import start_measurement
 from logs.setup_logger import setup_logger
 logger = setup_logger("start_app")
 
+###################################################################
+### FUNCTIONS FOR PERFORMING A CALLBACK-FUNCTION IN THE MAIN THREAD
+###################################################################
+
+
+def perform_callback_function_to_main_thread(func, *args):
+    """Writes an event to window, which then calls a 'invoked_callback_in_main_thread' which again calls the attributed function with parameters."""
+    window.write_event_value(KeyDefs.EVENT_CALLBACK_FUNCTION_MAIN_THREAD, [func, args])
+
+def invoked_callback_in_main_thread(event, values):
+    ...
+    logger.info("*"*10)
+    logger.info("invoked_callback_in_main_thread()")
+    args = values[event]
+    func = args[0]
+    func(*args[1])
+
+
+
 #################################
 ### TRANSMISSION CONFIG  ########
 #################################
@@ -130,12 +149,27 @@ def start_velocity_mode(event, values, controller:RebelAxisController):
     
     page_key = get_page_key_for_index(current_page_index)
     plotter = plotters[page_key]
-    start_measurement.start_measurement(controller, step, measurement_finished_callback, plotter)
+    start_measurement.start_measurement(controller, step, measurement_finished_callback,measurement_error_callback ,plotter)
 
 
 def measurement_finished_callback(m:Measurement):
     """Gets called from thread. To get this into main thread, call window.write_event_value."""
-    window.write_event_value(KeyDefs.EVENT_INITIAL_MEASUREMENT_FINISHED, m)
+    # window.write_event_value(KeyDefs.EVENT_INITIAL_MEASUREMENT_FINISHED, m)
+    perform_callback_function_to_main_thread(measurement_finished, m)
+
+
+
+def measurement_error_callback():
+    """This callback is called by controller instance, if motor can't move withe error code 'OC'"""
+    logger.error("measurement_error_callback")
+    perform_callback_function_to_main_thread(handle_error_while_measurement)
+
+
+def handle_error_while_measurement():
+    ...
+    logger.info("handle_error_while_measurement")
+
+
 
 
 def measurement_finished(m:Measurement):
@@ -149,6 +183,7 @@ def measurement_finished(m:Measurement):
 
 
 
+
 def predict_failure(measurement: Measurement):
     """Tries to predict < Indicator > (e.g. Overcurrent) based on currently measurement taken. Gets called after graph updating has stopped. """
     logger.info("### predict_failure()")
@@ -157,7 +192,6 @@ def predict_failure(measurement: Measurement):
     limit = get_current_limit_for_assembly_step(assembly_step)
     
     if measurement.max_current > limit:
-        
         session:Session = data_controller.create_session()
         failures = session.query(Failure).filter_by(assembly_step = assembly_step, failure_type = FailureType.overcurrent).all()
         if len(failures) != 1: raise Exception("DataStruture is corrupt! There should be only 1 instance of failure for a given AssemblyStep with FailureType overcurrent.")
@@ -437,7 +471,9 @@ if __name__ == "__main__":
 
         KeyDefs.COMBO_FAILURE_SELECT: (combo_value_changes, dict()),
         KeyDefs.BTN_SELECT_IMPROVEMENT: (btn_improvement_selection_clicked, dict()),
-        KeyDefs.EVENT_INITIAL_MEASUREMENT_FINISHED: (lambda event, values: measurement_finished(values[event]), dict()),
+        # KeyDefs.EVENT_INITIAL_MEASUREMENT_FINISHED: (lambda event, values: measurement_finished(values[event]), dict()),
+
+        KeyDefs.EVENT_CALLBACK_FUNCTION_MAIN_THREAD : ( lambda event, values: invoked_callback_in_main_thread(event, values), dict()),
 
 
 

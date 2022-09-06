@@ -183,12 +183,12 @@ class RebelAxisController:
             self.cmd_velocity_mode(0)
 
     
-    def start_movement_velocity_mode(self, velocity, duration, invoke_stop_function):
+    def start_movement_velocity_mode(self, velocity, duration, invoke_stop_function, invoke_error_function):
         """Starts sending movement cmds with velocity-type. After duration [sec], the invoke_stop_function is called.
         Params:
         - duration:(int) in seconds
         - invoke_stop_function: (function) function that is invoked afer movement has finished."""
-        self.thread_movement_velo_mode = Thread(target=self.__movement_velocity_mode, args=(velocity, duration, invoke_stop_function), daemon=True)
+        self.thread_movement_velo_mode = Thread(target=self.__movement_velocity_mode, args=(velocity, duration, invoke_stop_function, invoke_error_function), daemon=True)
         self.thread_movement_velo_mode.start()
         
     
@@ -198,7 +198,7 @@ class RebelAxisController:
         self.stop_movement()
     
 
-    def __movement_velocity_mode(self, velocity, duration, invoke_stop_function):
+    def __movement_velocity_mode(self, velocity, duration, invoke_stop_function, invoke_error_function):
         logging.info(f"__move_velocity_mode(), duration = {duration}")
         current_thread = threading.current_thread()
         
@@ -213,6 +213,11 @@ class RebelAxisController:
         while getattr(current_thread, "abort", False) == False and (datetime.now() - start_time).total_seconds() < duration:
             self.cmd_velocity_mode(velocity)
             self.do_cycle()
+
+            if "OC" in self.movement_cmd_errors:
+                self.stop_movement()
+                invoke_error_function()
+                return
 
         self.stop_movement()
         invoke_stop_function()

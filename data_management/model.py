@@ -115,7 +115,9 @@ class DataPoint(Base):
 
 class FailureType(enum.Enum):
     overcurrent = 1
-    calibration_both_tracks_values =  2
+    overcurrent_not_moving = 2
+    
+    calibration_both_tracks_values =  9
     not_measurable = 10
 
 
