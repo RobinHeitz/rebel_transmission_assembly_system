@@ -27,19 +27,26 @@ from gui import start_measurement
 from logs.setup_logger import setup_logger
 logger = setup_logger("start_app")
 
+
+def function_prints(f):
+    def wrap(*args, **kwargs):
+        ...
+        logger.info(f"--- {f.__name__}() called")
+        return f(*args, **kwargs)
+    return wrap
+
+
 ###################################################################
 ### FUNCTIONS FOR PERFORMING A CALLBACK-FUNCTION IN THE MAIN THREAD
 ###################################################################
 
-
+@function_prints
 def perform_callback_function_to_main_thread(func, *args):
     """Writes an event to window, which then calls a 'invoked_callback_in_main_thread' which again calls the attributed function with parameters."""
     window.write_event_value(KeyDefs.EVENT_CALLBACK_FUNCTION_MAIN_THREAD, [func, args])
 
+@function_prints
 def invoked_callback_in_main_thread(event, values):
-    ...
-    logger.info("*"*10)
-    logger.info("invoked_callback_in_main_thread()")
     args = values[event]
     func = args[0]
     func(*args[1])
@@ -49,6 +56,7 @@ def invoked_callback_in_main_thread(event, values):
 #################################
 ### TRANSMISSION CONFIG  ########
 #################################
+@function_prints
 def radio_size_is_clicked(event, values, size:TransmissionSize):
     update_next_page_btn(next_page_is_allowed=True)
     transmission_config.set_size(size)
@@ -58,10 +66,12 @@ def radio_size_is_clicked(event, values, size:TransmissionSize):
         window[KeyDefs.CHECKBOX_HAS_BRAKE].update(disabled=False)
 
 
+@function_prints
 def checkbox_has_brake_clicked(event, values):
     transmission_config.set_brake_flag(values[event])
 
 
+@function_prints
 def checkbox_has_encoder_clicked(event, values):
     transmission_config.set_encoder_flag(values[event])
 
@@ -69,6 +79,7 @@ def checkbox_has_encoder_clicked(event, values):
 ###################
 ### CONNECT CAN ###
 ###################
+@function_prints
 def btn_connect_can(*args):
     """Btn 'Connect can' is clicked."""
     logger.debug(f"Controller: {controller} / can-id: {controller.can_id}")
@@ -82,6 +93,7 @@ def btn_connect_can(*args):
         window[KeyDefs.TEXT_CAN_CONNECTED_STATUS].update(f"Searching for CAN-ID...")
         threading.Thread(target=search_for_can_id_thread, args=(window, controller), daemon=True).start()
 
+@function_prints
 def search_for_can_id_thread(window:sg.Window, controller:RebelAxisController):
     try:
         board_id = controller.find_can_id(timeout=2)
@@ -97,8 +109,8 @@ def search_for_can_id_thread(window:sg.Window, controller:RebelAxisController):
 ### BUTTON CHECK ERROR CODES:
 #############################
 
+@function_prints
 def is_estop_error(*args):
-    logger.debug("is_estop_error()")
     controller.cmd_reset_errors()
     controller.do_cycle()
     controller.cmd_reset_errors()
@@ -120,11 +132,13 @@ def is_estop_error(*args):
 ########################
 # Software update dummy
 ########################
+@function_prints
 def perform_software_update(event, values):
     btn = window[KeyDefs.BTN_SOFTWARE_UPDATE]
     btn.update(disabled=True)
     threading.Thread(target=perform_software_update_thread, args=(window, controller), daemon=True ).start()
 
+@function_prints
 def perform_software_update_thread(window, controller):
     for i in range(1,101):
         time.sleep(.1)
@@ -132,15 +146,15 @@ def perform_software_update_thread(window, controller):
     window.write_event_value(KeyDefs.SOFTWARE_UPDATE_DONE, None)
     
 
+@function_prints
 def check_moveability(event, values):
-    ...
-    logger.info("check_moveability button clicked")
     controller.reach_moveability()
 
 ###############
 # VELOCITY MODE
 ###############
 
+@function_prints
 def start_velocity_mode(event, values, controller:RebelAxisController):
     """Invoked by Btn click: Start Measurement"""
     _hide_failure_and_improvement_items()
@@ -152,6 +166,7 @@ def start_velocity_mode(event, values, controller:RebelAxisController):
     start_measurement.start_measurement(controller, step, measurement_finished_callback,measurement_error_callback ,plotter)
 
 
+@function_prints
 def measurement_finished_callback(m:Measurement):
     """Gets called from thread. To get this into main thread, call window.write_event_value."""
     # window.write_event_value(KeyDefs.EVENT_INITIAL_MEASUREMENT_FINISHED, m)
@@ -159,22 +174,20 @@ def measurement_finished_callback(m:Measurement):
 
 
 
+@function_prints
 def measurement_error_callback():
     """This callback is called by controller instance, if motor can't move withe error code 'OC'"""
-    logger.error("measurement_error_callback")
     perform_callback_function_to_main_thread(handle_error_while_measurement)
 
 
+@function_prints
 def handle_error_while_measurement():
     ...
-    logger.info("handle_error_while_measurement")
 
 
 
-
+@function_prints
 def measurement_finished(m:Measurement):
-    logger.error("***"*15)
-    logger.error("Measurement_finished()")
     logger.error(f"measurement = {m} / id = {m.id}")
     """Invoked by start_measurement.start_measurement. Callback function for updating gui elements based on finished measurement."""
     text_field = window[(KeyDefs.TEXT_MIN_MAX_CURRENT_VALUES, LayoutPageKeys.layout_assembly_step_1_page)]
@@ -184,9 +197,9 @@ def measurement_finished(m:Measurement):
 
 
 
+@function_prints
 def predict_failure(measurement: Measurement):
     """Tries to predict < Indicator > (e.g. Overcurrent) based on currently measurement taken. Gets called after graph updating has stopped. """
-    logger.info("### predict_failure()")
 
     assembly_step = get_assembly_step_for_page_index(current_page_index)
     limit = get_current_limit_for_assembly_step(assembly_step)
@@ -211,6 +224,7 @@ def predict_failure(measurement: Measurement):
             raise NotImplementedError("This Button Label is not checked against (yet)!")
 
 
+@function_prints
 def show_combo_failure_selection(*args, **kwargs):
     """Btn click: Fehler manuell detektieren. Shows Combo-Box of possible Failures."""
     assembly_step = get_assembly_step_for_page_index(current_page_index)
@@ -222,16 +236,19 @@ def show_combo_failure_selection(*args, **kwargs):
     change_combo_failures_visibility(True)
     show_improvements(failures[0])
 
+@function_prints
 def combo_value_changes(event, values):
     """If combo's selected value changes, Possible Improvement Window should hide."""
     show_improvements(values[event])
 
 
+@function_prints
 def change_combo_failures_visibility(visible):
     t = window[KeyDefs.COL_FAILURE_SELECTION_CONTAINER]
     t.update(visible=visible)
         
 
+@function_prints
 def show_improvements(f:Failure, *args, **kwargs):
     """Shows Frame + Listbox with possible Improvements."""
     assembly_step = get_assembly_step_for_page_index(current_page_index)
@@ -246,8 +263,8 @@ def show_improvements(f:Failure, *args, **kwargs):
         sg.popup("Keine weitere Behebungsmaßnahme","Es ist keine weitere Fehlerbehebungsmaßnahme hinterlegt. Wenn du eine weiter findest, füge sie bitte hinzu. Solltest du den Fehler nicht finden können, ist das Getriebe Ausschuss.")
 
 
+@function_prints
 def btn_improvement_selection_clicked(event, values):
-    logger.info("*"*10)
     selected_improvement = values[KeyDefs.LISTBOX_POSSIBLE_IMPROVEMENTS][0]
     selected_failure = values[KeyDefs.COMBO_FAILURE_SELECT]
     latest_measure = data_controller.get_current_measurement_instance()
@@ -269,6 +286,7 @@ def btn_improvement_selection_clicked(event, values):
 
     
 
+@function_prints
 def _hide_failure_and_improvement_items():
     window[KeyDefs.FRAME_FAILURE_DETECTION].update(visible=False)
     window[KeyDefs.TEXT_HIGH_CURRENT_FAILURE_DETECTED].update(visible=False)
@@ -279,6 +297,7 @@ def _hide_failure_and_improvement_items():
 # FUNCTIONS FOR ENABLING / DISABLING NAVIGATION BUTTONS
 ######################################################
 
+@function_prints
 def update_next_page_btn(next_page_is_allowed):
     btn = window[KeyDefs.BTN_NAV_NEXT_PAGE]
     if next_page_is_allowed == True:
@@ -288,11 +307,13 @@ def update_next_page_btn(next_page_is_allowed):
 
 
 
+@function_prints
 def _update_headline(index):
     new_headline = get_headline_for_index(index)
     window["-headline-"].update(new_headline)
     
 
+@function_prints
 def _nav_next_page(event, values):
     """Called when user clicks on "Next"-Button. Manages hide/show of layouts etc."""
     global current_page_index, current_transmission
@@ -310,34 +331,7 @@ def _nav_next_page(event, values):
     
 
 
-    # if page_key == LayoutPageKeys.layout_assembly_step_1_page:
-
-    #     err = is_estop_error()
-    #     if err:
-    #         ...
-    #     else:
-    #         config = transmission_config.get_transmission_config()
-    #         current_transmission = data_controller.create_transmission(config)
-
-    # elif page_key == LayoutPageKeys.layout_assembly_step_2_page:
-    #     ...
-    # elif page_key == LayoutPageKeys.layout_assembly_step_3_page:
-    #     ...
-        
-
-
-
-
-
-    # _hide_current_page()
-
-    # current_page_index += 1
-    # _show_next_page()
-    # # _disable_enable_nav_buttons()
-    # update_next_page_btn(False)
-   
-   
-
+@function_prints
 def _nav_previous_page(event, values):
     """Called when user clicks on "Previous"-Button. Manages hide/show of layouts etc."""
     global current_page_index
@@ -345,16 +339,17 @@ def _nav_previous_page(event, values):
 
     current_page_index -= 1
     _show_next_page()
-    # _disable_enable_nav_buttons()
     update_next_page_btn(False)
 
 
+@function_prints
 def _hide_current_page():
     global current_page_index
     current_page = window[get_page_keys()[current_page_index]]
     current_page.update(visible=False)
-    # current_page.hide_row()
 
+
+@function_prints
 def _show_next_page():
     global current_page_index
     
@@ -363,6 +358,8 @@ def _show_next_page():
 
     _update_headline(current_page_index)
 
+
+@function_prints
 def _disable_enable_nav_buttons():
     # First version of nav button handling
     
@@ -384,6 +381,7 @@ def _disable_enable_nav_buttons():
 ### CONDITIONS FOR NAVIGATION ###
 #################################
 
+@function_prints
 def condition_leave_config_page():
     err = is_estop_error()
     if err:
@@ -451,8 +449,6 @@ if __name__ == "__main__":
         KeyDefs.RADIO_BUTTON_80_CLICKED: (radio_size_is_clicked, dict(size=TransmissionSize.size_80)),
         KeyDefs.RADIO_BUTTON_105_CLICKED:( radio_size_is_clicked, dict(size=TransmissionSize.size_105)),
 
-        # KeyDefs.BTN_READ_ERROR_CODES: (check_error_codes, dict()),
-
         KeyDefs.BTN_CONNECT_CAN: (btn_connect_can, dict()),
 
 
@@ -463,15 +459,12 @@ if __name__ == "__main__":
         KeyDefs.CHECKBOX_HAS_ENCODER: (lambda event, values: transmission_config.set_encoder_flag(values[event]), dict()),
         KeyDefs.CHECKBOX_HAS_BRAKE: (lambda event, values: transmission_config.set_brake_flag(values[event]), dict()),
         
-        # KeyDefs.BTN_CHECK_MOVEABILITY: (check_moveability, dict()),
-
         (KeyDefs.BTN_START_VELO_MODE, LayoutPageKeys.layout_assembly_step_1_page): (start_velocity_mode, dict(controller=controller)),
         (KeyDefs.BTN_START_VELO_MODE, LayoutPageKeys.layout_assembly_step_2_page): (start_velocity_mode, dict(controller=controller)),
         (KeyDefs.BTN_START_VELO_MODE, LayoutPageKeys.layout_assembly_step_3_page): (start_velocity_mode, dict(controller=controller)),
 
         KeyDefs.COMBO_FAILURE_SELECT: (combo_value_changes, dict()),
         KeyDefs.BTN_SELECT_IMPROVEMENT: (btn_improvement_selection_clicked, dict()),
-        # KeyDefs.EVENT_INITIAL_MEASUREMENT_FINISHED: (lambda event, values: measurement_finished(values[event]), dict()),
 
         KeyDefs.EVENT_CALLBACK_FUNCTION_MAIN_THREAD : ( lambda event, values: invoked_callback_in_main_thread(event, values), dict()),
 
