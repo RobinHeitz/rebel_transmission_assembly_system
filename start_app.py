@@ -263,29 +263,46 @@ def _nav_next_page(event, values):
     """Called when user clicks on "Next"-Button. Manages hide/show of layouts etc."""
     global current_page_index, current_transmission
 
-    _hide_current_page()
+    future_index = current_page_index + 1
+    page_key = get_page_key_for_index(future_index)
 
-    current_page_index += 1
-    _show_next_page()
-    # _disable_enable_nav_buttons()
-    update_next_page_btn(False)
-   
-    page_key = get_page_key_for_index(current_page_index)
-   
-    if page_key == LayoutPageKeys.layout_assembly_step_1_page:
-
-        err = is_estop_error()
-        if err:
-            ...
-        else:
-            config = transmission_config.get_transmission_config()
-            current_transmission = data_controller.create_transmission(config)
-
-    elif page_key == LayoutPageKeys.layout_assembly_step_2_page:
+    condition = condition_next_page_map.get(page_key)
+    if condition():
         ...
-    elif page_key == LayoutPageKeys.layout_assembly_step_3_page:
-        ...
+        _hide_current_page()
+        current_page_index = future_index
+        _show_next_page()
+        update_next_page_btn(False)
+    
+
+
+    # if page_key == LayoutPageKeys.layout_assembly_step_1_page:
+
+    #     err = is_estop_error()
+    #     if err:
+    #         ...
+    #     else:
+    #         config = transmission_config.get_transmission_config()
+    #         current_transmission = data_controller.create_transmission(config)
+
+    # elif page_key == LayoutPageKeys.layout_assembly_step_2_page:
+    #     ...
+    # elif page_key == LayoutPageKeys.layout_assembly_step_3_page:
+    #     ...
         
+
+
+
+
+
+    # _hide_current_page()
+
+    # current_page_index += 1
+    # _show_next_page()
+    # # _disable_enable_nav_buttons()
+    # update_next_page_btn(False)
+   
+   
 
 def _nav_previous_page(event, values):
     """Called when user clicks on "Previous"-Button. Manages hide/show of layouts etc."""
@@ -329,6 +346,21 @@ def _disable_enable_nav_buttons():
  
 
 
+#################################
+### CONDITIONS FOR NAVIGATION ###
+#################################
+
+def condition_leave_config_page():
+    err = is_estop_error()
+    if err:
+        return False
+        
+
+    config = transmission_config.get_transmission_config()
+    current_transmission = data_controller.create_transmission(config)
+    return True
+
+
 
 #################
 ### MAIN ROUNTINE
@@ -369,6 +401,14 @@ if __name__ == "__main__":
         p.plot_data([],[])
 
     window.maximize()
+
+    condition_next_page_map = {
+        LayoutPageKeys.layout_assembly_step_1_page: condition_leave_config_page,
+        LayoutPageKeys.layout_assembly_step_2_page: lambda: print("Cond 2"),
+        LayoutPageKeys.layout_assembly_step_3_page: lambda: print("Cond 3"),
+
+    }
+
 
     key_function_map = {
         KeyDefs.BTN_NAV_NEXT_PAGE: (_nav_next_page, dict()),
