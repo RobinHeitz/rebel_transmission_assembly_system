@@ -27,10 +27,9 @@ from gui import start_measurement
 from logs.setup_logger import setup_logger
 logger = setup_logger("start_app")
 
-#######################
-### FUNCTIONS  ########
-#######################
-
+#################################
+### TRANSMISSION CONFIG  ########
+#################################
 def radio_size_is_clicked(event, values, size:TransmissionSize):
     update_next_page_btn(next_page_is_allowed=True)
     transmission_config.set_size(size)
@@ -48,7 +47,9 @@ def checkbox_has_encoder_clicked(event, values):
     transmission_config.set_encoder_flag(values[event])
 
 
-
+###################
+### CONNECT CAN ###
+###################
 def btn_connect_can(*args):
     """Btn 'Connect can' is clicked."""
     logger.debug(f"Controller: {controller} / can-id: {controller.can_id}")
@@ -56,6 +57,7 @@ def btn_connect_can(*args):
     if controller.can_id != -1:
         logger.debug(f"CAN ID has been found: {hex(controller.can_id)}")
         window[KeyDefs.TEXT_CAN_CONNECTED_STATUS].update(f"Connected. CAN-ID: {hex(controller.can_id)}")
+        window[KeyDefs.BTN_CONNECT_CAN].update(disabled=True)
     else:
         logger.debug("No can id available.")
         window[KeyDefs.TEXT_CAN_CONNECTED_STATUS].update(f"Searching for CAN-ID...")
@@ -65,9 +67,35 @@ def search_for_can_id_thread(window:sg.Window, controller:RebelAxisController):
     try:
         board_id = controller.find_can_id(timeout=2)
     except ExceptionPcanNoCanIdFound:
-        window[KeyDefs.TEXT_CAN_CONNECTED_STATUS].update("Seems like no device is connected.")
+        window[KeyDefs.TEXT_CAN_CONNECTED_STATUS].update("Seems like no device is connected or Module Control is open?.")
     else:
         window[KeyDefs.TEXT_CAN_CONNECTED_STATUS].update(f"Connected. CAN-ID: {hex(board_id)}")
+        window[KeyDefs.BTN_CONNECT_CAN].update(disabled=True)
+
+
+
+#############################
+### BUTTON CHECK ERROR CODES:
+#############################
+
+def is_estop_error(*args):
+    logger.debug("is_estop_error()")
+    controller.cmd_reset_errors()
+    controller.do_cycle()
+    controller.cmd_reset_errors()
+    controller.do_cycle()
+    controller.cmd_velocity_mode(0)
+    time.sleep(0.5)
+    error_codes = controller.movement_cmd_errors
+    logger.debug(f"current Error codes: {error_codes}")
+
+    if "ESTOP" in error_codes:
+        sg.popup("Dem Controller fehlt die 24V-Versorgung. Bitte das Kabel überprüfen.")
+        return True
+    return False
+
+
+
 
 
 ########################
@@ -245,9 +273,14 @@ def _nav_next_page(event, values):
     page_key = get_page_key_for_index(current_page_index)
    
     if page_key == LayoutPageKeys.layout_assembly_step_1_page:
-        config = transmission_config.get_transmission_config()
-        current_transmission = data_controller.create_transmission(config)
-            
+
+        err = is_estop_error()
+        if err:
+            ...
+        else:
+            config = transmission_config.get_transmission_config()
+            current_transmission = data_controller.create_transmission(config)
+
     elif page_key == LayoutPageKeys.layout_assembly_step_2_page:
         ...
     elif page_key == LayoutPageKeys.layout_assembly_step_3_page:
@@ -344,19 +377,19 @@ if __name__ == "__main__":
         KeyDefs.RADIO_BUTTON_80_CLICKED: (radio_size_is_clicked, dict(size=TransmissionSize.size_80)),
         KeyDefs.RADIO_BUTTON_105_CLICKED:( radio_size_is_clicked, dict(size=TransmissionSize.size_105)),
 
-        # KeyDefs.BTN_CONNECT_CAN: (lambda *args, **kwargs: can_connection_functions.connect_can(**kwargs),dict(controller=controller, window=window)),
-        
+        # KeyDefs.BTN_READ_ERROR_CODES: (check_error_codes, dict()),
+
         KeyDefs.BTN_CONNECT_CAN: (btn_connect_can, dict()),
 
-        KeyDefs.BTN_SOFTWARE_UPDATE: (perform_software_update, dict()),
 
+        KeyDefs.BTN_SOFTWARE_UPDATE: (perform_software_update, dict()),
         KeyDefs.SOFTWARE_UPDATE_FEEDBACK: (lambda event, values: window[KeyDefs.PROGRESSBAR_SOFTWARE_UPDATE].update_bar(values.get(event)), dict()),
         KeyDefs.SOFTWARE_UPDATE_DONE : (lambda *args: window[KeyDefs.TEXT_SOFTWARE_UPDATE_STATUS_TEXT].update("Software upgedated") , dict()),
 
         KeyDefs.CHECKBOX_HAS_ENCODER: (lambda event, values: transmission_config.set_encoder_flag(values[event]), dict()),
         KeyDefs.CHECKBOX_HAS_BRAKE: (lambda event, values: transmission_config.set_brake_flag(values[event]), dict()),
         
-        KeyDefs.BTN_CHECK_MOVEABILITY: (check_moveability, dict()),
+        # KeyDefs.BTN_CHECK_MOVEABILITY: (check_moveability, dict()),
 
         (KeyDefs.BTN_START_VELO_MODE, LayoutPageKeys.layout_assembly_step_1_page): (start_velocity_mode, dict(controller=controller)),
         (KeyDefs.BTN_START_VELO_MODE, LayoutPageKeys.layout_assembly_step_2_page): (start_velocity_mode, dict(controller=controller)),
@@ -372,29 +405,30 @@ if __name__ == "__main__":
     # Event loop
     while True:
         event, values = window.read()
+
         if event in (sg.WIN_CLOSED, 'Exit'):
             controller.stop_movement()
             controller.shut_down()
             break
         elif callable(event):
-            event(values[event])
-
-        try:
-            func, args = key_function_map.get(event)
-            func(event, values, **args)
-        
-        except KeyboardInterrupt:
-            controller.stop_movement()
-            controller.shut_down()
-            break
-        
-        except TypeError as e:
-            logger.error(f"WARNING: Missing event in 'key_functin_map': Event = {event} // values = {values.get(event)}")
-            logger.error(traceback.format_exc())
-        
-        except Exception as e:
-            logger.error(f"Error has occured while executing event: {event} | function name: {func.__name__}")
-            logger.error(traceback.format_exc())
-        
+            event()
+        else:
+            try:
+                func, args = key_function_map.get(event)
+                func(event, values, **args)
+            
+            except KeyboardInterrupt:
+                controller.stop_movement()
+                controller.shut_down()
+                break
+            
+            except TypeError as e:
+                logger.error(f"WARNING: Missing event in 'key_functin_map': Event = {event} // values = {values.get(event)}")
+                logger.error(traceback.format_exc())
+            
+            except Exception as e:
+                logger.error(f"Error has occured while executing event: {event} | function name: {func.__name__}")
+                logger.error(traceback.format_exc())
+            
 
     window.close()

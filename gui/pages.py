@@ -11,6 +11,9 @@ import random
 layout_config_page = [
 
     [sg.Button("Verbindung herstellen", key=KeyDefs.BTN_CONNECT_CAN, enable_events=True, font=font_normal, size=(25,1)), sg.Text("Nicht verbunden", key=KeyDefs.TEXT_CAN_CONNECTED_STATUS, font=font_normal)],
+    
+    # [sg.B("Fehlercodes auslesen", k=KeyDefs.BTN_READ_ERROR_CODES, enable_events=True, size=(25,1), font=font_normal)],
+    
     [sg.Frame("", layout=[
         [
             sg.Text("Getriebegröße", font=font_normal),
@@ -30,9 +33,9 @@ layout_config_page = [
         sg.ProgressBar(max_value=10, size=(20,20), k=KeyDefs.PROGRESSBAR_SOFTWARE_UPDATE),
         sg.Text("", k=KeyDefs.TEXT_SOFTWARE_UPDATE_STATUS_TEXT, font=font_normal),
         ],
-    [
-        sg.B("Bewegung testen", k=KeyDefs.BTN_CHECK_MOVEABILITY, enable_events=True, font=font_normal, size=(20,1))
-    ],
+    # [
+    #     sg.B("Bewegung testen", k=KeyDefs.BTN_CHECK_MOVEABILITY, enable_events=True, font=font_normal, size=(20,1))
+    # ],
     ]
 
 
