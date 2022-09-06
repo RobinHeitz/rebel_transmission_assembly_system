@@ -5,11 +5,13 @@ import logging, time, threading
 
 from sqlalchemy.orm.session import Session
 
+import traceback
+
 from data_management.model import AssemblyStep, Failure, FailureType, ImprovementInstance, Measurement
 from data_management import data_controller, data_transformation
 
 from hw_interface.motor_controller import RebelAxisController
-from hw_interface.definitions import Exception_Controller_No_CAN_ID, Exception_PCAN_Connection_Failed
+from hw_interface.definitions import ExceptionPcanIllHardware, ExceptionPcanNoCanIdFound
 from current_limits import get_current_limit_for_assembly_step
 
 from gui.definitions import KeyDefs, LayoutPageKeys
@@ -44,10 +46,33 @@ def checkbox_has_brake_clicked(event, values):
 
 def checkbox_has_encoder_clicked(event, values):
     transmission_config.set_encoder_flag(values[event])
- 
 
 
+
+def btn_connect_can(*args):
+    """Btn 'Connect can' is clicked."""
+    logger.debug(f"Controller: {controller} / can-id: {controller.can_id}")
+    
+    if controller.can_id != -1:
+        logger.debug(f"CAN ID has been found: {hex(controller.can_id)}")
+        window[KeyDefs.TEXT_CAN_CONNECTED_STATUS].update(f"Connected. CAN-ID: {hex(controller.can_id)}")
+    else:
+        logger.debug("No can id available.")
+        window[KeyDefs.TEXT_CAN_CONNECTED_STATUS].update(f"Searching for CAN-ID...")
+        threading.Thread(target=search_for_can_id_thread, args=(window, controller), daemon=True).start()
+
+def search_for_can_id_thread(window:sg.Window, controller:RebelAxisController):
+    try:
+        board_id = controller.find_can_id(timeout=2)
+    except ExceptionPcanNoCanIdFound:
+        window[KeyDefs.TEXT_CAN_CONNECTED_STATUS].update("Seems like no device is connected.")
+    else:
+        window[KeyDefs.TEXT_CAN_CONNECTED_STATUS].update(f"Connected. CAN-ID: {hex(board_id)}")
+
+
+########################
 # Software update dummy
+########################
 def perform_software_update(event, values):
     btn = window[KeyDefs.BTN_SOFTWARE_UPDATE]
     btn.update(disabled=True)
@@ -65,8 +90,9 @@ def check_moveability(event, values):
     logger.info("check_moveability button clicked")
     controller.reach_moveability()
 
-
+###############
 # VELOCITY MODE
+###############
 
 def start_velocity_mode(event, values, controller:RebelAxisController):
     """Invoked by Btn click: Start Measurement"""
@@ -277,16 +303,21 @@ def _disable_enable_nav_buttons():
 
 if __name__ == "__main__":
     window = sg.Window("ReBeL Getriebe Montage & Kalibrierung", main_layout, size=(1200,1000), finalize=True, location=(0,0),resizable=True)
+    
     controller = None
     try:
-        controller = RebelAxisController(verbose=False)
-    except Exception_PCAN_Connection_Failed as e:
-        print("Exception PCAN Connection Failed:", e)
-        can_connection_functions.update_connect_btn_status("PCAN_HW_ERROR", window, controller)
-    except Exception_Controller_No_CAN_ID:
-        ...
-        can_connection_functions.update_connect_btn_status("ERROR_NO_CAN_ID_FOUND", window, controller)
+        controller = RebelAxisController(verbose=False, )
+        controller.connect()
+    except ExceptionPcanIllHardware as e:
+        logger.warning(e)
+        window[KeyDefs.TEXT_CAN_CONNECTED_STATUS].update(str(e))
+        window[KeyDefs.BTN_CONNECT_CAN].update(disabled=True)
+    
+    except ExceptionPcanNoCanIdFound as e:
+        window[KeyDefs.TEXT_CAN_CONNECTED_STATUS].update(str(e))
+        window[KeyDefs.BTN_CONNECT_CAN].update("Try Device again")
 
+    
     transmission_config = TransmissionConfigHelper()
     
     thread_velocity = None
@@ -313,7 +344,10 @@ if __name__ == "__main__":
         KeyDefs.RADIO_BUTTON_80_CLICKED: (radio_size_is_clicked, dict(size=TransmissionSize.size_80)),
         KeyDefs.RADIO_BUTTON_105_CLICKED:( radio_size_is_clicked, dict(size=TransmissionSize.size_105)),
 
-        KeyDefs.BTN_CONNECT_CAN: (lambda *args, **kwargs: can_connection_functions.connect_can(**kwargs),dict(controller=controller, window=window)),
+        # KeyDefs.BTN_CONNECT_CAN: (lambda *args, **kwargs: can_connection_functions.connect_can(**kwargs),dict(controller=controller, window=window)),
+        
+        KeyDefs.BTN_CONNECT_CAN: (btn_connect_can, dict()),
+
         KeyDefs.BTN_SOFTWARE_UPDATE: (perform_software_update, dict()),
 
         KeyDefs.SOFTWARE_UPDATE_FEEDBACK: (lambda event, values: window[KeyDefs.PROGRESSBAR_SOFTWARE_UPDATE].update_bar(values.get(event)), dict()),

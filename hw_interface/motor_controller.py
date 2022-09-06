@@ -15,7 +15,7 @@ from ctypes import *
 from .helper_functions import get_cmd_msg, bytes_to_int, int_to_bytes
 from .helper_functions import pos_from_tics, tics_from_pos, response_error_codes, get_referenced_and_alignment_status
 
-from .definitions import GEAR_SCALE, RESPONSE_ERROR_CODES, MessageMovementCommandReply, MessageEnvironmentStatus, MovementPositionMode, MovementVelocityMode
+from .definitions import GEAR_SCALE, RESPONSE_ERROR_CODES, ExceptionPcanIllHardware, ExceptionPcanNoCanIdFound, MessageMovementCommandReply, MessageEnvironmentStatus, MovementPositionMode, MovementVelocityMode
 from .definitions import Exception_PCAN_Connection_Failed, Exception_Controller_No_CAN_ID, Exception_Movement_Command_Reply_Error
 
 from threading import Thread, Lock
@@ -51,7 +51,7 @@ class RebelAxisController:
     movement_queue = []
 
 
-    def __init__(self, _can_id = None, can_auto_detect = True, verbose = False, start_movement_queue = False) -> None:
+    def __init__(self, _can_id = -1, can_auto_detect = True, verbose = False, start_movement_queue = False) -> None:
         """Init of RebelAxisController cls. Automatically starts 'CAN Message listener thread'.
         
         Params:
@@ -60,35 +60,36 @@ class RebelAxisController:
         - verbose (default False): Logs additional information.
         - start_movement_queue (default False): Automatically start Thread which sends movement cmds the axis (with velocity 0). Once queue gets a new action command, they get processed.
         """
-
+        logger.debug("Start Initializing.")
+        self.__start_movement_queue = start_movement_queue
         self.__verbose = verbose
-        
+        self.can_id = _can_id
+
         self.pcan = PCANBasic()
-        status = self.pcan.Initialize(self.channel, self.std_baudrate)
-        if status != PCAN_ERROR_OK:
-            raise Exception_PCAN_Connection_Failed(self.status_str(status))
-        else:
-            logger.info("Connection was succesfull")
-
-        if can_auto_detect is True:
-            id = self.find_can_id(timeout=2)
-            self.can_id = id if id != -1 else None
-        else:
-            self.can_id = _can_id
-
-        self.start_msg_listener_thread()
-        
-        if start_movement_queue == True:
-            self.start_movement_thread()
-
-        logger.info("Initializing was succesfull.")
+        logger.debug("End Initializing.")
     
    
+    def connect(self, ):
+        logger.debug("connect() - Method called.")
+        status = self.pcan.Initialize(self.channel, self.std_baudrate)
+        
+        if status == PCAN_ERROR_OK:
+            self.can_id = self.find_can_id()
+            self.start_msg_listener_thread()
+            
+            if self.__start_movement_queue == True:
+                self.start_movement_thread()
+        
+        if status == PCAN_ERROR_ILLHW:
+            raise ExceptionPcanIllHardware()
+        logger.info("Connection was succesfull.")
+
+
     def __log_verbose(self, msg):
         if self.__verbose == True:
             logger.debug(msg)
 
-    def find_can_id(self, timeout = 5):
+    def find_can_id(self, timeout = 2):
         logger.debug("find_can_id()")
         start_time = time.time()
 
@@ -109,6 +110,10 @@ class RebelAxisController:
                 else:
                     board_id = -1
         
+        if board_id == -1:
+            raise ExceptionPcanNoCanIdFound()
+        
+
         self.can_id = board_id
         return board_id
 

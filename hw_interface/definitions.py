@@ -30,6 +30,22 @@ RESPONSE_ERROR_CODES_DICT = {
 # EXCEPTIONS
 ############
 
+
+
+class ExceptionPcanIllHardware(BaseException):
+    def __init__(self) -> None:
+        message = f"Connection to PCAN USB Adapter failed. Is the adapter plugged in?"
+        super().__init__(message)
+
+class ExceptionPcanNoCanIdFound(BaseException):
+    def __init__(self) -> None:
+        message = f"Can ID could not be found."
+        super().__init__(message)
+
+
+
+
+
 class Exception_PCAN_Connection_Failed(BaseException):
     def __init__(self, error_status):            
         message = f"Connection to PCAN USB Adapter failed. Is the adapter plugged in? Error Code = {error_status}"
