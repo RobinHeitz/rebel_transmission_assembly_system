@@ -2,6 +2,7 @@ from fileinput import close
 from tkinter import font
 import PySimpleGUI as sg
 import traceback
+from hw_interface.definitions import ExceptionPcanNoCanIdFound
 
 from hw_interface.motor_controller import RebelAxisController
 
@@ -65,10 +66,9 @@ def close_window():
 ####################################
 @function_prints
 def start_improvement(*args):
-    ...
+    """Invoked by button click, calls motor_controller's disconnect-method."""
     window[Key.BTN_START_IMPROVEMENT_METHOD].update(visible=False)
     window[Key.COL_IMAGE_DESCRIPTION].update(visible=True)
-    
     controller.disconnect()
     
 
@@ -80,11 +80,8 @@ def show_next_image(*args):
     def img_update(img_key, **kwargs):
         window[img_key].update(**kwargs)
     
-    if current_image_index == 1:
-        ...
 
-
-    elif current_image_index == 3:
+    if current_image_index == 3:
         window[Key.COL_IMAGE_DESCRIPTION].update(visible=False)
         return improvement_process_finished()
 
@@ -95,7 +92,12 @@ def show_next_image(*args):
 @function_prints
 def improvement_process_finished():
     ...
-
+    try:
+        controller.connect()
+    except ExceptionPcanNoCanIdFound as e:
+        import traceback
+        logger.warning("Received exception: CAN-ID could not be found.")
+        logger.warning(traceback.format_exc())
 
 
 
