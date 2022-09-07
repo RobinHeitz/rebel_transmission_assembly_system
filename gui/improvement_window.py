@@ -117,6 +117,11 @@ def user_selected_failure_still_exists():
     logger.debug(f"user_selected_failure_still_exists")
     data_controller.set_success_status(imp_instance, False)
     close_window()
+
+@function_prints
+def start_improvement(*args):
+    ...
+    
     
     
 
@@ -163,6 +168,7 @@ key_function_map = {
     Key.BTN_FAILURE_STILL_EXISTS: lambda *args: user_selected_failure_still_exists(),
     Key.BTN_FAILURE_FIXED: lambda *args: user_selected_failure_is_fixed(),
     Key.BTN_CLOSE_IMPROVEMENT_WINDOW: lambda *args: close_window(),
+    Key.BTN_START_IMPROVEMENT_METHOD: lambda *args: start_improvement(),
 
 }
 

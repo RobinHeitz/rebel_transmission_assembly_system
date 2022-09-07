@@ -18,6 +18,8 @@ class ImprovementWindowKeys(enum.Enum):
     BTN_FAILURE_STILL_EXISTS = "-BTN_FAILURE_STILL_EXISTS-"
     BTN_CLOSE_IMPROVEMENT_WINDOW = "-BTN_CLOSE_IMPROVEMENT_WINDOW-"
 
+    BTN_START_IMPROVEMENT_METHOD = "-BTN_START_IMPROVEMENT_METHOD-"
+
 
 class KeyDefs(enum.Enum):
     """Represents all needed Keys as Enum-Class."""

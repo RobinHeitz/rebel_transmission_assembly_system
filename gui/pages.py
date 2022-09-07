@@ -210,20 +210,22 @@ def generate_improvement_window_layout(title, description, start, cancel ):
 
 
 
-    c1 = sg.Col([
+    c_desc = sg.Col([
             [sg.T(title, font=font_headline)], 
             [sg.Multiline(description, font=font_normal, no_scrollbar=True, write_only=True, expand_x=True, expand_y=True)],
+            [sg.Col(layout=[[sg.B("Behebungsmaßnahme starten", k=Key.BTN_START_IMPROVEMENT_METHOD)]], justification="center")]
             
             ], expand_x=True, expand_y=True, vertical_alignment="top",background_color=get_color_arg())
         
-    c2 = sg.Col([
+    c_image = sg.Col([
         [sg.Image("gui/assembly_pictures/step_1_resize.png", size=(300,300))]
         ], vertical_alignment="top", background_color=get_color_arg())
 
-    c3 = sg.Col([
+    c_canvas = sg.Col([
         [sg.Canvas(key=Key.CANVAS, size=(50,50))],
         [sg.T("", k="-result-")],
-    ], expand_x=True, expand_y=True, background_color=get_color_arg())
+    ], expand_x=True, expand_y=True, background_color=get_color_arg(), visible=False)
+
 
 
     bottom_button_bar = sg.Col([
@@ -238,8 +240,9 @@ def generate_improvement_window_layout(title, description, start, cancel ):
     ], vertical_alignment="bottom", justification="center", element_justification="center", background_color=get_color_arg(), expand_x=True, )
 
     layout = [
-        [c1, c2],
-        [c3],
+        [c_desc,],
+        # [c1, c2],
+        [c_canvas],
         [bottom_button_bar],
         
     ]
