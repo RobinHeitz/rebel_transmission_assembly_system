@@ -216,7 +216,7 @@ class RebelAxisController:
 
             if "OC" in self.movement_cmd_errors:
                 self.stop_movement()
-                invoke_error_function()
+                invoke_error_function("OC")
                 return
 
         self.stop_movement()

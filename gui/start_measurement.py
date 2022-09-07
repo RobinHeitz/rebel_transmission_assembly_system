@@ -44,7 +44,7 @@ def start_measurement(controller: RebelAxisController, assembly_step:AssemblySte
         velocity=10, 
         duration=3, 
         invoke_stop_function=lambda: stop_graph_update(stop_func), 
-        invoke_error_function=lambda: cancel_graph_update(error_func))
+        invoke_error_function=lambda *args: cancel_graph_update(error_func, *args))
 
 
 
@@ -100,13 +100,13 @@ def stop_graph_update(stop_func):
     stop_func(measurement)
 
 
-def cancel_graph_update(error_func):
+def cancel_graph_update(error_func, *args):
     """
     Gets called when due to an error the measurement has to be stopped/ aborted."""
     logger.info("#"*10)
     logger.info("cancel_graph_update()")
 
     stop_current_thread()
-    error_func()
+    error_func(*args)
 
     

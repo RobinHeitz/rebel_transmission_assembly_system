@@ -23,6 +23,14 @@ import random
 from logs.setup_logger import setup_logger
 logger = setup_logger("improvemet_window")
 
+def function_prints(f):
+    def wrap(*args, **kwargs):
+        ...
+        logger.info(f"--- {f.__name__}() called")
+        return f(*args, **kwargs)
+    return wrap
+
+
 ###################
 ### DEFINITIONS ###
 ###################
@@ -41,10 +49,12 @@ assembly_step = None
 ### FUNCTIONS ###
 #################
 
+@function_prints
 def close_window():
     window.write_event_value("Exit", None)
 
 
+@function_prints
 def cancel_improvement_button_clicked(imp_instance):
     logger.debug(f"cancel_improvement_button_clicked()")
     data_controller.delete_improvement_instance(imp_instance)
@@ -52,11 +62,13 @@ def cancel_improvement_button_clicked(imp_instance):
     # window.write_event_value("Exit", None)
     close_window()
 
+@function_prints
 def start_repeat_measurement(imp_instance:ImprovementInstance, ):
     logger.debug(f"start_repeat_measurement() | imp_instance: {imp_instance}")
     start_measurement.start_measurement(controller, AssemblyStep.step_1_no_flexring, measurement_finished, plotter)
 
 
+@function_prints
 def measurement_finished(m:Measurement):
     logger.debug(f"measurement_finished() | measurement: {m} | failure={fail_instance.failure}")
     data_controller.update_improvement_measurement_relation(m, imp_instance)    
@@ -78,6 +90,7 @@ def measurement_finished(m:Measurement):
         window[Key.BTN_FAILURE_STILL_EXISTS].update(visible=True)
 
 
+@function_prints
 def is_measurement_ok(m:Measurement):
     logger.debug(f"evaluate_measurable_failures()")
     limit = get_current_limit_for_assembly_step(assembly_step)
@@ -85,6 +98,7 @@ def is_measurement_ok(m:Measurement):
         return False
     return True
 
+@function_prints
 def user_selected_failure_is_fixed():
     """Btn click: For not-measureable failures, user decides whether failure is fixed or not."""
     logger.debug(f"user_selected_failure_is_fixed")
@@ -92,6 +106,7 @@ def user_selected_failure_is_fixed():
     close_window()
 
 
+@function_prints
 def user_selected_failure_still_exists():
     """Btn click: For not-measureable failures, user decides whether failure is fixed or not."""
     logger.debug(f"user_selected_failure_still_exists")
@@ -100,8 +115,10 @@ def user_selected_failure_still_exists():
     
     
 
+@function_prints
 def improvement_window(c:RebelAxisController, t:Transmission, selected_failure:Failure, selected_improvement: Improvement, invalid_measurement:Measurement, step:AssemblyStep):
-    logger.debug(f"improvement_window() ")
+    import pdb
+    pdb.set_trace()
 
     global controller, fail_instance, imp_instance, window, plotter, assembly_step
     assembly_step = step

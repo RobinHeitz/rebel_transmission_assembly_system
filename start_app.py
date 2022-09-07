@@ -98,7 +98,7 @@ def search_for_can_id_thread(window:sg.Window, controller:RebelAxisController):
     try:
         board_id = controller.find_can_id(timeout=2)
     except ExceptionPcanNoCanIdFound:
-        window[KeyDefs.TEXT_CAN_CONNECTED_STATUS].update("Seems like no device is connected or Module Control is open?.")
+        window[KeyDefs.TEXT_CAN_CONNECTED_STATUS].update("Seems like no device is connected or Module Control is open?")
     else:
         window[KeyDefs.TEXT_CAN_CONNECTED_STATUS].update(f"Connected. CAN-ID: {hex(board_id)}")
         window[KeyDefs.BTN_CONNECT_CAN].update(disabled=True)
@@ -121,7 +121,7 @@ def is_estop_error(*args):
     logger.debug(f"current Error codes: {error_codes}")
 
     if "ESTOP" in error_codes:
-        sg.popup("Dem Controller fehlt die 24V-Versorgung. Bitte das Kabel überprüfen.")
+        sg.popup("24V Versorgung fehlt","Dem Controller fehlt die 24V-Versorgung. Bitte das Kabel überprüfen.",)
         return True
     return False
 
@@ -175,14 +175,28 @@ def measurement_finished_callback(m:Measurement):
 
 
 @function_prints
-def measurement_error_callback():
+def measurement_error_callback(error):
     """This callback is called by controller instance, if motor can't move withe error code 'OC'"""
-    perform_callback_function_to_main_thread(handle_error_while_measurement)
+    perform_callback_function_to_main_thread(handle_error_while_measurement, error)
 
 
 @function_prints
-def handle_error_while_measurement():
-    ...
+def handle_error_while_measurement(error):
+    assembly_step = get_assembly_step_for_page_index(current_page_index)
+    logger.info(f"Error code: {error} / assembly_step = {assembly_step}")
+    session:Session = data_controller.create_session()
+    
+    failures = session.query(Failure).filter_by(assembly_step = assembly_step, failure_type = FailureType.overcurrent_not_moving).all()
+    
+    
+    if len(failures) != 1: raise Exception("DataStruture is corrupt! There should be only 1 instance of failure for a given AssemblyStep with FailureType overcurrent_not_moving.")
+    session.close()
+    
+    window[KeyDefs.TEXT_HIGH_CURRENT_FAILURE_DETECTED].update(f"Es wurde ein Fehler erkannt: {failures[0]}", text_color="red", visible=True)
+    window[KeyDefs.COMBO_FAILURE_SELECT].update(values=failures, value=failures[0])
+    change_combo_failures_visibility(False)
+    show_improvements(failures[0])
+
 
 
 
@@ -270,7 +284,7 @@ def btn_improvement_selection_clicked(event, values):
     latest_measure = data_controller.get_current_measurement_instance()
     logger.info(f"btn_improvement_selection_clicked: {selected_improvement} | selected_failure = {selected_failure} | measurement = {latest_measure}")
 
-    assembly_step = step = get_assembly_step_for_page_index(current_page_index)
+    assembly_step = get_assembly_step_for_page_index(current_page_index)
     fail_instance, imp_instance = improvement_window.improvement_window(controller, current_transmission, selected_failure, selected_improvement, latest_measure, assembly_step)
     
     # for some reason; need to create anothger sesseion since this value is wrooong

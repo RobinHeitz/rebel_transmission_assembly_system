@@ -65,6 +65,11 @@ def create_assembly_step_1(session:Session, assembly_step:AssemblyStep):
         assembly_step = assembly_step,
         description = "Die Bremse durch drehen lösen und wechseln. ACHTUNG: Der Bremskolben samt Feder kann herausfallen!")
 
+    imp_7 = Improvement(
+        title = "Encoder verbinden", 
+        assembly_step = assembly_step,
+        description = "Der Encoder ist nicht mit dem Controller verbunden. Überprüfe, ob das Kabel verbunden bzw. beschädigt ist.")
+    
     add_to_session(session, imp_1, imp_2, imp_3, imp_4, imp_5, imp_6)
     
     f1.improvements = [imp_1,]
@@ -73,7 +78,7 @@ def create_assembly_step_1(session:Session, assembly_step:AssemblyStep):
     
     f3.improvements = [imp_4, imp_5]
 
-    f4.improvements = [imp_4, imp_6]
+    f4.improvements = [imp_4, imp_6, imp_7]
     
     f5.improvements = [imp_1]
     
