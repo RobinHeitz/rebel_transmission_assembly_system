@@ -25,13 +25,6 @@ import random
 from logs.setup_logger import setup_logger
 logger = setup_logger("improvemet_window")
 
-def function_prints(f):
-    def wrap(*args, **kwargs):
-        ...
-        logger.info(f"--- {f.__name__}() called")
-        return f(*args, **kwargs)
-    return wrap
-
 
 ###################
 ### DEFINITIONS ###
@@ -47,13 +40,50 @@ fail_instance = None
 imp_instance = None
 assembly_step = None
 
+current_image_index = 1
+
 #################
 ### FUNCTIONS ###
 #################
 
+def function_prints(f):
+    def wrap(*args, **kwargs):
+        ...
+        logger.info(f"--- {f.__name__}() called")
+        return f(*args, **kwargs)
+    return wrap
+
+
+
 @function_prints
 def close_window():
     window.write_event_value("Exit", None)
+
+
+
+@function_prints
+def show_next_image(*args):
+    global current_image_index
+    
+    def img_update(img_key, **kwargs):
+        window[img_key].update(**kwargs)
+    
+    if current_image_index == 3:
+        window[Key.COL_IMAGE_DESCRIPTION].update(visible=False)
+        return improvement_process_finished()
+
+    img_update(image_index_map[current_image_index], visible=False)
+    current_image_index += 1
+    img_update(image_index_map[current_image_index], visible=True)
+
+@function_prints
+def improvement_process_finished():
+    ...
+
+#############################
+### START IMPROVEMENT PROCESS
+#############################
+
 
 
 @function_prints
@@ -123,6 +153,7 @@ def user_selected_failure_still_exists():
 @function_prints
 def start_improvement(*args):
     ...
+    window[Key.BTN_START_IMPROVEMENT_METHOD].update(visible=False)
     window[Key.COL_IMAGE_DESCRIPTION].update(visible=True)
     
     
@@ -171,6 +202,13 @@ key_function_map = {
     Key.BTN_FAILURE_FIXED: lambda *args: user_selected_failure_is_fixed(),
     Key.BTN_CLOSE_IMPROVEMENT_WINDOW: lambda *args: close_window(),
     Key.BTN_START_IMPROVEMENT_METHOD: lambda *args: start_improvement(),
+    Key.BTN_SHOW_NEXT_IMAGE: show_next_image,
 
+}
+
+image_index_map = {
+    1: Key.IMG_CABLE_DISCONNECT,
+    2: Key.IMG_IMPROVEMENT_PICURE,
+    3: Key.IMG_CABLE_RECONNECT,
 }
 
