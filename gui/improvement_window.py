@@ -38,6 +38,7 @@ controller = None
 plotter = None
 
 fail_instance = None
+improvement = None
 imp_instance = None
 assembly_step = None
 
@@ -77,17 +78,24 @@ def start_improvement(*args):
 def show_next_image(*args):
     global current_image_index
     
-    def img_update(img_key, **kwargs):
-        window[img_key].update(**kwargs)
+    def img_update(img_name):
+        path = f"gui/assembly_pictures/{img_name}"
+        s = (300,300)
+        img = image_resize.resize_bin_output(path, size=s)
+        window[Key.IMG_IMPROVEMENT].update(img, size=s)
     
 
-    if current_image_index == 3:
+    if current_image_index == 1:
+        img_update(improvement.image_filename)
+
+    elif current_image_index == 2:
+        img_update("cable_connected.png")
+    elif current_image_index == 3:
         window[Key.COL_IMAGE_DESCRIPTION].update(visible=False)
         return improvement_process_finished()
-
-    img_update(image_index_map[current_image_index], visible=False)
     current_image_index += 1
-    img_update(image_index_map[current_image_index], visible=True)
+
+
 
 @function_prints
 def improvement_process_finished():
@@ -147,6 +155,10 @@ def is_measurement_ok(m:Measurement):
     return True
 
 
+##############################
+### Handle improvement process
+##############################
+
 
 
 @function_prints
@@ -177,12 +189,18 @@ def user_selected_failure_still_exists():
 
     
 
+
+###################################################################################################################
+###################################################################################################################
+###################################################################################################################
+
 @function_prints
 def improvement_window(c:RebelAxisController, t:Transmission, selected_failure:Failure, selected_improvement: Improvement, invalid_measurement:Measurement, step:AssemblyStep):
-    global controller, fail_instance, imp_instance, window, plotter, assembly_step
-    assembly_step = step
-
+    global controller, fail_instance, imp_instance, window, plotter, assembly_step, improvement
+    
     controller = c
+    assembly_step = step
+    improvement = selected_improvement
     fail_instance, imp_instance = data_controller.setup_improvement_start(t, selected_failure, selected_improvement, invalid_measurement, assembly_step)
     title, description = imp_instance.improvement.title, imp_instance.improvement.description
     
@@ -223,11 +241,5 @@ key_function_map = {
     Key.BTN_START_IMPROVEMENT_METHOD: lambda *args: start_improvement(),
     Key.BTN_SHOW_NEXT_IMAGE: show_next_image,
 
-}
-
-image_index_map = {
-    1: Key.IMG_CABLE_DISCONNECT,
-    2: Key.IMG_IMPROVEMENT_PICURE,
-    3: Key.IMG_CABLE_RECONNECT,
 }
 

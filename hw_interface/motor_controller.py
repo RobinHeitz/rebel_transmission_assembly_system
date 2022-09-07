@@ -97,6 +97,8 @@ class RebelAxisController:
         self.thread_read_msg.running = False
         self.pcan.Uninitialize(self.channel)
         self.can_id = -1
+        self.motor_enabled = False
+        self.motor_no_err = False
 
 
     def __log_verbose(self, msg):
@@ -231,9 +233,10 @@ class RebelAxisController:
 
     @function_prints
     def __movement_velocity_mode(self, velocity, duration, invoke_stop_function, invoke_error_function):
-        logging.info(f"__move_velocity_mode(), duration = {duration}")
         current_thread = threading.current_thread()
-        
+        can_move_ = self.can_move()
+
+        logger.info(f"can_move: {can_move_}")
         if not self.can_move():
             self.cmd_reset_errors()
             self.do_cycle()

@@ -1,3 +1,4 @@
+from email.policy import default
 from sqlalchemy import Column, Integer, String, ForeignKey, Table, Enum, DateTime, Float, Boolean
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.ext.declarative import declarative_base
@@ -115,7 +116,9 @@ class DataPoint(Base):
 
 class FailureType(enum.Enum):
     overcurrent = 1
-    overcurrent_not_moving = 2
+    # overcurrent_not_moving = 2
+
+    not_moving_oc = 2
     
     calibration_both_tracks_values =  9
     not_measurable = 10
@@ -167,8 +170,11 @@ class Improvement(Base):
     __tablename__ = "improvement"
     id = Column(Integer, primary_key = True)
     created_at = Column(DateTime, default=datetime.now)
+    
     title = Column(String, nullable=False)
     description = Column(String, nullable=False)
+    image_filename = Column(String, default="no_img.png")
+
     assembly_step = Column(Enum(AssemblyStep))
     
     improvement_instances = relationship("ImprovementInstance", backref=backref("improvement"))

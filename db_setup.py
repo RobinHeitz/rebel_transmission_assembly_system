@@ -11,26 +11,18 @@ import random
 
 from data_management import data_controller
 
-engine, connection, metadata, session = None, None, None, None
+engine, connection, metadata, session = (None, )*4
 
 def add_to_session(session:Session, *args):
     for i in args:
         session.add(i)
-
-# def setup_session():
-#     global engine, connection, metadata, session
-
-#     engine = db.create_engine('sqlite:///rebel.sqlite')
-#     connection = engine.connect()
-#     metadata = db.MetaData()
-#     session = sessionmaker(bind = engine)()
 
 
 def create_assembly_step_1(session:Session, assembly_step:AssemblyStep):
     f1 = Failure(description="Strom > Nennwert", assembly_step = assembly_step, failure_type = FailureType.overcurrent)
     f2 = Failure(description="Encoderfehler", assembly_step = assembly_step, failure_type = FailureType.not_measurable)
     f3 = Failure(description="Ruckeln beim Anfahren", assembly_step = assembly_step, failure_type = FailureType.not_measurable)
-    f4 = Failure(description="OC beim Anfahren", assembly_step = assembly_step, failure_type = FailureType.overcurrent_not_moving)
+    f4 = Failure(description="OC beim Anfahren", assembly_step = assembly_step, failure_type = FailureType.not_moving_oc)
     f5 = Failure(description="Module Dead: Wicklungsfehler??", assembly_step = assembly_step, failure_type = FailureType.not_measurable)
 
     add_to_session(session, f1, f2, f3, f4, f5)
@@ -68,8 +60,11 @@ def create_assembly_step_1(session:Session, assembly_step:AssemblyStep):
     imp_7 = Improvement(
         title = "Encoder verbinden", 
         assembly_step = assembly_step,
-        description = "Der Encoder ist nicht mit dem Controller verbunden. Überprüfe, ob das 5-polige Kabel verbunden bzw. beschädigt ist.")
-    
+        description = "Der Encoder ist nicht mit dem Controller verbunden. Überprüfe, ob das 5-polige Kabel verbunden bzw. beschädigt ist.",
+        image_filename = "encoder_cable.png",
+        )
+
+
     add_to_session(session, imp_1, imp_2, imp_3, imp_4, imp_5, imp_6)
     
     f1.improvements = [imp_1,]

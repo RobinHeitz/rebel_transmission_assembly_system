@@ -1,8 +1,8 @@
-"""init
+"""empty message
 
-Revision ID: 896e40ad2099
+Revision ID: 64697a0361b7
 Revises: 
-Create Date: 2022-09-01 20:21:33.874236
+Create Date: 2022-09-07 15:04:12.158603
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '896e40ad2099'
+revision = '64697a0361b7'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -23,7 +23,7 @@ def upgrade() -> None:
     sa.Column('created_at', sa.DateTime(), nullable=True),
     sa.Column('description', sa.String(), nullable=True),
     sa.Column('assembly_step', sa.Enum('step_1_no_flexring', 'step_2_with_flexring', 'step_3_gearoutput_not_screwed', 'step_4_gearoutput_screwed', name='assemblystep'), nullable=True),
-    sa.Column('failure_type', sa.Enum('overcurrent', 'calibration_both_tracks_values', 'not_measurable', name='failuretype'), nullable=True),
+    sa.Column('failure_type', sa.Enum('overcurrent', 'not_moving_oc', 'calibration_both_tracks_values', 'not_measurable', name='failuretype'), nullable=True),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('improvement',
@@ -31,6 +31,7 @@ def upgrade() -> None:
     sa.Column('created_at', sa.DateTime(), nullable=True),
     sa.Column('title', sa.String(), nullable=False),
     sa.Column('description', sa.String(), nullable=False),
+    sa.Column('image_filename', sa.String(), nullable=True),
     sa.Column('assembly_step', sa.Enum('step_1_no_flexring', 'step_2_with_flexring', 'step_3_gearoutput_not_screwed', 'step_4_gearoutput_screwed', name='assemblystep'), nullable=True),
     sa.PrimaryKeyConstraint('id')
     )

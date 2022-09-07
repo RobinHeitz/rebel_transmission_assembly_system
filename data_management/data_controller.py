@@ -230,7 +230,11 @@ def sorted_failures_by_incidents(session:Session, step:AssemblyStep):
     logger.info("##"*5)
     logger.info("Testing sorting of failures by number of incidents")
 
-    failures_without_oc: List[Failure] = session.query(Failure).filter(Failure.failure_type != FailureType.overcurrent, Failure.assembly_step == step).all()
+    failures_without_oc: List[Failure] = session.query(Failure).\
+        filter(
+            Failure.failure_type != FailureType.overcurrent,
+            Failure.failure_type != FailureType.not_moving_oc,
+            Failure.assembly_step == step).all()
     failures_sorted = sorted(failures_without_oc, key=lambda f: len(f.failure_instances), reverse=True)
 
     logger.info(f"Before: {failures_without_oc}")

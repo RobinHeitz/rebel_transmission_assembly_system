@@ -234,7 +234,6 @@ def generate_improvement_window_layout(title, description, start, cancel ):
             ], expand_x=True, expand_y=True, vertical_alignment="top",background_color=get_color_arg())
         
     c_image = sg.Col([
-        # [sg.Image("gui/assembly_pictures/step_1_resize.png", size=(300,300))]
         [get_image("gui/assembly_pictures/step1.png", size=(300,300))],
         ], vertical_alignment="top", background_color=get_color_arg())
 
@@ -245,10 +244,8 @@ def generate_improvement_window_layout(title, description, start, cancel ):
 
     c_image_steps = sg.Col([
         [
-            get_image("gui/assembly_pictures/cable_not_connected.png", size=(350,350), k=Key.IMG_CABLE_DISCONNECT),
-            get_image("gui/assembly_pictures/step1.png", size=(350,350), visible=False, k=Key.IMG_IMPROVEMENT_PICURE),
-            get_image("gui/assembly_pictures/cable_connected.png", size=(350,350), visible=False, k=Key.IMG_CABLE_RECONNECT),
-            ],
+            get_image("gui/assembly_pictures/cable_not_connected.png", size=(350,350), k=Key.IMG_IMPROVEMENT),
+        ],
         [sg.B("Weiter", k=Key.BTN_SHOW_NEXT_IMAGE)],
 
     ], visible=False, k=Key.COL_IMAGE_DESCRIPTION, justification="center")

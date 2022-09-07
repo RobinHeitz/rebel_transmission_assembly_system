@@ -415,7 +415,13 @@ def condition_leave_config_page():
 if __name__ == "__main__":
     window = sg.Window("ReBeL Getriebe Montage & Kalibrierung", main_layout, size=(1200,1000), finalize=True, location=(0,0),resizable=True)
     
-    controller = None
+    # controller = None
+    # thread_velocity = None
+    # thread_graph_updater = None
+    # current_transmission = None
+
+    controller, thread_velocity, thread_graph_updater, current_transmission = (None, )*4
+
     try:
         controller = RebelAxisController(verbose=False)
         controller.connect()
@@ -432,12 +438,9 @@ if __name__ == "__main__":
     
     transmission_config = TransmissionConfigHelper()
     
-    thread_velocity = None
-    thread_graph_updater = None
 
     current_page_index = 0
 
-    current_transmission = None
 
 
     plotters = {
