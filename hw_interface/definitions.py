@@ -67,30 +67,30 @@ class Exception_Movement_Command_Reply_Error(BaseException):
 # CLASSES
 #########
 
-class MovementActionBase:
-    finished = False
+# class MovementActionBase:
+#     finished = False
 
 
-class MovementPositionMode(MovementActionBase):
-    def __init__(self, target_tics, velo=10, threshold_tics = 1000) -> None:
-        super().__init__()
-        self.target_tics = target_tics
-        self.velo = velo
-        self.threshold_tics = threshold_tics
+# class MovementPositionMode(MovementActionBase):
+#     def __init__(self, target_tics, velo=10, threshold_tics = 1000) -> None:
+#         super().__init__()
+#         self.target_tics = target_tics
+#         self.velo = velo
+#         self.threshold_tics = threshold_tics
     
-    def __str__(self):
-        return f"MovementPositionMode: Target = {self.target_tics} / velo={self.velo}"
+#     def __str__(self):
+#         return f"MovementPositionMode: Target = {self.target_tics} / velo={self.velo}"
 
-    def __call__(self):
-        """Returns parameters as tuple:
-        return (target_tics, velo, threshold_tics)"""
-        return self.target_tics, self.velo, self.threshold_tics
+#     def __call__(self):
+#         """Returns parameters as tuple:
+#         return (target_tics, velo, threshold_tics)"""
+#         return self.target_tics, self.velo, self.threshold_tics
 
-class MovementVelocityMode(MovementActionBase):
-    def __init__(self, duration, velo=10) -> None:
-        super().__init__()
-        self.duration = duration
-        self.velo = 10
+# class MovementVelocityMode(MovementActionBase):
+#     def __init__(self, duration, velo=10) -> None:
+#         super().__init__()
+#         self.duration = duration
+#         self.velo = 10
 
 
 

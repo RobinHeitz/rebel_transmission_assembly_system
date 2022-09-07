@@ -15,7 +15,7 @@ from ctypes import *
 from .helper_functions import get_cmd_msg, bytes_to_int, int_to_bytes
 from .helper_functions import pos_from_tics, tics_from_pos, response_error_codes, get_referenced_and_alignment_status
 
-from .definitions import GEAR_SCALE, RESPONSE_ERROR_CODES, ExceptionPcanIllHardware, ExceptionPcanNoCanIdFound, MessageMovementCommandReply, MessageEnvironmentStatus, MovementPositionMode, MovementVelocityMode
+from .definitions import GEAR_SCALE, RESPONSE_ERROR_CODES, ExceptionPcanIllHardware, ExceptionPcanNoCanIdFound, MessageMovementCommandReply, MessageEnvironmentStatus
 from .definitions import Exception_PCAN_Connection_Failed, Exception_Controller_No_CAN_ID, Exception_Movement_Command_Reply_Error
 
 from threading import Thread, Lock
@@ -48,20 +48,19 @@ class RebelAxisController:
     movement_cmd_errors = []
     movement_cmd_reply_list = []
     motor_env_status_list = []
-    movement_queue = []
+    # movement_queue = []
 
 
-    def __init__(self, _can_id = -1, can_auto_detect = True, verbose = False, start_movement_queue = False) -> None:
+    def __init__(self, _can_id = -1, can_auto_detect = True, verbose = False) -> None:
         """Init of RebelAxisController cls. Automatically starts 'CAN Message listener thread'.
         
         Params:
         - _can_id: CAN ID of axis.
         - can_auto_detect (default True): Autmatically seeks for CAN ID of connected axis.
         - verbose (default False): Logs additional information.
-        - start_movement_queue (default False): Automatically start Thread which sends movement cmds the axis (with velocity 0). Once queue gets a new action command, they get processed.
         """
         logger.debug("Start Initializing.")
-        self.__start_movement_queue = start_movement_queue
+        # self.__start_movement_queue = start_movement_queue
         self.__verbose = verbose
         self.can_id = _can_id
 
@@ -77,8 +76,8 @@ class RebelAxisController:
             self.can_id = self.find_can_id()
             self.start_msg_listener_thread()
             
-            if self.__start_movement_queue == True:
-                self.start_movement_thread()
+            # if self.__start_movement_queue == True:
+            #     self.start_movement_thread()
         
         if status == PCAN_ERROR_ILLHW:
             raise ExceptionPcanIllHardware()
@@ -228,77 +227,77 @@ class RebelAxisController:
     # MOVEMENT THROUGH MOVEMENT QUEUE
     ################################
     
-    def start_movement_thread(self):
-        self.thread_movement = Thread(target=self.__move_queue, args=(), daemon=True)
-        self.thread_movement.start()
+    # def start_movement_thread(self):
+    #     self.thread_movement = Thread(target=self.__move_queue, args=(), daemon=True)
+    #     self.thread_movement.start()
 
-    def __move_queue_handle_velo_mode(self, action:MovementVelocityMode):
-        ...
+    # def __move_queue_handle_velo_mode(self, action:MovementVelocityMode):
+    #     ...
     
-    def __move_queue_handle_position_mode(self, action:MovementPositionMode):
-        ...
-        time.sleep(1)
-        target_tics, velo, threshold_tics = action()
-        current_tics = self.tics_current
-        err_reset_counter = 0
-        delta_tics = self.get_delta_tics_for_output_velo(velo)
+    # def __move_queue_handle_position_mode(self, action:MovementPositionMode):
+    #     ...
+    #     time.sleep(1)
+    #     target_tics, velo, threshold_tics = action()
+    #     current_tics = self.tics_current
+    #     err_reset_counter = 0
+    #     delta_tics = self.get_delta_tics_for_output_velo(velo)
 
-        if current_tics > target_tics:
-            delta_tics = delta_tics *-1
+    #     if current_tics > target_tics:
+    #         delta_tics = delta_tics *-1
             
-        while abs(self.tics_current - target_tics) > threshold_tics:
-            if not self.can_move():
-                if err_reset_counter >= 5:
-                    self.__log_verbose("ERROR: Reset was done 5 times, max_counter exceeded!")
-                    break
-                self.cmd_reset_errors()
-                self.do_cycle()
-                self.cmd_enable_motor()
-                err_reset_counter += 1
+    #     while abs(self.tics_current - target_tics) > threshold_tics:
+    #         if not self.can_move():
+    #             if err_reset_counter >= 5:
+    #                 self.__log_verbose("ERROR: Reset was done 5 times, max_counter exceeded!")
+    #                 break
+    #             self.cmd_reset_errors()
+    #             self.do_cycle()
+    #             self.cmd_enable_motor()
+    #             err_reset_counter += 1
 
-            current_tics += delta_tics 
-            self.cmd_position_mode(current_tics, 0)
+    #         current_tics += delta_tics 
+    #         self.cmd_position_mode(current_tics, 0)
             
-            self.do_cycle()
+    #         self.do_cycle()
     
-        self.cmd_disable_motor()
-        self.__log_verbose("*"*10)
-        self.__log_verbose("MOVEMENT-ACTION FINISHED!")
-        time.sleep(2)
+    #     self.cmd_disable_motor()
+    #     self.__log_verbose("*"*10)
+    #     self.__log_verbose("MOVEMENT-ACTION FINISHED!")
+    #     time.sleep(2)
 
 
-    def __move_queue(self):
-        """
-        On possible way to move the rebel axis.
-        If 'start_movement_queue' is set, movement cmds are sent (velocity-mode with velocity 0).
-        You can add new cmds to the movement queue; the queue is working through them.
-        """
-        self.cmd_reset_position()
-        self.do_cycle()
-        # time.sleep(1/f_hz)
-        self.cmd_reset_position()
+    # def __move_queue(self):
+    #     """
+    #     On possible way to move the rebel axis.
+    #     If 'start_movement_queue' is set, movement cmds are sent (velocity-mode with velocity 0).
+    #     You can add new cmds to the movement queue; the queue is working through them.
+    #     """
+    #     self.cmd_reset_position()
+    #     self.do_cycle()
+    #     # time.sleep(1/f_hz)
+    #     self.cmd_reset_position()
 
-        while True:
-            self.__log_verbose("STARTING __move_queue() - LOOP again.")
-            if len(self.movement_queue) > 0:
-                ...
-                current_action = self.movement_queue.pop(0)
-                self.__log_verbose("#"*15)
-                self.__log_verbose(f"New Movemen: {str(current_action)}")
-                self.__log_verbose("#"*15)
+    #     while True:
+    #         self.__log_verbose("STARTING __move_queue() - LOOP again.")
+    #         if len(self.movement_queue) > 0:
+    #             ...
+    #             current_action = self.movement_queue.pop(0)
+    #             self.__log_verbose("#"*15)
+    #             self.__log_verbose(f"New Movemen: {str(current_action)}")
+    #             self.__log_verbose("#"*15)
                 
-                if type(current_action) == MovementPositionMode:
-                    self.__move_queue_handle_position_mode(current_action)
+    #             if type(current_action) == MovementPositionMode:
+    #                 self.__move_queue_handle_position_mode(current_action)
                 
-                elif type(current_action) == MovementVelocityMode:
-                    self.__move_queue_handle_velo_mode(current_action)
+    #             elif type(current_action) == MovementVelocityMode:
+    #                 self.__move_queue_handle_velo_mode(current_action)
             
-            else:
-                # There are no actions left in the queue
-                ...
-                self.cmd_velocity_mode(0)
+    #         else:
+    #             # There are no actions left in the queue
+    #             ...
+    #             self.cmd_velocity_mode(0)
 
-            self.do_cycle()
+    #         self.do_cycle()
 
 
 
