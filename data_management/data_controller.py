@@ -223,13 +223,6 @@ def delete_failure_instance(session:Session, fail_instance: FailureInstance):
 
 @catch_exceptions
 def sorted_failures_by_incidents(session:Session, step:AssemblyStep):
-    # session = get_session()
-    
-    # total_failure_occurences = session.query(FailureInstance).filter_by(assembly_step = step).count() 
-    
-    logger.info("##"*5)
-    logger.info("Testing sorting of failures by number of incidents")
-
     failures_without_oc: List[Failure] = session.query(Failure).\
         filter(
             Failure.failure_type != FailureType.overcurrent,
