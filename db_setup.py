@@ -68,7 +68,7 @@ def create_assembly_step_1(session:Session, assembly_step:AssemblyStep):
     imp_7 = Improvement(
         title = "Encoder verbinden", 
         assembly_step = assembly_step,
-        description = "Der Encoder ist nicht mit dem Controller verbunden. Überprüfe, ob das Kabel verbunden bzw. beschädigt ist.")
+        description = "Der Encoder ist nicht mit dem Controller verbunden. Überprüfe, ob das 5-polige Kabel verbunden bzw. beschädigt ist.")
     
     add_to_session(session, imp_1, imp_2, imp_3, imp_4, imp_5, imp_6)
     
