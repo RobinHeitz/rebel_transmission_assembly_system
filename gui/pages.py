@@ -240,9 +240,9 @@ def generate_improvement_window_layout(title, description, start, cancel ):
     c_canvas = sg.Col([
         [sg.Canvas(key=Key.CANVAS, size=(50,50))],
         [sg.T("", k="-result-")],
-    ], expand_x=True, expand_y=True, background_color=get_color_arg(), visible=False)
+    ], expand_x=True, expand_y=True, background_color=get_color_arg(), visible=False, k=Key.COL_CANVAS)
 
-    c_image_steps = sg.Col([
+    c_image_assembly_steps = sg.Col([
         [
             get_image("gui/assembly_pictures/cable_not_connected.png", size=(350,350), k=Key.IMG_IMPROVEMENT),
         ],
@@ -265,8 +265,7 @@ def generate_improvement_window_layout(title, description, start, cancel ):
 
     layout = [
         [c_desc,],
-        [c_image_steps],
-        # [c1, c2],
+        [sg.pin(c_image_assembly_steps, shrink=True)],
         [c_canvas],
         [bottom_button_bar],
         

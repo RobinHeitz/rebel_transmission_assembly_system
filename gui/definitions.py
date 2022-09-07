@@ -27,6 +27,8 @@ class ImprovementWindowKeys(enum.Enum):
     # IMG_CABLE_RECONNECT = "-IMG_CABLE_RECONNECT-"
     BTN_SHOW_NEXT_IMAGE = "-BTN_SHOW_NEXT_IMAGE-"
 
+    COL_CANVAS = "-COL_CANVAS-"
+
 class KeyDefs(enum.Enum):
     """Represents all needed Keys as Enum-Class."""
 

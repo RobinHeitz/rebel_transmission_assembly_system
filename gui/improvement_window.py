@@ -117,6 +117,7 @@ def improvement_process_finished():
 @function_prints
 def start_repeat_measurement(imp_instance:ImprovementInstance, ):
     logger.debug(f"start_repeat_measurement() | imp_instance: {imp_instance}")
+    window[Key.COL_CANVAS].update(visible=True)
     start_measurement.start_measurement(controller, AssemblyStep.step_1_no_flexring, measurement_finished, measurement_aborted_due_to_error, plotter)
 
 @function_prints
