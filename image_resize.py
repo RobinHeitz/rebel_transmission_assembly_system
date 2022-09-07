@@ -24,7 +24,7 @@ import io, base64
 #     resize_image(pic, (300,300), output_path)
 
     
-# %%
+
 
 
 def resize_bin_output(path, size):

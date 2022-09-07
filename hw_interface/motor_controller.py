@@ -115,12 +115,23 @@ class RebelAxisController:
                 # Receive queue empty
                 ...
             else:
+                # board_id = msg.ID - 3
+                can_ids = [0x10, 0x20, 0x30, 0x40, 0x50, 0x60]
                 first_2_bytes = bytes_to_int(msg.DATA[0:2])
-                board_id = msg.ID - 3
-                if board_id in [0x10, 0x20, 0x30, 0x40, 0x50, 0x60] and first_2_bytes == 0x1200:
+                
+                if msg.ID-3 in can_ids and first_2_bytes == 0x1200:
                     logger.debug(f"Found CAN ID: {board_id} // status = {status} // first 2 bytes = {first_2_bytes}")
-                    # return board_id
+                    board_id = msg.ID -3
                     break
+                    
+                # Catch startup msg (+2)    
+                first_5_bytes = bytes_to_int(msg.DATA[0:5])
+                if msg.ID - 2 in can_ids and first_5_bytes == 0x0102030400:
+                    logger.debug(f"Found CAN ID from startup-msg: {board_id} // status = {status} // first 2 bytes = {first_2_bytes}")
+                    board_id = msg.ID -2
+                    break
+                    
+
                 else:
                     board_id = -1
         
