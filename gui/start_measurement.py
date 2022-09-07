@@ -33,6 +33,13 @@ def stop_current_thread():
 
 
 def start_measurement(controller: RebelAxisController, assembly_step:AssemblyStep, stop_func, error_func,  plotter:GraphPlotter):
+    """Starting routine for moving axis, threads handle communication.
+    
+    Params:
+    - controller: RebelAxisController instance
+    - assembly_step: AssemblyStep
+    - stop_func: Function that gets invoked after movement finished. That function gets passed the measurement-obj as parameter
+    - error_func: Function that gets invoked after movement aborted due to error like OC. That function gets passed an tuple of arguments, containing str like 'OC'."""
     assembly = data_controller.get_assembly_from_current_transmission(assembly_step)
     data_controller.create_measurement(assembly)
 

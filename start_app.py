@@ -401,7 +401,7 @@ def condition_leave_config_page():
     if err:
         return False
         
-
+    global current_transmission
     config = transmission_config.get_transmission_config()
     current_transmission = data_controller.create_transmission(config)
     return True

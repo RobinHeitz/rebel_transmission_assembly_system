@@ -65,7 +65,7 @@ def cancel_improvement_button_clicked(imp_instance):
 @function_prints
 def start_repeat_measurement(imp_instance:ImprovementInstance, ):
     logger.debug(f"start_repeat_measurement() | imp_instance: {imp_instance}")
-    start_measurement.start_measurement(controller, AssemblyStep.step_1_no_flexring, measurement_finished, plotter)
+    start_measurement.start_measurement(controller, AssemblyStep.step_1_no_flexring, measurement_finished, measurement_aborted_due_to_error, plotter)
 
 
 @function_prints
@@ -88,6 +88,11 @@ def measurement_finished(m:Measurement):
         logger.info(f"Failure is not measurable; Therefore personal feedback necessary")
         window[Key.BTN_FAILURE_FIXED].update(visible=True)
         window[Key.BTN_FAILURE_STILL_EXISTS].update(visible=True)
+
+@function_prints
+def measurement_aborted_due_to_error(error_code, *args, **kwargs):
+    ...
+    logger.info(error_code)
 
 
 @function_prints
@@ -117,9 +122,6 @@ def user_selected_failure_still_exists():
 
 @function_prints
 def improvement_window(c:RebelAxisController, t:Transmission, selected_failure:Failure, selected_improvement: Improvement, invalid_measurement:Measurement, step:AssemblyStep):
-    import pdb
-    pdb.set_trace()
-
     global controller, fail_instance, imp_instance, window, plotter, assembly_step
     assembly_step = step
 
