@@ -96,7 +96,7 @@ class RebelAxisController:
         """Gets called for user beeing able to unplug adapter and make changes to gear assembly."""
         self.thread_read_msg.running = False
         self.pcan.Uninitialize(self.channel)
-
+        self.can_id = -1
 
 
     def __log_verbose(self, msg):

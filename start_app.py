@@ -417,8 +417,9 @@ if __name__ == "__main__":
     
     controller = None
     try:
-        controller = RebelAxisController(verbose=False, )
+        controller = RebelAxisController(verbose=False)
         controller.connect()
+
     except ExceptionPcanIllHardware as e:
         logger.warning(e)
         window[KeyDefs.TEXT_CAN_CONNECTED_STATUS].update(str(e))
