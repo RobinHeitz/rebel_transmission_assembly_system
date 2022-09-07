@@ -10,6 +10,7 @@ def main():
     session = data_controller.create_session()
 
     controller = RebelAxisController()
+    controller.connect()
 
     t = session.query(Transmission).order_by(Transmission.id.desc()).first()
 

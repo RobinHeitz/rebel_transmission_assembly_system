@@ -24,6 +24,13 @@ from threading import Thread, Lock
 from logs.setup_logger import setup_logger
 logger = setup_logger("motor_controller")
 
+def function_prints(f):
+    def wrap(*args, **kwargs):
+        ...
+        logger.info(f"--- {f.__name__}() called")
+        return f(*args, **kwargs)
+    return wrap
+
 
 ####################
 # Class: Controller
@@ -50,7 +57,7 @@ class RebelAxisController:
     motor_env_status_list = []
     # movement_queue = []
 
-
+    @function_prints
     def __init__(self, _can_id = -1, can_auto_detect = True, verbose = False) -> None:
         """Init of RebelAxisController cls. Automatically starts 'CAN Message listener thread'.
         
@@ -64,12 +71,12 @@ class RebelAxisController:
         self.__verbose = verbose
         self.can_id = _can_id
 
-        self.pcan = PCANBasic()
         logger.debug("End Initializing.")
     
    
+    @function_prints
     def connect(self, ):
-        logger.debug("connect() - Method called.")
+        self.pcan = PCANBasic()
         status = self.pcan.Initialize(self.channel, self.std_baudrate)
         
         if status == PCAN_ERROR_OK:
@@ -83,13 +90,21 @@ class RebelAxisController:
             raise ExceptionPcanIllHardware()
         logger.info("Connection was succesfull.")
 
+    
+    @function_prints
+    def disconnect(self):
+        """Gets called for user beeing able to unplug adapter and make changes to gear assembly."""
+        self.thread_read_msg.running = False
+        self.pcan.Uninitialize(self.channel)
+
+
 
     def __log_verbose(self, msg):
         if self.__verbose == True:
             logger.debug(msg)
 
+    @function_prints
     def find_can_id(self, timeout = 2):
-        logger.debug("find_can_id()")
         start_time = time.time()
 
         board_id = -1
@@ -118,13 +133,16 @@ class RebelAxisController:
 
 
 
+    @function_prints
     def shut_down(self):
-        self.pcan.Uninitialize(self.channel)
+        self.disconnect()
     
+    @function_prints
     def do_cycle(self):
         time.sleep(1 / self.frequency_hz)
 
     
+    @function_prints
     def get_delta_tics_for_output_velo(self, output_velocity):
         """
         Returns delta tics (int) based on wanted output velocity (and cycle time / Frequency)
@@ -140,19 +158,20 @@ class RebelAxisController:
         return int(output_velocity * GEAR_SCALE / self.frequency_hz)
 
 
+    @function_prints
     def can_move(self):
-        logger.error("*"*15)
-        logger.error("*"*15)
-        logger.error(f"can_move() called: motor_enabled = {self.motor_enabled} / motor_no_err = {self.motor_no_err} ")
+        logger.error(f"motor_enabled = {self.motor_enabled} / motor_no_err = {self.motor_no_err} ")
         return (self.motor_enabled == True ) and (self.motor_no_err == True)
     
 
+    @function_prints
     def stop_movement(self):
         self.cmd_disable_motor()
         self.motor_enabled = False
         self.motor_no_err = False
 
 
+    @function_prints
     def get_movement_cmd_reply_batch(self, batchsize:int=20):
         """Returns a batch of movement cmd replies with a given batchsize.
         Params:
@@ -166,10 +185,11 @@ class RebelAxisController:
     # Movement directly through velocity CMDs / NO QUEUE
     ####################################################
 
+    @function_prints
     def reach_moveability(self):
         ...
         can_move = self.can_move()
-        logger.info(f"reach_moveability() | can_move: {can_move}")
+        logger.info(f"can_move: {can_move}")
         max_reset = 5
         reset_counter = 0
 
@@ -182,6 +202,7 @@ class RebelAxisController:
             self.cmd_velocity_mode(0)
 
     
+    @function_prints
     def start_movement_velocity_mode(self, velocity, duration, invoke_stop_function, invoke_error_function):
         """Starts sending movement cmds with velocity-type. After duration [sec], the invoke_stop_function is called.
         Params:
@@ -197,6 +218,7 @@ class RebelAxisController:
         self.stop_movement()
     
 
+    @function_prints
     def __movement_velocity_mode(self, velocity, duration, invoke_stop_function, invoke_error_function):
         logging.info(f"__move_velocity_mode(), duration = {duration}")
         current_thread = threading.current_thread()
@@ -308,6 +330,7 @@ class RebelAxisController:
     ##################################
 
 
+    @function_prints
     def start_msg_listener_thread(self):
         if self.can_id is None or self.can_id == -1:
             raise Exception_Controller_No_CAN_ID("MotorController: No valid CAN-ID is set!")
@@ -316,8 +339,10 @@ class RebelAxisController:
 
         
    
+    @function_prints
     def read_msg_thread(self):
-        while True:
+        cur_t = threading.current_thread()
+        while True and getattr(cur_t, "running", True):
             status, msg, timestamp = self.pcan.Read(self.channel)
 
             if status == PCAN_ERROR_OK:
@@ -492,6 +517,7 @@ class RebelAxisController:
     ######################
 
 
+    @function_prints
     def write_cmd(self, msg, cmd_description):
         status = self.pcan.Write(self.channel, msg)
         if status == PCAN_ERROR_OK:
@@ -500,52 +526,50 @@ class RebelAxisController:
             raise Exception(f"Status is not OK! {self.status_str(status)} while {cmd_description}")
 
 
+    @function_prints
     def cmd_reset_errors(self):
-        logger.debug("cmd_reset_errors()")
         msg = get_cmd_msg([0x01, 0x06], self.can_id)
         self.write_cmd(msg, "reset_errors")
 
 
+    @function_prints
     def cmd_enable_motor(self):
-        logger.debug("cmd_enable_motor()")
         msg = get_cmd_msg([0x01, 0x09], self.can_id)
         self.write_cmd(msg, "enable_motors")
 
 
+    @function_prints
     def cmd_reset_position(self):
-        logger.debug("cmd_reset_position()")
         """Needs to be sent 2 times within 20ms at start."""
         msg = get_cmd_msg ([0x01, 0x08, 0x0, 0x0], self.can_id)
         self.write_cmd(msg, "reset_position")
     
     
+    @function_prints
     def cmd_reference(self):
-        logger.debug("cmd_reference()")
         msg = get_cmd_msg([0x01, 0x0B], self.can_id)
         self.write_cmd(msg, "reference")
 
 
+    @function_prints
     def cmd_disable_motor(self):
-        logger.debug("cmd_disable_motor()")
         msg = get_cmd_msg([0x01, 0x0A], self.can_id)
         self.write_cmd(msg, "disable_motors")
 
 
+    @function_prints
     def cmd_allign_rotor(self):
-        logger.debug("cmd_allign_rotor()")
         msg = get_cmd_msg([0x01, 0x0C], self.can_id)
         self.write_cmd(msg, "align_rotor")
 
     
+    @function_prints
     def cmd_velocity_mode(self, velo=10):
         """Command for Velocity mode.
         Params:
         pcan: PCANBasic instance
         channel: Current PCANChannel
         velo: Velocity transmission-sided in [°/sec]"""
-        
-        logger.debug("#"*10)
-        logger.debug("cmd_velocity_mode()")
         
         if abs(velo) > 36:
             raise TypeError("Parameter velo should not be greater than 36°/sec!")
@@ -558,6 +582,7 @@ class RebelAxisController:
         self.write_cmd(msg, "velocity_mode")
 
 
+    @function_prints
     def cmd_position_mode(self, to_tics:int, time_stamp:int):
         """Position mode with position in tics to move to.
         Params:
@@ -566,17 +591,16 @@ class RebelAxisController:
         if type(to_tics)  != int:
             raise ValueError("Tics need to be integer values.")
         
-        logger.debug("#"*10)
-        logger.debug("cmd_position_mode")
-
         tics_32_bits = int_to_bytes(to_tics, num_bytes=4, signed=True)
         msg = get_cmd_msg([0x14,0x0,*tics_32_bits, time_stamp, 0x0], self.can_id)    
         self.write_cmd(msg, "position_mode")
 
     
+    @function_prints
     def timestamp_str(self, timestamp):
         return f"Timestamps Milliseconds: {timestamp.millis} // Milliseconds (overflow): {timestamp.millis_overflow} // Microseconds: {timestamp.micros}"
 
+    @function_prints
     def status_str(self, status):
         return f"Current Status: {PCAN_DICT_STATUS.get(status)}"
 

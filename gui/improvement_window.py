@@ -60,6 +60,18 @@ def close_window():
     window.write_event_value("Exit", None)
 
 
+####################################
+### (Mechanical) IMPROVEMENT PROCESS
+####################################
+@function_prints
+def start_improvement(*args):
+    ...
+    window[Key.BTN_START_IMPROVEMENT_METHOD].update(visible=False)
+    window[Key.COL_IMAGE_DESCRIPTION].update(visible=True)
+    
+    controller.disconnect()
+    
+
 
 @function_prints
 def show_next_image(*args):
@@ -68,7 +80,11 @@ def show_next_image(*args):
     def img_update(img_key, **kwargs):
         window[img_key].update(**kwargs)
     
-    if current_image_index == 3:
+    if current_image_index == 1:
+        ...
+
+
+    elif current_image_index == 3:
         window[Key.COL_IMAGE_DESCRIPTION].update(visible=False)
         return improvement_process_finished()
 
@@ -80,25 +96,18 @@ def show_next_image(*args):
 def improvement_process_finished():
     ...
 
-#############################
-### START IMPROVEMENT PROCESS
-#############################
 
 
 
-@function_prints
-def cancel_improvement_button_clicked(imp_instance):
-    logger.debug(f"cancel_improvement_button_clicked()")
-    data_controller.delete_improvement_instance(imp_instance)
-    data_controller.data_controller.delete_failure_instance(fail_instance)
-    # window.write_event_value("Exit", None)
-    close_window()
 
+
+###############################
+### START REPEATING MEASUREMENT
+###############################
 @function_prints
 def start_repeat_measurement(imp_instance:ImprovementInstance, ):
     logger.debug(f"start_repeat_measurement() | imp_instance: {imp_instance}")
     start_measurement.start_measurement(controller, AssemblyStep.step_1_no_flexring, measurement_finished, measurement_aborted_due_to_error, plotter)
-
 
 @function_prints
 def measurement_finished(m:Measurement):
@@ -135,6 +144,20 @@ def is_measurement_ok(m:Measurement):
         return False
     return True
 
+
+
+
+@function_prints
+def cancel_improvement_button_clicked(imp_instance):
+    logger.debug(f"cancel_improvement_button_clicked()")
+    data_controller.delete_improvement_instance(imp_instance)
+    data_controller.data_controller.delete_failure_instance(fail_instance)
+    # window.write_event_value("Exit", None)
+    close_window()
+
+
+
+
 @function_prints
 def user_selected_failure_is_fixed():
     """Btn click: For not-measureable failures, user decides whether failure is fixed or not."""
@@ -150,12 +173,6 @@ def user_selected_failure_still_exists():
     data_controller.set_success_status(imp_instance, False)
     close_window()
 
-@function_prints
-def start_improvement(*args):
-    ...
-    window[Key.BTN_START_IMPROVEMENT_METHOD].update(visible=False)
-    window[Key.COL_IMAGE_DESCRIPTION].update(visible=True)
-    
     
 
 @function_prints
