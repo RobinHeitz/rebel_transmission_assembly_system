@@ -120,15 +120,15 @@ class RebelAxisController:
                 first_2_bytes = bytes_to_int(msg.DATA[0:2])
                 
                 if msg.ID-3 in can_ids and first_2_bytes == 0x1200:
-                    logger.debug(f"Found CAN ID: {board_id} // status = {status} // first 2 bytes = {first_2_bytes}")
                     board_id = msg.ID -3
+                    logger.debug(f"Found CAN ID: {board_id} // status = {status} // first 2 bytes = {first_2_bytes}")
                     break
                     
                 # Catch startup msg (+2)    
                 first_5_bytes = bytes_to_int(msg.DATA[0:5])
                 if msg.ID - 2 in can_ids and first_5_bytes == 0x0102030400:
-                    logger.debug(f"Found CAN ID from startup-msg: {board_id} // status = {status} // first 2 bytes = {first_2_bytes}")
                     board_id = msg.ID -2
+                    logger.debug(f"Found CAN ID from startup-msg: {board_id} // status = {status} // first 2 bytes = {first_2_bytes}")
                     break
                     
 
@@ -241,6 +241,8 @@ class RebelAxisController:
             self.do_cycle()
         
         start_time = datetime.now()
+
+        mne_counter = 0
         
         while getattr(current_thread, "abort", False) == False and (datetime.now() - start_time).total_seconds() < duration:
             self.cmd_velocity_mode(velocity)
@@ -250,6 +252,20 @@ class RebelAxisController:
                 self.stop_movement()
                 invoke_error_function("OC")
                 return
+            
+            elif "MNE" in self.movement_cmd_errors and mne_counter <= 5:
+                logger.debug("+++")
+                logger.debug("MNE, therefore try to reset manually again.")
+                self.cmd_reset_errors()
+                self.do_cycle()
+                self.cmd_reset_errors()
+                self.do_cycle()
+                self.cmd_enable_motor()
+                mne_counter += 1
+
+
+
+            
 
         self.stop_movement()
         invoke_stop_function()
