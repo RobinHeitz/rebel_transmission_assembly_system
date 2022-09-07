@@ -17,6 +17,8 @@ from gui.definitions import ImprovementWindowKeys as Key
 
 from current_limits import get_current_limit_for_assembly_step
 
+import image_resize
+
 import enum
 import random
 
@@ -121,7 +123,7 @@ def user_selected_failure_still_exists():
 @function_prints
 def start_improvement(*args):
     ...
-    
+    window[Key.COL_IMAGE_DESCRIPTION].update(visible=True)
     
     
 

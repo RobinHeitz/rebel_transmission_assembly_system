@@ -1,12 +1,25 @@
 import PySimpleGUI as sg
 
 from data_management.model import AssemblyStep
+import image_resize
 from .definitions import KeyDefs, font_headline, font_normal, font_small, LayoutPageKeys, ImprovementWindowKeys as Key
 import random
+
+
+def get_image(path, size, key=None):
+    data = image_resize.resize_bin_output(path, size)
+    return sg.Image(data, size=size, key=key)
+
 
 #####################################################
 # LAYOUTS of different 'pages' within the application
 #####################################################
+
+
+    
+
+
+
 
 layout_config_page = [
 
@@ -42,7 +55,8 @@ layout_config_page = [
 layout_assembly_step_1 = [
     [
         sg.Col(layout=[
-            [ sg.Image("gui/assembly_pictures/step_1_resize.png", size=(300,300)),]
+            [ get_image("gui/assembly_pictures/step1.png", size=(300,300))],
+            # [ sg.Image("gui/assembly_pictures/step_1_resize.png", size=(300,300)),]
         ], vertical_alignment="top"),
         sg.VSeparator(pad=(5,5,5,5,)),
         sg.Column([
@@ -79,7 +93,8 @@ layout_assembly_step_1 = [
 
 layout_assembly_step_2 = [
     [
-        sg.Image("gui/assembly_pictures/step_2_resize.png", size=(300,300)),
+        # sg.Image("gui/assembly_pictures/step_2_resize.png", size=(300,300)),
+        get_image("gui/assembly_pictures/step2.png", size=(300,300)),
         sg.VSeparator(pad=(5,5,5,5,)),
         sg.Column([
             [
@@ -95,7 +110,8 @@ layout_assembly_step_2 = [
 
 layout_assembly_step_3 = [
     [
-        sg.Image("gui/assembly_pictures/step_3_resize.png", size=(300,300)),
+        get_image("gui/assembly_pictures/step3.png", size=(300,300)),
+        # sg.Image("gui/assembly_pictures/step_3_resize.png", size=(300,300)),
         sg.VSeparator(pad=(5,5,5,5,)),
         sg.Column([
             [
@@ -218,13 +234,21 @@ def generate_improvement_window_layout(title, description, start, cancel ):
             ], expand_x=True, expand_y=True, vertical_alignment="top",background_color=get_color_arg())
         
     c_image = sg.Col([
-        [sg.Image("gui/assembly_pictures/step_1_resize.png", size=(300,300))]
+        # [sg.Image("gui/assembly_pictures/step_1_resize.png", size=(300,300))]
+        [get_image("gui/assembly_pictures/step1.png")],
         ], vertical_alignment="top", background_color=get_color_arg())
 
     c_canvas = sg.Col([
         [sg.Canvas(key=Key.CANVAS, size=(50,50))],
         [sg.T("", k="-result-")],
     ], expand_x=True, expand_y=True, background_color=get_color_arg(), visible=False)
+
+    c_image_steps = sg.Col([
+        [sg.Image("gui/assembly_pictures/cable_not_connected.png", size=(300,300))],
+
+        [get_image("gui/assembly_pictures/cable_connected.png", size=(250,250))],
+
+    ], visible=False, k=Key.COL_IMAGE_DESCRIPTION)
 
 
 
@@ -241,6 +265,7 @@ def generate_improvement_window_layout(title, description, start, cancel ):
 
     layout = [
         [c_desc,],
+        [c_image_steps],
         # [c1, c2],
         [c_canvas],
         [bottom_button_bar],
