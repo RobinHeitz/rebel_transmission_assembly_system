@@ -14,7 +14,7 @@ from hw_interface.motor_controller import RebelAxisController
 from hw_interface.definitions import ExceptionPcanIllHardware, ExceptionPcanNoCanIdFound
 from current_limits import get_current_limit_for_assembly_step
 
-from gui.definitions import KeyDefs, LayoutPageKeys
+from gui.definitions import KeyDefs, LayoutPageKeys, theme_dict
 from gui.definitions import TransmissionConfigHelper, TransmissionSize
 from gui.helper_functions import can_connection_functions
 from gui.pages import main_layout
@@ -186,7 +186,7 @@ def handle_error_while_measurement(error):
     logger.info(f"Error code: {error} / assembly_step = {assembly_step}")
     session:Session = data_controller.create_session()
     
-    failures = session.query(Failure).filter_by(assembly_step = assembly_step, failure_type = FailureType.overcurrent_not_moving).all()
+    failures = session.query(Failure).filter_by(assembly_step = assembly_step, failure_type = FailureType.not_moving_oc).all()
     
     
     if len(failures) != 1: raise Exception("DataStruture is corrupt! There should be only 1 instance of failure for a given AssemblyStep with FailureType overcurrent_not_moving.")
@@ -413,12 +413,9 @@ def condition_leave_config_page():
 #################
 
 if __name__ == "__main__":
-    window = sg.Window("ReBeL Getriebe Montage & Kalibrierung", main_layout, size=(1200,1000), finalize=True, location=(0,0),resizable=True)
     
-    # controller = None
-    # thread_velocity = None
-    # thread_graph_updater = None
-    # current_transmission = None
+    # sg.theme("DarkBlue1")
+    window = sg.Window("ReBeL Getriebe Montage & Kalibrierung", main_layout, size=(1200,1000), finalize=True, location=(0,0),resizable=True)
 
     controller, thread_velocity, thread_graph_updater, current_transmission = (None, )*4
 

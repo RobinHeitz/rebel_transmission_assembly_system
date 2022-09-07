@@ -9,6 +9,15 @@ font_headline = "Helvetiva 25"
 font_normal = "Helvetica 15"
 font_small = "Helvetica 13"
 
+theme_dict = {'BACKGROUND': '#2B475D',
+                'TEXT': '#FFFFFF',
+                'INPUT': '#F2EFE8',
+                'TEXT_INPUT': '#000000',
+                'SCROLL': '#F2EFE8',
+                'BUTTON': ('#000000', '#C2D4D8'),
+                'PROGRESS': ('#FFFFFF', '#C7D5E0'),
+                'BORDER': 1,'SLIDER_DEPTH': 0, 'PROGRESS_DEPTH': 0}
+
 
 class ImprovementWindowKeys(enum.Enum):
     """Keys in improvement window"""

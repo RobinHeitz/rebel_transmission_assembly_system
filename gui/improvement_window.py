@@ -91,6 +91,8 @@ def show_next_image(*args):
     elif current_image_index == 2:
         img_update("cable_connected.png")
     elif current_image_index == 3:
+        col = window[Key.COL_IMAGE_DESCRIPTION]
+
         window[Key.COL_IMAGE_DESCRIPTION].update(visible=False)
         return improvement_process_finished()
     current_image_index += 1
@@ -207,7 +209,7 @@ def improvement_window(c:RebelAxisController, t:Transmission, selected_failure:F
     
     layout = pages.generate_improvement_window_layout(title, description, start_repeat_measurement, cancel_improvement_button_clicked)
 
-    window = sg.Window(f"Fehler beheben: {selected_failure}", layout, modal=True, size=(1000,600),location=(0,0) , finalize=True, resizable=True)
+    window = sg.Window(f"Fehler beheben: {selected_failure}", layout, modal=True, size=(1000,600),location=(0,0) , finalize=True, resizable=True, no_titlebar=True)
     plotter = GraphPlotter(window[Key.CANVAS])
     plotter.plot_data([],[])
 
