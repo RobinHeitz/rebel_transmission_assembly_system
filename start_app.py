@@ -20,7 +20,8 @@ from gui.helper_functions import can_connection_functions
 from gui.pages import main_layout
 from gui.pages import get_headline_for_index, get_page_keys, get_page_key_for_index,get_assembly_step_for_page_index
 from gui.plotting import GraphPlotter
-import gui.improvement_window as improvement_window
+# import gui.improvement_window.improvement_window as improvement_window
+import gui.improvement_window.improvement_window as improvement_window
 
 from gui import start_measurement
 

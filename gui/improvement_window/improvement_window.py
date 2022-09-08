@@ -1,20 +1,20 @@
-from fileinput import close
-from tkinter import font
 import PySimpleGUI as sg
 import traceback
 from hw_interface.definitions import ExceptionPcanNoCanIdFound
 
 from hw_interface.motor_controller import RebelAxisController
 
-from .definitions import font_headline, font_normal, font_small
-from .plotting import GraphPlotter
+from .definitions import font_headline, font_normal, font_small, ImprovementWindowKeys as Key
+from .pages import generate_improvement_window_layout
+from ..plotting import GraphPlotter
+
 
 from data_management.model import AssemblyStep, FailureType, Improvement, ImprovementInstance, Failure, FailureInstance, Measurement, Transmission
 from data_management import data_controller
 
 from gui import start_measurement
 from gui import pages
-from gui.definitions import ImprovementWindowKeys as Key
+
 
 from current_limits import get_current_limit_for_assembly_step
 
@@ -22,6 +22,10 @@ import image_resize
 
 import enum
 import random
+
+sg.theme("DarkTeal10")
+
+
 
 from logs.setup_logger import setup_logger
 logger = setup_logger("improvemet_window")
@@ -207,7 +211,7 @@ def improvement_window(c:RebelAxisController, t:Transmission, selected_failure:F
     fail_instance, imp_instance = data_controller.setup_improvement_start(t, selected_failure, selected_improvement, invalid_measurement, assembly_step)
     title, description = imp_instance.improvement.title, imp_instance.improvement.description
     
-    layout = pages.generate_improvement_window_layout(title, description, start_repeat_measurement, cancel_improvement_button_clicked)
+    layout = generate_improvement_window_layout(title, description, start_repeat_measurement, cancel_improvement_button_clicked)
 
     window = sg.Window(f"Fehler beheben: {selected_failure}", layout, modal=True, size=(1000,600),location=(0,0) , finalize=True, resizable=True, no_titlebar=True)
     plotter = GraphPlotter(window[Key.CANVAS])
