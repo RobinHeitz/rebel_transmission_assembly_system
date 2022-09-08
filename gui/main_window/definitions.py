@@ -13,6 +13,7 @@ class LayoutTypes(enum.Enum):
     assembly = 2
 
 
+
 class KeyDefs(enum.Enum):
     """Represents all needed Keys as Enum-Class."""
 
@@ -49,6 +50,8 @@ class KeyDefs(enum.Enum):
 
     # EVENT_INITIAL_MEASUREMENT_FINISHED = "-EVENT_INITIAL_MEASUREMENT_FINISHED-"
     EVENT_CALLBACK_FUNCTION_MAIN_THREAD = "-EVENT_CALLBACK_FUNCTION_MAIN_THREAD-"
+
+    IMAGE_ASSEMBLY = "-IMAGE_ASSEMBLY-"
     
     
     
@@ -190,12 +193,6 @@ ELEMENT_VISIBILITY_MAP = {
 ##################
 # CLASS DEFINITION
 ##################
-
-class LayoutPageKeys(enum.Enum):
-    layout_config_page = "-LAYOUT_CONFIG_PAGE-"
-    layout_assembly_step_1_page = "-LAYOUT_ASSEMBLY_STEP_1_PAGE-"
-    layout_assembly_step_2_page = "-LAYOUT_ASSEMBLY_STEP_2_PAGE-"
-    layout_assembly_step_3_page = "-LAYOUT_ASSEMBLY_STEP_3_PAGE-"
 
 class TransmissionSize(enum.Enum):
     size_80 = "80"

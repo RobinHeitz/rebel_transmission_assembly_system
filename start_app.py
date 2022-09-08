@@ -7,6 +7,8 @@ from sqlalchemy.orm.session import Session
 
 import traceback
 
+import image_resize
+
 from data_management.model import AssemblyStep, Failure, FailureType, ImprovementInstance, Measurement
 from data_management import data_controller, data_transformation
 
@@ -14,11 +16,11 @@ from hw_interface.motor_controller import RebelAxisController
 from hw_interface.definitions import ExceptionPcanIllHardware, ExceptionPcanNoCanIdFound
 from current_limits import get_current_limit_for_assembly_step
 
-from gui.main_window.definitions import KeyDefs, LayoutPageKeys, ElementVisibilityStates, ELEMENT_VISIBILITY_MAP, LayoutTypes
+from gui.main_window.definitions import KeyDefs, ElementVisibilityStates, ELEMENT_VISIBILITY_MAP, LayoutTypes
 from gui.main_window.definitions import TransmissionConfigHelper, TransmissionSize
 # from gui import can_connection_functions
-from gui.main_window.pages import main_layout
-from gui.main_window.pages import get_headline_for_index, get_page_keys, get_page_key_for_index,get_assembly_step_for_page_index
+from gui.main_window.pages import get_headline, main_layout, get_assembly_step_data
+# from gui.main_window.pages import get_headline_for_index, get_page_keys, get_page_key_for_index,get_assembly_step_for_page_index
 from gui.plotting import GraphPlotter
 
 import gui.improvement_window.improvement_window as improvement_window
@@ -49,11 +51,11 @@ def set_element_state(new_state:ElementVisibilityStates):
 
 @function_prints
 def get_condition_for_next_page():
-    cond = condition_next_page_map.get(active_layout)
-    if callable(cond):
-        return cond
-    return cond.get(current_assembly_step)
-    
+    cond = condition_functions_dictionary[(active_layout, current_assembly_step)]
+    # if callable(cond):
+    #     return cond
+    # return cond.get(current_assembly_step)
+    return cond
 
 
 
@@ -323,28 +325,37 @@ def btn_improvement_selection_clicked(event, values):
 @function_prints
 def _nav_next_page(event, values):
     """Called when user clicks on "Next"-Button. Manages hide/show of layouts etc."""
-    global current_transmission, current_assembly_step, active_layout
+    global current_assembly_step, active_layout
     condition = get_condition_for_next_page()
+    
+    if not callable(condition):
+        raise ValueError("Error, condition should be a function and therefore callable")
 
     if condition():
-        ...
-        # _hide_current_page()
-        # _update_headline()
-        # _show_next_page()
-        # update_next_page_btn(False)
+
         if active_layout == LayoutTypes.config:
             active_layout = LayoutTypes.assembly
+            window[KeyDefs.LAYOUT_CONFIG].update(visible=False)
+            window[KeyDefs.LAYOUT_ASSEMBLY].update(visible=True)
+
         else:
             current_assembly_step = AssemblyStep.next_step(current_assembly_step)
             
+        _update_headline()
+        _update_assembly_steps_data()
     
 
 
 @function_prints
-def _update_headline(index):
-    new_headline = get_headline_for_index(index)
+def _update_headline():
+    new_headline = get_headline(active_layout, current_assembly_step)
     window["-headline-"].update(new_headline)
-    
+
+@function_prints
+def _update_assembly_steps_data():
+    image_path = get_assembly_step_data(active_layout, current_assembly_step)
+    data = image_resize.resize_bin_output(image_path, (300,300))
+    window[KeyDefs.IMAGE_ASSEMBLY].update(data, size=(300,300))
 
 @function_prints
 def _nav_previous_page(event, values):
@@ -365,10 +376,6 @@ def condition_leave_config_page():
     global current_transmission
     config = transmission_config.get_transmission_config()
     current_transmission = data_controller.create_transmission(config)
-
-    # hide config layout
-    window[KeyDefs.LAYOUT_CONFIG].update(visible=False)
-    window[KeyDefs.LAYOUT_ASSEMBLY].update(visible=True)
     return True
 
 @function_prints
@@ -383,6 +390,11 @@ def condition_leave_assembly_step_2():
 
 @function_prints
 def condition_leave_assembly_step_3():
+    ...
+    return True
+
+@function_prints
+def condition_leave_assembly_step_4():
     ...
     return True
 
@@ -429,14 +441,14 @@ if __name__ == "__main__":
 
     window.maximize()
 
-    condition_next_page_map = {
-        LayoutTypes.config: condition_leave_config_page,
-        LayoutTypes.assembly: {
-            AssemblyStep.step_1_no_flexring :  lambda: print("Assembly Step 1"),
-            AssemblyStep.step_2_with_flexring :  lambda: print("Assembly Step 2"),
-            AssemblyStep.step_3_gearoutput_not_screwed :  lambda: print("Assembly Step 4"),
-            AssemblyStep.step_4_gearoutput_screwed :  lambda: print("Assembly Step 4"),
-        }
+
+    condition_functions_dictionary = {
+        (LayoutTypes.config, AssemblyStep.step_1_no_flexring): condition_leave_config_page,
+        (LayoutTypes.assembly, AssemblyStep.step_1_no_flexring):condition_leave_assembly_step_1,
+        (LayoutTypes.assembly, AssemblyStep.step_2_with_flexring):condition_leave_assembly_step_2,
+        (LayoutTypes.assembly, AssemblyStep.step_3_gearoutput_not_screwed):condition_leave_assembly_step_3,
+        (LayoutTypes.assembly, AssemblyStep.step_4_gearoutput_screwed):condition_leave_assembly_step_4,
+
     }
 
 

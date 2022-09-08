@@ -2,7 +2,7 @@ import PySimpleGUI as sg
 
 from data_management.model import AssemblyStep
 import image_resize
-from .definitions import KeyDefs, font_headline, font_normal, font_small, LayoutPageKeys
+from .definitions import KeyDefs, LayoutTypes, font_headline, font_normal, font_small
 import random
 
 sg.theme("DarkTeal10")
@@ -10,6 +10,8 @@ sg.theme("DarkTeal10")
 def get_image(path, size, **kwargs):
     data = image_resize.resize_bin_output(path, size)
     return sg.Image(data, size=size, **kwargs)
+
+
 
 
 #####################################################
@@ -50,7 +52,7 @@ layout_config_page = [
 layout_assembly_step_1 = [
     [
         sg.Col(layout=[
-            [ get_image("gui/assembly_pictures/step1.png", size=(300,300))],
+            [ get_image("gui/assembly_pictures/step1.png", size=(300,300), k=KeyDefs.IMAGE_ASSEMBLY)],
         ], vertical_alignment="top"),
         sg.VSeparator(pad=(5,5,5,5,)),
         sg.Column([
@@ -83,42 +85,73 @@ layout_assembly_step_1 = [
     ],
 ]
 
+pages_config = {
 
-pages_config = [
-    dict(
+    (LayoutTypes.config,AssemblyStep.step_1_no_flexring): dict(
         headline="Getriebe Konfigurieren:", 
-        layout=layout_config_page, 
-        layout_key=LayoutPageKeys.layout_config_page,
-        visible=True,
-        ),
     
-    dict(
+    ),
+
+    (LayoutTypes.assembly, AssemblyStep.step_1_no_flexring): dict(
         headline="Schritt 1: Getriebe ohne Flexring testen", 
         image="gui/assembly_pictures/step1.png",
-        layout=layout_assembly_step_1, 
-        layout_key=LayoutPageKeys.layout_assembly_step_1_page,
-        visible=False,
-        assembly_step = AssemblyStep.step_1_no_flexring,
-        ),
+    ),
 
-    dict(
+    (LayoutTypes.assembly, AssemblyStep.step_2_with_flexring): dict(
         headline="Schritt 2: Getriebe mit Flexring & Lagerring testen",
         image="gui/assembly_pictures/step2.png",
-        # layout=layout_assembly_step_2,
-        layout_key=LayoutPageKeys.layout_assembly_step_2_page,
-        visible=False,
-        assembly_step = AssemblyStep.step_2_with_flexring, 
-        ),
-    
-    dict(
+    ),
+
+    (LayoutTypes.assembly, AssemblyStep.step_3_gearoutput_not_screwed): dict(
         headline="Schritt 3: Getriebe mit Abtrieb testen",
         image="gui/assembly_pictures/step3.png",
-        # layout=layout_assembly_step_3,
-        layout_key=LayoutPageKeys.layout_assembly_step_3_page,
-        visible=False,
-        assembly_step = AssemblyStep.step_3_gearoutput_not_screwed, 
-        ),
-]
+    ),
+
+    (LayoutTypes.assembly, AssemblyStep.step_4_gearoutput_screwed): dict(
+        headline="Schritt 3: Getriebe mit Abtrieb testen",
+        image="gui/assembly_pictures/step3.png",
+    ),
+
+
+}
+
+
+
+# pages_config = [
+#     dict(
+#         headline="Getriebe Konfigurieren:", 
+#         layout=layout_config_page, 
+#         # layout_key=LayoutPageKeys.layout_config_page,
+#         visible=True,
+#         ),
+    
+#     dict(
+#         headline="Schritt 1: Getriebe ohne Flexring testen", 
+#         image="gui/assembly_pictures/step1.png",
+#         layout=layout_assembly_step_1, 
+#         # layout_key=LayoutPageKeys.layout_assembly_step_1_page,
+#         visible=False,
+#         assembly_step = AssemblyStep.step_1_no_flexring,
+#         ),
+
+#     dict(
+#         headline="Schritt 2: Getriebe mit Flexring & Lagerring testen",
+#         image="gui/assembly_pictures/step2.png",
+#         # layout=layout_assembly_step_2,
+#         # layout_key=LayoutPageKeys.layout_assembly_step_2_page,
+#         visible=False,
+#         assembly_step = AssemblyStep.step_2_with_flexring, 
+#         ),
+    
+#     dict(
+#         headline="Schritt 3: Getriebe mit Abtrieb testen",
+#         image="gui/assembly_pictures/step3.png",
+#         # layout=layout_assembly_step_3,
+#         # layout_key=LayoutPageKeys.layout_assembly_step_3_page,
+#         visible=False,
+#         assembly_step = AssemblyStep.step_3_gearoutput_not_screwed, 
+#         ),
+# ]
 
 
 
@@ -127,8 +160,20 @@ pages_config = [
 # HELPER Functions for returning data from pages_config
 #######################################################
 
-def get_headline_for_index(index: int):
-    return pages_config[index].get("headline", f"Es ist leider ein Fehler aufgetreten: Page-index = {index}")
+# def get_headline_for_index(index: int):
+#     return pages_config[index].get("headline", f"Es ist leider ein Fehler aufgetreten: Page-index = {index}")
+
+def get_headline(layout:LayoutTypes, assembly_step: AssemblyStep):
+    conf = pages_config.get((layout, assembly_step))
+    headline = conf.get("headline")
+    return headline
+
+
+def get_assembly_step_data(layout:LayoutTypes, assembly_step:AssemblyStep):
+    ...
+    conf = pages_config.get((layout, assembly_step))
+    return conf.get("image")
+
 
 
 # def render_sub_layouts():
@@ -137,14 +182,14 @@ def get_headline_for_index(index: int):
 #         [sg.pin(sg.Column(i.get("layout"), expand_x=True, expand_y=True, visible=i.get("visible"), key=i.get("layout_key")))] for i in pages_config
 #     ]
 
-def get_page_keys():
-    return [i.get("layout_key") for i in pages_config]
+# def get_page_keys():
+#     return [i.get("layout_key") for i in pages_config]
 
-def get_page_key_for_index(index:int) -> LayoutPageKeys:
-    return pages_config[index].get("layout_key")
+# def get_page_key_for_index(index:int) -> LayoutPageKeys:
+#     return pages_config[index].get("layout_key")
 
-def get_assembly_step_for_page_index(index:int) -> AssemblyStep:
-    return pages_config[index].get("assembly_step")
+# def get_assembly_step_for_page_index(index:int) -> AssemblyStep:
+#     return pages_config[index].get("assembly_step")
 
 
 
