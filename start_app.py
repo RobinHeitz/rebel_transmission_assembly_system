@@ -413,9 +413,11 @@ def condition_leave_config_page():
 #################
 
 if __name__ == "__main__":
-    
-    # sg.theme("DarkBlue1")
+    sg.theme("DarkTeal10")
     window = sg.Window("ReBeL Getriebe Montage & Kalibrierung", main_layout, size=(1200,1000), finalize=True, location=(0,0),resizable=True)
+
+    logger.info(f"Currently used background color: {sg.theme_background_color()}")
+    logger.info(f"Currently used button color: {sg.theme_button_color()} and {sg.theme_button_color_background()}")
 
     controller, thread_velocity, thread_graph_updater, current_transmission = (None, )*4
 

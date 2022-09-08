@@ -1,10 +1,12 @@
+from turtle import color
 import PySimpleGUI as sg
 
 from data_management.model import AssemblyStep
 import image_resize
-from .definitions import KeyDefs, font_headline, font_normal, font_small, LayoutPageKeys, ImprovementWindowKeys as Key
+from .definitions import KeyDefs, font_headline, font_normal, font_small, LayoutPageKeys, ImprovementWindowKeys as Key, Colors
 import random
 
+sg.theme("DarkTeal10")
 
 def get_image(path, size, **kwargs):
     data = image_resize.resize_bin_output(path, size)
@@ -16,18 +18,14 @@ def get_image(path, size, **kwargs):
 #####################################################
 
 
-    
-
-
-
 
 layout_config_page = [
 
-    [sg.Button("Verbindung herstellen", key=KeyDefs.BTN_CONNECT_CAN, enable_events=True, font=font_normal, size=(25,1)), sg.Text("Nicht verbunden", key=KeyDefs.TEXT_CAN_CONNECTED_STATUS, font=font_normal)],
+    [sg.Button("Verbindung herstellen",button_color=sg.theme_button_color() , key=KeyDefs.BTN_CONNECT_CAN, enable_events=True, font=font_normal, size=(25,1)), sg.Text("Nicht verbunden", key=KeyDefs.TEXT_CAN_CONNECTED_STATUS, font=font_normal)],
     
     # [sg.B("Fehlercodes auslesen", k=KeyDefs.BTN_READ_ERROR_CODES, enable_events=True, size=(25,1), font=font_normal)],
     
-    [sg.Frame("", layout=[
+    [sg.Frame("",background_color=Colors.bc, layout=[
         [
             sg.Text("Getriebegröße", font=font_normal),
             sg.Radio("80", default=False, group_id="-radio_transmission_size-", font=font_normal, enable_events=True, key=KeyDefs.RADIO_BUTTON_80_CLICKED), 
@@ -42,22 +40,21 @@ layout_config_page = [
     ])],
     
     [
-        sg.Button("Software updaten", key=KeyDefs.BTN_SOFTWARE_UPDATE, enable_events=True, font=font_normal, size=(20,1)), 
+        sg.Button("Software updaten",button_color=sg.theme_button_color(), key=KeyDefs.BTN_SOFTWARE_UPDATE, enable_events=True, font=font_normal, size=(20,1)), 
         sg.ProgressBar(max_value=10, size=(20,20), k=KeyDefs.PROGRESSBAR_SOFTWARE_UPDATE),
         sg.Text("", k=KeyDefs.TEXT_SOFTWARE_UPDATE_STATUS_TEXT, font=font_normal),
         ],
-    # [
-    #     sg.B("Bewegung testen", k=KeyDefs.BTN_CHECK_MOVEABILITY, enable_events=True, font=font_normal, size=(20,1))
-    # ],
     ]
+    
+    
+
 
 
 layout_assembly_step_1 = [
     [
         sg.Col(layout=[
             [ get_image("gui/assembly_pictures/step1.png", size=(300,300))],
-            # [ sg.Image("gui/assembly_pictures/step_1_resize.png", size=(300,300)),]
-        ], vertical_alignment="top"),
+        ], vertical_alignment="top",background_color=Colors.bc),
         sg.VSeparator(pad=(5,5,5,5,)),
         sg.Column([
             [
@@ -67,8 +64,8 @@ layout_assembly_step_1 = [
                 sg.Canvas(key=(KeyDefs.CANVAS_GRAPH_PLOTTING, LayoutPageKeys.layout_assembly_step_1_page), size=(250,250)),
                 
                 
-                sg.Frame("Fehler beheben:",font=font_headline,layout=[
-                    [sg.Col([
+                sg.Frame("Fehler beheben:",background_color=Colors.bc,font=font_headline,layout=[
+                    [sg.Col(background_color=Colors.bc, layout=[
                         [sg.T("Fehler: ", font=font_normal)],
                         [sg.Combo(["A", "B", "C"], default_value="B", s=(50,25), enable_events=True, readonly=True, k=KeyDefs.COMBO_FAILURE_SELECT, font=font_normal),],
 
@@ -85,7 +82,7 @@ layout_assembly_step_1 = [
             [sg.T("Es wurde ein Fehler erkannt: ", k=KeyDefs.TEXT_HIGH_CURRENT_FAILURE_DETECTED, font=font_normal, visible=False)],
 
             
-        ])
+        ],background_color=Colors.bc)
 
     ],
 ]
