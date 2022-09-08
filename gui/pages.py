@@ -63,6 +63,7 @@ layout_assembly_step_1 = [
                 
                 
                 sg.Frame("Fehler beheben:",font=font_headline,layout=[
+                    [sg.T("Es wurde ein Fehler erkannt: ", k=KeyDefs.TEXT_HIGH_CURRENT_FAILURE_DETECTED, font=font_normal, visible=False)],
                     [sg.Col(layout=[
                         [sg.T("Fehler: ", font=font_normal)],
                         [sg.Combo(["A", "B", "C"], default_value="B", s=(50,25), enable_events=True, readonly=True, k=KeyDefs.COMBO_FAILURE_SELECT, font=font_normal),],
@@ -77,7 +78,6 @@ layout_assembly_step_1 = [
                 ],
             
             [sg.Text("", font=font_normal, key=KeyDefs.TEXT_MIN_MAX_CURRENT_VALUES, visible=False)],
-            [sg.T("Es wurde ein Fehler erkannt: ", k=KeyDefs.TEXT_HIGH_CURRENT_FAILURE_DETECTED, font=font_normal, visible=False)],
 
             
         ])
