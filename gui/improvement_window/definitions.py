@@ -26,9 +26,13 @@ def get_color_arg():
 
 
 class ImprovementWindowKeys(enum.Enum):
-    """Keys in improvement window"""
     CANVAS = "-CANVAS-"
-    FINISHED_REPEATING_MEASUREMENT = "-FINISHED_REPEATING_MEASUREMENT-"
+
+    BTN_START_MEASUREMENT = "-BTN_START_MEASUREMENT-"
+    BTN_CANCEL_IMPROVEMENT = "-BTN_CANCEL_IMPROVEMENT-"
+
+    FINISHED_MEASUREMENT = "-FINISHED_REPEATING_MEASUREMENT-"
+    
     BTN_FAILURE_FIXED = "-BTN_FAILURE_FIXED-"
     BTN_FAILURE_STILL_EXISTS = "-BTN_FAILURE_STILL_EXISTS-"
     BTN_CLOSE_IMPROVEMENT_WINDOW = "-BTN_CLOSE_IMPROVEMENT_WINDOW-"
@@ -37,9 +41,29 @@ class ImprovementWindowKeys(enum.Enum):
     COL_IMAGE_DESCRIPTION = "-COL_IMAGE_DESCRIPTION-"
     
     IMG_IMPROVEMENT = "-IMG_IMPROVEMENT-"
-    # IMG_CABLE_DISCONNECT = "-IMG_CABLE_DISCONNECT-"
-    # IMG_IMPROVEMENT_PICURE = "-IMG_IMPROVEMENT_PICURE-"
-    # IMG_CABLE_RECONNECT = "-IMG_CABLE_RECONNECT-"
     BTN_SHOW_NEXT_IMAGE = "-BTN_SHOW_NEXT_IMAGE-"
 
     COL_CANVAS = "-COL_CANVAS-"
+
+
+class ElementVisibilityState(enum.Enum):
+    step_1_start_improvement = 1
+
+
+
+_nav_disabled =  {
+    None:{"disabled": True},
+}
+
+
+
+
+ELEMENT_VISIBILITY_MAP = {
+    ElementVisibilityState.step_1_start_improvement : {
+        ImprovementWindowKeys.CANVAS: {"visible":False},
+        ImprovementWindowKeys.BTN_START_MEASUREMENT: {"visible":False}
+        # ImprovementWindowKeys.BTN_START
+        
+    },
+
+}

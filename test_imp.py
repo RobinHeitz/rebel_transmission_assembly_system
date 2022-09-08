@@ -1,5 +1,5 @@
 from data_management.model import Assembly, AssemblyStep, Failure, Measurement, Transmission, TransmissionConfiguration
-from gui.improvement_window import improvement_window
+from gui.improvement_window.improvement_window import improvement_window
 
 from data_management import data_controller
 from hw_interface.motor_controller import RebelAxisController

@@ -1,38 +1,29 @@
 import PySimpleGUI as sg
 import traceback
+
 from hw_interface.definitions import ExceptionPcanNoCanIdFound
-
 from hw_interface.motor_controller import RebelAxisController
-
-from .definitions import font_headline, font_normal, font_small, ImprovementWindowKeys as Key
-from .pages import generate_improvement_window_layout
-
-from ..plotting import GraphPlotter
-
 
 from data_management.model import AssemblyStep, FailureType, Improvement, ImprovementInstance, Failure, FailureInstance, Measurement, Transmission
 from data_management import data_controller
 
+from .definitions import font_headline, font_normal, font_small, ImprovementWindowKeys as Key, ElementVisibilityState, ELEMENT_VISIBILITY_MAP
+
+from .pages import generate_improvement_window_layout
+
+from ..plotting import GraphPlotter
 
 from gui.main_window.start_measurement import start_measurement
-# from gui.main_window import start_measurement
-# from gui.main_window import pages
-
 
 from current_limits import get_current_limit_for_assembly_step
 
 import image_resize
 
-import enum
-import random
-
-sg.theme("DarkTeal10")
-
-
 
 from logs.setup_logger import setup_logger
 logger = setup_logger("improvemet_window")
 
+sg.theme("DarkTeal10")
 
 ###################
 ### DEFINITIONS ###
@@ -64,16 +55,36 @@ def function_prints(f):
 
 
 
+
+@function_prints
+def set_element_state(new_state:ElementVisibilityState):
+    if new_state not in ELEMENT_VISIBILITY_MAP:
+        logger.error("ERROR: State is not part of ELEMENT_VISIBILITy_MAP")
+        raise Exception("ERROR: State is not part of ELEMENT_VISIBILITy_MAP")
+    
+    config = ELEMENT_VISIBILITY_MAP.get(new_state)
+    
+    for el in config.keys():
+        window[el].update(**config[el])
+
+
+
+
+###################
+### BUTTON CLICKED:
+###################
+
 @function_prints
 def close_window():
     window.write_event_value("Exit", None)
 
-
-####################################
-### (Mechanical) IMPROVEMENT PROCESS
-####################################
 @function_prints
-def start_improvement(*args):
+def btn_cancel_improvement(*args):
+    ...
+    
+
+@function_prints
+def btn_start_improvement(*args):
     """Invoked by button click, calls motor_controller's disconnect-method."""
     window[Key.BTN_START_IMPROVEMENT_METHOD].update(visible=False)
     window[Key.COL_IMAGE_DESCRIPTION].update(visible=True)
@@ -82,7 +93,7 @@ def start_improvement(*args):
 
 
 @function_prints
-def show_next_image(*args):
+def btn_show_next_image(*args):
     global current_image_index
     
     def img_update(img_name):
@@ -214,11 +225,14 @@ def improvement_window(c:RebelAxisController, t:Transmission, selected_failure:F
     fail_instance, imp_instance = data_controller.setup_improvement_start(t, selected_failure, selected_improvement, invalid_measurement, assembly_step)
     title, description = imp_instance.improvement.title, imp_instance.improvement.description
     
-    layout = generate_improvement_window_layout(title, description, start_repeat_measurement, cancel_improvement_button_clicked)
+    # layout = generate_improvement_window_layout(title, description, start_repeat_measurement, cancel_improvement_button_clicked)
+    layout = generate_improvement_window_layout(title, description)
 
     window = sg.Window(f"Fehler beheben: {selected_failure}", layout, modal=True, size=(1000,600),location=(0,0) , finalize=True, resizable=True, no_titlebar=True)
     plotter = GraphPlotter(window[Key.CANVAS])
     plotter.plot_data([],[])
+
+    set_element_state(ElementVisibilityState.step_1_start_improvement)
 
     window.maximize()
     
@@ -244,12 +258,16 @@ def improvement_window(c:RebelAxisController, t:Transmission, selected_failure:F
 
 
 key_function_map = {
-    Key.FINISHED_REPEATING_MEASUREMENT: measurement_finished,
+    Key.BTN_CANCEL_IMPROVEMENT: btn_cancel_improvement, 
+    Key.BTN_START_MEASUREMENT: btn_start_improvement,
+
+
+    Key.FINISHED_MEASUREMENT: measurement_finished,
     Key.BTN_FAILURE_STILL_EXISTS: lambda *args: user_selected_failure_still_exists(),
     Key.BTN_FAILURE_FIXED: lambda *args: user_selected_failure_is_fixed(),
-    Key.BTN_CLOSE_IMPROVEMENT_WINDOW: lambda *args: close_window(),
-    Key.BTN_START_IMPROVEMENT_METHOD: lambda *args: start_improvement(),
-    Key.BTN_SHOW_NEXT_IMAGE: show_next_image,
+    # Key.BTN_CLOSE_IMPROVEMENT_WINDOW: lambda *args: btn_close_window(),
+    Key.BTN_START_IMPROVEMENT_METHOD: lambda *args: btn_start_improvement(),
+    Key.BTN_SHOW_NEXT_IMAGE: btn_show_next_image,
 
 }
 
