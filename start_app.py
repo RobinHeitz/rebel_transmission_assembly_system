@@ -337,34 +337,19 @@ def btn_improvement_selection_clicked(event, values):
         # change_combo_failures_visibility(False)
 
     
-
-# @function_prints
-# def _hide_failure_and_improvement_items():
-#     window[KeyDefs.FRAME_FAILURE_DETECTION].update(visible=False)
-#     window[KeyDefs.TEXT_HIGH_CURRENT_FAILURE_DETECTED].update(visible=False)
-#     # window[(KeyDefs.TEXT_MIN_MAX_CURRENT_VALUES, LayoutPageKeys.layout_assembly_step_1_page)].update(visible=False)
-#     window[KeyDefs.TEXT_MIN_MAX_CURRENT_VALUES].update(visible=False)
-    
-
 ######################################################
 # FUNCTIONS FOR ENABLING / DISABLING NAVIGATION BUTTONS
 ######################################################
 
-@function_prints
-def update_next_page_btn(next_page_is_allowed):
-    btn = window[KeyDefs.BTN_NAV_NEXT_PAGE]
-    # if next_page_is_allowed == True:
+# @function_prints
+# def update_next_page_btn(next_page_is_allowed):
+#     btn = window[KeyDefs.BTN_NAV_NEXT_PAGE]
+#     # if next_page_is_allowed == True:
     #     btn.update(button_color="green", disabled=False)
     # else:
     #     btn.update(button_color="darkblue", disabled=True)
 
 
-
-@function_prints
-def _update_headline(index):
-    new_headline = get_headline_for_index(index)
-    window["-headline-"].update(new_headline)
-    
 
 @function_prints
 def _nav_next_page(event, values):
@@ -377,58 +362,64 @@ def _nav_next_page(event, values):
     condition = condition_next_page_map.get(page_key)
     if condition():
         ...
-        _hide_current_page()
+        # _hide_current_page()
         current_page_index = future_index
-        _show_next_page()
-        update_next_page_btn(False)
+        _update_headline()
+        # _show_next_page()
+        # update_next_page_btn(False)
     
 
+
+@function_prints
+def _update_headline(index):
+    new_headline = get_headline_for_index(index)
+    window["-headline-"].update(new_headline)
+    
 
 @function_prints
 def _nav_previous_page(event, values):
     """Called when user clicks on "Previous"-Button. Manages hide/show of layouts etc."""
     global current_page_index
-    _hide_current_page()
+    # _hide_current_page()
 
     current_page_index -= 1
-    _show_next_page()
-    update_next_page_btn(False)
+    # _show_next_page()
 
 
-@function_prints
-def _hide_current_page():
-    global current_page_index
-    current_page = window[get_page_keys()[current_page_index]]
-    current_page.update(visible=False)
+# @function_prints
+# def _hide_current_page():
+#     global current_page_index
+#     current_page = window[get_page_keys()[current_page_index]]
+#     current_page.update(visible=False)
 
 
-@function_prints
-def _show_next_page():
-    next_page = window[get_page_keys()[current_page_index]]
-    next_page.update(visible=True)
-    _update_headline(current_page_index)
+# @function_prints
+# def _show_next_page():
+#     next_page = window[get_page_keys()[current_page_index]]
+#     next_page.update(visible=True)
+#     _update_headline(current_page_index)
 
-    if current_page_index == 1:
-        set_element_state(ElementVisibilityStates.assembly_state_1_can_start_measure)
+#     if current_page_index == 1:
+#         set_element_state(ElementVisibilityStates.assembly_state_1_can_start_measure)
     
 
 
 
-@function_prints
-def _disable_enable_nav_buttons():
-    # First version of nav button handling
+# @function_prints
+# def _disable_enable_nav_buttons():
+#     # First version of nav button handling
     
-    btn_next = window[KeyDefs.BTN_NAV_NEXT_PAGE]
-    btn_prev = window[KeyDefs.BTN_NAV_PREVIOUS_PAGE]
+#     btn_next = window[KeyDefs.BTN_NAV_NEXT_PAGE]
+#     btn_prev = window[KeyDefs.BTN_NAV_PREVIOUS_PAGE]
 
-    btn_prev.update(disabled=False)
-    btn_next.update(disabled=False)
+#     btn_prev.update(disabled=False)
+#     btn_next.update(disabled=False)
 
-    if current_page_index == 0:
-        btn_prev.update(disabled=True)
+#     if current_page_index == 0:
+#         btn_prev.update(disabled=True)
     
-    elif current_page_index == len(get_page_keys()) -1:
-        btn_next(disabled=True)
+#     elif current_page_index == len(get_page_keys()) -1:
+#         btn_next(disabled=True)
  
 
 
@@ -446,7 +437,27 @@ def condition_leave_config_page():
     global current_transmission
     config = transmission_config.get_transmission_config()
     current_transmission = data_controller.create_transmission(config)
+
+    # hide config layout
+    window[KeyDefs.LAYOUT_CONFIG].update(visible=False)
+    window[KeyDefs.LAYOUT_ASSEMBLY].update(visible=True)
     return True
+
+@function_prints
+def condition_leave_assembly_step_1():
+    ...
+    return True
+
+@function_prints
+def condition_leave_assembly_step_2():
+    ...
+    return True
+
+@function_prints
+def condition_leave_assembly_step_3():
+    ...
+    return True
+
 
 
 

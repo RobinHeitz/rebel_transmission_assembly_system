@@ -59,8 +59,6 @@ layout_assembly_step_1 = [
             ],
             [
                 sg.Canvas(key=KeyDefs.CANVAS_GRAPH_PLOTTING, size=(250,250)),
-                # sg.Canvas(key=(KeyDefs.CANVAS_GRAPH_PLOTTING, LayoutPageKeys.layout_assembly_step_1_page), size=(250,250)),
-                
                 
                 sg.Frame("Fehler beheben:",font=font_headline,layout=[
                     [sg.T("Es wurde ein Fehler erkannt: ", k=KeyDefs.TEXT_HIGH_CURRENT_FAILURE_DETECTED, font=font_normal, visible=False)],
@@ -86,42 +84,6 @@ layout_assembly_step_1 = [
 ]
 
 
-# layout_assembly_step_2 = [
-#     [
-#         # sg.Image("gui/assembly_pictures/step_2_resize.png", size=(300,300)),
-#         get_image("gui/assembly_pictures/step2.png", size=(300,300)),
-#         sg.VSeparator(pad=(5,5,5,5,)),
-#         sg.Column([
-#             [
-#                 sg.Button("Messung starten",enable_events=True, k=(KeyDefs.BTN_START_VELO_MODE, LayoutPageKeys.layout_assembly_step_2_page) ),
-#             ],
-#             [sg.Canvas(key=(KeyDefs.CANVAS_GRAPH_PLOTTING, LayoutPageKeys.layout_assembly_step_2_page), )],
-#             [sg.Text("", font=font_normal, key=(KeyDefs.TEXT_MIN_MAX_CURRENT_VALUES, LayoutPageKeys.layout_assembly_step_2_page))]
-# ])
-
-#     ],
-# ]
-
-
-# layout_assembly_step_3 = [
-#     [
-#         get_image("gui/assembly_pictures/step3.png", size=(300,300)),
-#         # sg.Image("gui/assembly_pictures/step_3_resize.png", size=(300,300)),
-#         sg.VSeparator(pad=(5,5,5,5,)),
-#         sg.Column([
-#             [
-#                 sg.Button("Messung starten",enable_events=True, k=(KeyDefs.BTN_START_VELO_MODE, LayoutPageKeys.layout_assembly_step_3_page) ),
-#                 # sg.Button("Abbrechen",enable_events=True, k=(KeyDefs.BTN_STOP_VELO_MODE, LayoutPageKeys.layout_assembly_step_3_page) ),
-#             ],
-#             [sg.Canvas(key=(KeyDefs.CANVAS_GRAPH_PLOTTING, LayoutPageKeys.layout_assembly_step_3_page), )],
-#             [sg.Text("", font=font_normal, key=(KeyDefs.TEXT_MIN_MAX_CURRENT_VALUES, LayoutPageKeys.layout_assembly_step_3_page))]
-# ])
-
-#     ],
-# ]
-
-
-
 pages_config = [
     dict(
         headline="Getriebe Konfigurieren:", 
@@ -132,27 +94,30 @@ pages_config = [
     
     dict(
         headline="Schritt 1: Getriebe ohne Flexring testen", 
+        image="gui/assembly_pictures/step1.png",
         layout=layout_assembly_step_1, 
         layout_key=LayoutPageKeys.layout_assembly_step_1_page,
         visible=False,
         assembly_step = AssemblyStep.step_1_no_flexring,
         ),
 
-    # dict(
-    #     headline="Schritt 2: Getriebe mit Flexring & Lagerring testen",
-    #     layout=layout_assembly_step_2,
-    #     layout_key=LayoutPageKeys.layout_assembly_step_2_page,
-    #     visible=False,
-    #     assembly_step = AssemblyStep.step_2_with_flexring, 
-    #     ),
+    dict(
+        headline="Schritt 2: Getriebe mit Flexring & Lagerring testen",
+        image="gui/assembly_pictures/step2.png",
+        # layout=layout_assembly_step_2,
+        layout_key=LayoutPageKeys.layout_assembly_step_2_page,
+        visible=False,
+        assembly_step = AssemblyStep.step_2_with_flexring, 
+        ),
     
-    # dict(
-    #     headline="Schritt 3: Getriebe mit Abtrieb testen",
-    #     layout=layout_assembly_step_3,
-    #     layout_key=LayoutPageKeys.layout_assembly_step_3_page,
-    #     visible=False,
-    #     assembly_step = AssemblyStep.step_3_gearoutput_not_screwed, 
-    #     ),
+    dict(
+        headline="Schritt 3: Getriebe mit Abtrieb testen",
+        image="gui/assembly_pictures/step3.png",
+        # layout=layout_assembly_step_3,
+        layout_key=LayoutPageKeys.layout_assembly_step_3_page,
+        visible=False,
+        assembly_step = AssemblyStep.step_3_gearoutput_not_screwed, 
+        ),
 ]
 
 
@@ -161,24 +126,16 @@ pages_config = [
 #######################################################
 # HELPER Functions for returning data from pages_config
 #######################################################
-# COLS_WITH_COLOR = False
-
-# def get_color_arg():
-#     if COLS_WITH_COLOR == True:
-#         colors = ["red", "blue", "green", "purple", "orange", "brown", "yellow"]
-#         return random.choice(colors)
-#     else:
-#         return None
 
 def get_headline_for_index(index: int):
     return pages_config[index].get("headline", f"Es ist leider ein Fehler aufgetreten: Page-index = {index}")
 
 
-def render_sub_layouts():
-    """Returns a list with each sub-layout (also called page)."""
-    return [
-        [sg.pin(sg.Column(i.get("layout"), expand_x=True, expand_y=True, visible=i.get("visible"), key=i.get("layout_key")))] for i in pages_config
-    ]
+# def render_sub_layouts():
+#     """Returns a list with each sub-layout (also called page)."""
+#     return [
+#         [sg.pin(sg.Column(i.get("layout"), expand_x=True, expand_y=True, visible=i.get("visible"), key=i.get("layout_key")))] for i in pages_config
+#     ]
 
 def get_page_keys():
     return [i.get("layout_key") for i in pages_config]
@@ -210,58 +167,7 @@ main_layout = [
     ],
     [sg.HorizontalSeparator(pad=(5,5,5,5,))],
 
-    *render_sub_layouts(),
+    [sg.pin(sg.Column(layout_config_page, expand_x=True, expand_y=True, visible=True, key=KeyDefs.LAYOUT_CONFIG))],
+    [sg.pin(sg.Column(layout_assembly_step_1, expand_x=True, expand_y=True, visible=False, key=KeyDefs.LAYOUT_ASSEMBLY))],
+    
 ]
-
-
-# IMPROVEMENT WINDOW 
-
-# def generate_improvement_window_layout(title, description, start, cancel ):
-
-
-
-#     c_desc = sg.Col([
-#             [sg.T(title, font=font_headline)], 
-#             [sg.Multiline(description, font=font_normal, no_scrollbar=True, write_only=True, expand_x=True, expand_y=True)],
-#             [sg.Col(layout=[[sg.B("Behebungsmaßnahme starten", k=Key.BTN_START_IMPROVEMENT_METHOD)]], justification="center")]
-            
-#             ], expand_x=True, expand_y=True, vertical_alignment="top",background_color=get_color_arg())
-        
-#     c_image = sg.Col([
-#         [get_image("gui/assembly_pictures/step1.png", size=(300,300))],
-#         ], vertical_alignment="top", background_color=get_color_arg())
-
-#     c_canvas = sg.Col([
-#         [sg.Canvas(key=Key.CANVAS, size=(50,50))],
-#         [sg.T("", k="-result-")],
-#     ], expand_x=True, expand_y=True, background_color=get_color_arg(), visible=False, k=Key.COL_CANVAS)
-
-#     c_image_assembly_steps = sg.Col([
-#         [
-#             get_image("gui/assembly_pictures/cable_not_connected.png", size=(350,350), k=Key.IMG_IMPROVEMENT),
-#         ],
-#         [sg.B("Weiter", k=Key.BTN_SHOW_NEXT_IMAGE)],
-
-#     ], visible=False, k=Key.COL_IMAGE_DESCRIPTION, justification="center")
-
-
-
-#     bottom_button_bar = sg.Col([
-#         [
-#             sg.B("Messung starten", size=(20,2), k=start), 
-#             sg.B("Abbrechen", k=cancel, size=(20,2)),
-#             sg.B("Fehler behoben", size=(20,2), button_color="green", k=Key.BTN_FAILURE_FIXED, visible=False),
-#             sg.B("Fehler besteht weiterhin", size=(20,2), button_color="red", k=Key.BTN_FAILURE_STILL_EXISTS, visible=False),
-#             sg.B("Schließen", size=(20,2), button_color="red", k=Key.BTN_CLOSE_IMPROVEMENT_WINDOW, visible=False),
-            
-#             ]
-#     ], vertical_alignment="bottom", justification="center", element_justification="center", background_color=get_color_arg(), expand_x=True, )
-
-#     layout = [
-#         [c_desc,],
-#         [sg.pin(c_image_assembly_steps, shrink=True)],
-#         [c_canvas],
-#         [bottom_button_bar],
-        
-#     ]
-#     return layout
