@@ -151,27 +151,29 @@ def btn_start_measurement(imp_instance:ImprovementInstance, *args):
 
 @function_prints
 def measurement_finished(m:Measurement):
+    def _update_text(passed:bool):
+        if passed:
+            window[Key.TEXT_MEASUREMENT_RESULT].update(f"Messung erfolgreich! Max. current: {m.max_current}", text_color=sg.GREENS[3])
+        else:
+            window[Key.TEXT_MEASUREMENT_RESULT].update(f"Messung nicht erfolgreich: Max. current is {m.max_current}", text_color="red")
+    
     data_controller.update_improvement_measurement_relation(m, imp_instance)    
-   
-    # TODO: Sollte nicht unbedingt von der vorherigen Messung abhängig sein sondern generell Strom messen?? Evt. überdenken
-   
+    passed = is_measurement_ok(m)
+    _update_text(passed)
+
     if fail_instance.failure.failure_type == FailureType.overcurrent:
-        passed = is_measurement_ok(m)
         set_element_state(ElementVisibilityState.finished_measurement)
         
         if passed == True:
             data_controller.set_success_status(imp_instance, True)
-            window[Key.TEXT_MEASUREMENT_RESULT].update(f"Messung erfolgreich: Max. current is {m.max_current}", text_color=sg.GREENS[3])
             window[Key.BTN_CLOSE_IMPROVEMENT_WINDOW].update(visible=True, button_color=sg.GREENS[3])
         else:
             data_controller.set_success_status(imp_instance, False)
-            window[Key.BTN_CLOSE_IMPROVEMENT_WINDOW].update(visible=True, color="red")
-            window[Key.TEXT_MEASUREMENT_RESULT].update(f"Messung nicht erfolgreich: Max. current is {m.max_current}", text_color="red")
-        
+            window[Key.BTN_CLOSE_IMPROVEMENT_WINDOW].update(visible=True, button_color="red")
     
     else:
-        set_element_state(ElementVisibilityState.measurement_user_detects_additional_errors)
         logger.info(f"Failure is not measurable; Therefore personal feedback necessary")
+        set_element_state(ElementVisibilityState.measurement_user_detects_additional_errors)
        
 
 @function_prints
