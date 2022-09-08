@@ -14,7 +14,7 @@ from hw_interface.motor_controller import RebelAxisController
 from hw_interface.definitions import ExceptionPcanIllHardware, ExceptionPcanNoCanIdFound
 from current_limits import get_current_limit_for_assembly_step
 
-from gui.main_window.definitions import KeyDefs, LayoutPageKeys, ElementVisibilityStates, ELEMENT_VISIBILITY_MAP
+from gui.main_window.definitions import KeyDefs, LayoutPageKeys, ElementVisibilityStates, ELEMENT_VISIBILITY_MAP, LayoutTypes
 from gui.main_window.definitions import TransmissionConfigHelper, TransmissionSize
 # from gui import can_connection_functions
 from gui.main_window.pages import main_layout
@@ -47,6 +47,13 @@ def set_element_state(new_state:ElementVisibilityStates):
         settings = config.get(el)
         window[el].update(**settings)
 
+@function_prints
+def get_condition_for_next_page():
+    cond = condition_next_page_map.get(active_layout)
+    if callable(cond):
+        return cond
+    return cond.get(current_assembly_step)
+    
 
 
 
@@ -183,13 +190,7 @@ def check_moveability(event, values):
 def start_velocity_mode(event, values, controller:RebelAxisController):
     """Invoked by Btn click: Start Measurement"""
     set_element_state(ElementVisibilityStates.assembly_state_2_is_doing_measure)
-    # _hide_failure_and_improvement_items()
-
-    step = get_assembly_step_for_page_index(current_page_index)
-    
-    page_key = get_page_key_for_index(current_page_index)
-    # plotter = plotters[page_key]
-    start_measurement.start_measurement(controller, step, measurement_finished_callback,measurement_error_callback ,plotter)
+    start_measurement.start_measurement(controller, current_assembly_step, measurement_finished_callback,measurement_error_callback ,plotter)
 
 
 @function_prints
@@ -208,11 +209,10 @@ def measurement_error_callback(error):
 
 @function_prints
 def handle_error_while_measurement(error):
-    assembly_step = get_assembly_step_for_page_index(current_page_index)
-    logger.info(f"Error code: {error} / assembly_step = {assembly_step}")
+    logger.info(f"Error code: {error} / assembly_step = {current_assembly_step}")
     session:Session = data_controller.create_session()
     
-    failures = session.query(Failure).filter_by(assembly_step = assembly_step, failure_type = FailureType.not_moving_oc).all()
+    failures = session.query(Failure).filter_by(assembly_step = current_assembly_step, failure_type = FailureType.not_moving_oc).all()
     
     
     if len(failures) != 1: raise Exception("DataStruture is corrupt! There should be only 1 instance of failure for a given AssemblyStep with FailureType overcurrent_not_moving.")
@@ -240,13 +240,11 @@ def measurement_finished(m:Measurement):
 @function_prints
 def predict_failure(measurement: Measurement):
     """Tries to predict < Indicator > (e.g. Overcurrent) based on currently measurement taken. Gets called after graph updating has stopped. """
-
-    assembly_step = get_assembly_step_for_page_index(current_page_index)
-    limit = get_current_limit_for_assembly_step(assembly_step)
+    limit = get_current_limit_for_assembly_step(current_assembly_step)
     
     if measurement.max_current > limit:
         session:Session = data_controller.create_session()
-        failures = session.query(Failure).filter_by(assembly_step = assembly_step, failure_type = FailureType.overcurrent).all()
+        failures = session.query(Failure).filter_by(assembly_step = current_assembly_step, failure_type = FailureType.overcurrent).all()
         if len(failures) != 1: raise Exception("DataStruture is corrupt! There should be only 1 instance of failure for a given AssemblyStep with FailureType overcurrent.")
         session.close()
        
@@ -263,28 +261,13 @@ def predict_failure(measurement: Measurement):
         if answer == "Yes":
             set_element_state(ElementVisibilityStates.assembly_state_4_measure_finished_user_detects_additional_error)
             
-            assembly_step = get_assembly_step_for_page_index(current_page_index)
-            failures = data_controller.sorted_failures_by_incidents(assembly_step)
+            failures = data_controller.sorted_failures_by_incidents(current_assembly_step)
             window[KeyDefs.COMBO_FAILURE_SELECT].update(values=failures, value=failures[0])
             show_improvements(failures[0])
-            # show_combo_failure_selection()
         elif answer == "No":
             set_element_state(ElementVisibilityStates.assembly_state_3_measure_finished_no_failure_detected)
         else:
             raise NotImplementedError("This Button Label is not checked against (yet)!")
-
-
-# @function_prints
-# def show_combo_failure_selection(*args, **kwargs):
-#     """Btn click: Fehler manuell detektieren. Shows Combo-Box of possible Failures."""
-#     assembly_step = get_assembly_step_for_page_index(current_page_index)
-#     failures = data_controller.sorted_failures_by_incidents(assembly_step)
-#     window[KeyDefs.COMBO_FAILURE_SELECT].update(values=failures, value=failures[0])
-        
-#     # window[KeyDefs.FRAME_FAILURE_DETECTION].update(visible=True)
-
-#     change_combo_failures_visibility(True)
-    
 
 @function_prints
 def combo_value_changes(event, values):
@@ -301,8 +284,7 @@ def change_combo_failures_visibility(visible):
 @function_prints
 def show_improvements(f:Failure, *args, **kwargs):
     """Shows Frame + Listbox with possible Improvements."""
-    assembly_step = get_assembly_step_for_page_index(current_page_index)
-    improvements = data_controller.get_improvements_for_failure(f, assembly_step, *args, **kwargs)
+    improvements = data_controller.get_improvements_for_failure(f, current_assembly_step, *args, **kwargs)
     
     if len(improvements) > 0:
         window[KeyDefs.FRAME_FAILURE_DETECTION].update(visible=True)
@@ -320,8 +302,7 @@ def btn_improvement_selection_clicked(event, values):
     latest_measure = data_controller.get_current_measurement_instance()
     logger.info(f"btn_improvement_selection_clicked: {selected_improvement} | selected_failure = {selected_failure} | measurement = {latest_measure}")
 
-    assembly_step = get_assembly_step_for_page_index(current_page_index)
-    fail_instance, imp_instance = improvement_window.improvement_window(controller, current_transmission, selected_failure, selected_improvement, latest_measure, assembly_step)
+    fail_instance, imp_instance = improvement_window.improvement_window(controller, current_transmission, selected_failure, selected_improvement, latest_measure, current_assembly_step)
     
     # for some reason; need to create anothger sesseion since this value is wrooong
     session = data_controller.create_session()
@@ -329,44 +310,33 @@ def btn_improvement_selection_clicked(event, values):
 
     if imp_instance.successful == True:
         set_element_state(ElementVisibilityStates.improvement_was_success)
-        # window[KeyDefs.FRAME_FAILURE_DETECTION].update(visible=False)
-        # update_next_page_btn(True)
     else:
         set_element_state(ElementVisibilityStates.improvement_was_no_success)
         show_improvements(selected_failure)
-        # change_combo_failures_visibility(False)
 
     
 ######################################################
 # FUNCTIONS FOR ENABLING / DISABLING NAVIGATION BUTTONS
 ######################################################
 
-# @function_prints
-# def update_next_page_btn(next_page_is_allowed):
-#     btn = window[KeyDefs.BTN_NAV_NEXT_PAGE]
-#     # if next_page_is_allowed == True:
-    #     btn.update(button_color="green", disabled=False)
-    # else:
-    #     btn.update(button_color="darkblue", disabled=True)
-
-
 
 @function_prints
 def _nav_next_page(event, values):
     """Called when user clicks on "Next"-Button. Manages hide/show of layouts etc."""
-    global current_page_index, current_transmission
+    global current_transmission, current_assembly_step, active_layout
+    condition = get_condition_for_next_page()
 
-    future_index = current_page_index + 1
-    page_key = get_page_key_for_index(future_index)
-
-    condition = condition_next_page_map.get(page_key)
     if condition():
         ...
         # _hide_current_page()
-        current_page_index = future_index
-        _update_headline()
+        # _update_headline()
         # _show_next_page()
         # update_next_page_btn(False)
+        if active_layout == LayoutTypes.config:
+            active_layout = LayoutTypes.assembly
+        else:
+            current_assembly_step = AssemblyStep.next_step(current_assembly_step)
+            
     
 
 
@@ -379,48 +349,6 @@ def _update_headline(index):
 @function_prints
 def _nav_previous_page(event, values):
     """Called when user clicks on "Previous"-Button. Manages hide/show of layouts etc."""
-    global current_page_index
-    # _hide_current_page()
-
-    current_page_index -= 1
-    # _show_next_page()
-
-
-# @function_prints
-# def _hide_current_page():
-#     global current_page_index
-#     current_page = window[get_page_keys()[current_page_index]]
-#     current_page.update(visible=False)
-
-
-# @function_prints
-# def _show_next_page():
-#     next_page = window[get_page_keys()[current_page_index]]
-#     next_page.update(visible=True)
-#     _update_headline(current_page_index)
-
-#     if current_page_index == 1:
-#         set_element_state(ElementVisibilityStates.assembly_state_1_can_start_measure)
-    
-
-
-
-# @function_prints
-# def _disable_enable_nav_buttons():
-#     # First version of nav button handling
-    
-#     btn_next = window[KeyDefs.BTN_NAV_NEXT_PAGE]
-#     btn_prev = window[KeyDefs.BTN_NAV_PREVIOUS_PAGE]
-
-#     btn_prev.update(disabled=False)
-#     btn_next.update(disabled=False)
-
-#     if current_page_index == 0:
-#         btn_prev.update(disabled=True)
-    
-#     elif current_page_index == len(get_page_keys()) -1:
-#         btn_next(disabled=True)
- 
 
 
 #################################
@@ -492,8 +420,8 @@ if __name__ == "__main__":
     
     transmission_config = TransmissionConfigHelper()
     
-
-    current_page_index = 0
+    active_layout = LayoutTypes.config
+    current_assembly_step = AssemblyStep.step_1_no_flexring
 
 
     plotter = GraphPlotter(window[KeyDefs.CANVAS_GRAPH_PLOTTING])
@@ -502,10 +430,13 @@ if __name__ == "__main__":
     window.maximize()
 
     condition_next_page_map = {
-        LayoutPageKeys.layout_assembly_step_1_page: condition_leave_config_page,
-        LayoutPageKeys.layout_assembly_step_2_page: lambda: print("Cond 2"),
-        LayoutPageKeys.layout_assembly_step_3_page: lambda: print("Cond 3"),
-
+        LayoutTypes.config: condition_leave_config_page,
+        LayoutTypes.assembly: {
+            AssemblyStep.step_1_no_flexring :  lambda: print("Assembly Step 1"),
+            AssemblyStep.step_2_with_flexring :  lambda: print("Assembly Step 2"),
+            AssemblyStep.step_3_gearoutput_not_screwed :  lambda: print("Assembly Step 4"),
+            AssemblyStep.step_4_gearoutput_screwed :  lambda: print("Assembly Step 4"),
+        }
     }
 
 

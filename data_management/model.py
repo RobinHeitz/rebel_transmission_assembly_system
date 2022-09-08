@@ -33,6 +33,20 @@ class AssemblyStep(enum.Enum):
     step_4_gearoutput_screwed = 4
 
     @classmethod
+    def next_step(cls, step):
+        if step == cls.step_1_no_flexring:
+            return cls.step_2_with_flexring
+        elif step == cls.step_2_with_flexring:
+            return cls.step_3_gearoutput_not_screwed
+        elif step == cls.step_3_gearoutput_not_screwed:
+            return cls.step_4_gearoutput_screwed
+        elif step == cls.step_4_gearoutput_screwed:
+            return cls.step_4_gearoutput_screwed
+        
+        
+
+
+    @classmethod
     def get_all_steps(cls):
         return [cls.step_1_no_flexring, cls.step_2_with_flexring, cls.step_3_gearoutput_not_screwed, cls.step_4_gearoutput_screwed]
 
