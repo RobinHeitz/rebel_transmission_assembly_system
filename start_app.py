@@ -14,7 +14,7 @@ from hw_interface.motor_controller import RebelAxisController
 from hw_interface.definitions import ExceptionPcanIllHardware, ExceptionPcanNoCanIdFound
 from current_limits import get_current_limit_for_assembly_step
 
-from gui.definitions import KeyDefs, LayoutPageKeys, theme_dict
+from gui.definitions import KeyDefs, LayoutPageKeys, ElementVisibilityStates, ELEMENT_VISIBILITY_MAP
 from gui.definitions import TransmissionConfigHelper, TransmissionSize
 from gui.helper_functions import can_connection_functions
 from gui.pages import main_layout
@@ -34,6 +34,19 @@ def function_prints(f):
         logger.info(f"--- {f.__name__}() called")
         return f(*args, **kwargs)
     return wrap
+
+@function_prints
+def set_element_state(new_state:ElementVisibilityStates):
+    if new_state not in ELEMENT_VISIBILITY_MAP:
+        print("*******"*5)
+        print("ERROR, set_element_state: new_state is not contained!")
+    
+    config = ELEMENT_VISIBILITY_MAP[new_state]
+    for el in config.keys():
+        settings = config.get(el)
+        window[el].update(**settings)
+
+
 
 
 ###################################################################
@@ -58,7 +71,10 @@ def invoked_callback_in_main_thread(event, values):
 #################################
 @function_prints
 def radio_size_is_clicked(event, values, size:TransmissionSize):
-    update_next_page_btn(next_page_is_allowed=True)
+    if controller.connected:
+        set_element_state(ElementVisibilityStates.config_state_2_can_go_next)
+    
+    # update_next_page_btn(next_page_is_allowed=True)
     transmission_config.set_size(size)
     if size == TransmissionSize.size_80:
         window[KeyDefs.CHECKBOX_HAS_BRAKE].update(disabled=True)
@@ -314,10 +330,10 @@ def _hide_failure_and_improvement_items():
 @function_prints
 def update_next_page_btn(next_page_is_allowed):
     btn = window[KeyDefs.BTN_NAV_NEXT_PAGE]
-    if next_page_is_allowed == True:
-        btn.update(button_color="green", disabled=False)
-    else:
-        btn.update(button_color="darkblue", disabled=True)
+    # if next_page_is_allowed == True:
+    #     btn.update(button_color="green", disabled=False)
+    # else:
+    #     btn.update(button_color="darkblue", disabled=True)
 
 
 
@@ -365,12 +381,14 @@ def _hide_current_page():
 
 @function_prints
 def _show_next_page():
-    global current_page_index
-    
     next_page = window[get_page_keys()[current_page_index]]
     next_page.update(visible=True)
-
     _update_headline(current_page_index)
+
+    if current_page_index == 1:
+        set_element_state(ElementVisibilityStates.assembly_state_1_can_start_measure)
+    
+
 
 
 @function_prints
@@ -397,6 +415,7 @@ def _disable_enable_nav_buttons():
 
 @function_prints
 def condition_leave_config_page():
+    """Conditional function, is last condition before new page is loaded."""
     err = is_estop_error()
     if err:
         return False
@@ -415,6 +434,8 @@ def condition_leave_config_page():
 if __name__ == "__main__":
     sg.theme("DarkTeal10")
     window = sg.Window("ReBeL Getriebe Montage & Kalibrierung", main_layout, size=(1200,1000), finalize=True, location=(0,0),resizable=True)
+
+    set_element_state(ElementVisibilityStates.config_state_1_cannot_go_next)
 
     logger.info(f"Currently used background color: {sg.theme_background_color()}")
     logger.info(f"Currently used button color: {sg.theme_button_color()} and {sg.theme_button_color_background()}")

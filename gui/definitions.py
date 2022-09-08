@@ -1,7 +1,6 @@
 from data_management.model import TransmissionConfiguration
 import enum
 
-
 ##################
 # Style definitions
 ###################
@@ -78,6 +77,39 @@ class KeyDefs(enum.Enum):
     # Element keys (text, etc.)
     CANVAS_GRAPH_PLOTTING = "-CANVAS_GRAPH_PLOTTING-"
     TEXT_MIN_MAX_CURRENT_VALUES = "-TEXT_MIN_MAX_CURRENT_VALUES-"
+
+
+
+class ElementVisibilityStates(enum.Enum):
+    config_state_1_cannot_go_next = 1
+    config_state_2_can_go_next = 2
+    assembly_state_1_can_start_measure = 3
+    random_state = 5
+
+
+ELEMENT_VISIBILITY_MAP = {
+    ElementVisibilityStates.config_state_1_cannot_go_next : {
+        KeyDefs.BTN_NAV_NEXT_PAGE:{"disabled": True},
+        KeyDefs.BTN_NAV_PREVIOUS_PAGE:{"disabled": True},
+    },
+
+    ElementVisibilityStates.config_state_2_can_go_next: {
+        KeyDefs.BTN_NAV_NEXT_PAGE:{"disabled": False},
+        KeyDefs.BTN_NAV_PREVIOUS_PAGE:{"disabled": True},
+    },
+    
+    ElementVisibilityStates.assembly_state_1_can_start_measure: {
+        KeyDefs.BTN_NAV_NEXT_PAGE:{"disabled": True},
+        KeyDefs.BTN_NAV_PREVIOUS_PAGE:{"visible": False},
+        
+        KeyDefs.BTN_START_VELO_MODE: {"disabled": False},
+        KeyDefs.CANVAS_GRAPH_PLOTTING: {"visible": True},
+    },
+    
+
+
+}
+
 
 
 

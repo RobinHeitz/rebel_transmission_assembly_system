@@ -49,6 +49,7 @@ class RebelAxisController:
     motor_referenced = False
     motor_position_is_resetted = False
     motor_rotor_is_aligned = False
+    connected = False
     
     lock = Lock()
     
@@ -81,6 +82,9 @@ class RebelAxisController:
         
         if status == PCAN_ERROR_OK:
             self.can_id = self.find_can_id()
+            if self.can_id != -1:
+                self.connected = True
+
             self.start_msg_listener_thread()
             
             # if self.__start_movement_queue == True:
@@ -99,6 +103,7 @@ class RebelAxisController:
         self.can_id = -1
         self.motor_enabled = False
         self.motor_no_err = False
+        self.connected = False
 
 
     def __log_verbose(self, msg):
