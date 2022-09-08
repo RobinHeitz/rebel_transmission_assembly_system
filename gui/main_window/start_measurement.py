@@ -1,4 +1,3 @@
-from concurrent.futures import thread
 import threading
 import logging
 from data_management.model import AssemblyStep
@@ -7,7 +6,6 @@ import time
 from gui.plotting import GraphPlotter
 from hw_interface.motor_controller import RebelAxisController
 
-from gui import pages
 
 from data_management import data_controller, data_transformation
 

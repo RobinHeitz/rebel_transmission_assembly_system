@@ -14,16 +14,16 @@ from hw_interface.motor_controller import RebelAxisController
 from hw_interface.definitions import ExceptionPcanIllHardware, ExceptionPcanNoCanIdFound
 from current_limits import get_current_limit_for_assembly_step
 
-from gui.definitions import KeyDefs, LayoutPageKeys, ElementVisibilityStates, ELEMENT_VISIBILITY_MAP
-from gui.definitions import TransmissionConfigHelper, TransmissionSize
-from gui.helper_functions import can_connection_functions
-from gui.pages import main_layout
-from gui.pages import get_headline_for_index, get_page_keys, get_page_key_for_index,get_assembly_step_for_page_index
+from gui.main_window.definitions import KeyDefs, LayoutPageKeys, ElementVisibilityStates, ELEMENT_VISIBILITY_MAP
+from gui.main_window.definitions import TransmissionConfigHelper, TransmissionSize
+# from gui import can_connection_functions
+from gui.main_window.pages import main_layout
+from gui.main_window.pages import get_headline_for_index, get_page_keys, get_page_key_for_index,get_assembly_step_for_page_index
 from gui.plotting import GraphPlotter
-# import gui.improvement_window.improvement_window as improvement_window
+
 import gui.improvement_window.improvement_window as improvement_window
 
-from gui import start_measurement
+from gui.main_window import start_measurement
 
 from logs.setup_logger import setup_logger
 logger = setup_logger("start_app")

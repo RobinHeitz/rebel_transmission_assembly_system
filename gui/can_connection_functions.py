@@ -1,7 +1,7 @@
 import threading
 import PySimpleGUI as sg
 from hw_interface.motor_controller import RebelAxisController
-from gui.definitions import KeyDefs
+# from gui.main_window.definitions import KeyDefs
 
 
 def connect_can(window:sg.Window, controller: RebelAxisController):

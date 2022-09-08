@@ -6,14 +6,17 @@ from hw_interface.motor_controller import RebelAxisController
 
 from .definitions import font_headline, font_normal, font_small, ImprovementWindowKeys as Key
 from .pages import generate_improvement_window_layout
+
 from ..plotting import GraphPlotter
 
 
 from data_management.model import AssemblyStep, FailureType, Improvement, ImprovementInstance, Failure, FailureInstance, Measurement, Transmission
 from data_management import data_controller
 
-from gui import start_measurement
-from gui import pages
+
+from gui.main_window.start_measurement import start_measurement
+# from gui.main_window import start_measurement
+# from gui.main_window import pages
 
 
 from current_limits import get_current_limit_for_assembly_step
@@ -124,7 +127,7 @@ def improvement_process_finished():
 def start_repeat_measurement(imp_instance:ImprovementInstance, ):
     logger.debug(f"start_repeat_measurement() | imp_instance: {imp_instance}")
     window[Key.COL_CANVAS].update(visible=True)
-    start_measurement.start_measurement(controller, AssemblyStep.step_1_no_flexring, measurement_finished, measurement_aborted_due_to_error, plotter)
+    start_measurement(controller, AssemblyStep.step_1_no_flexring, measurement_finished, measurement_aborted_due_to_error, plotter)
 
 @function_prints
 def measurement_finished(m:Measurement):

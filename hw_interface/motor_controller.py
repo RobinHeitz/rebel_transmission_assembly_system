@@ -4,9 +4,9 @@ from can.interfaces.pcan.basic import PCAN_USBBUS1
 from can.interfaces.pcan.basic import PCANBasic, PCAN_DICT_STATUS, PCAN_BAUD_500K
 from can.interfaces.pcan.basic import PCAN_ERROR_OK,PCAN_ERROR_BUSHEAVY, PCAN_ERROR_QRCVEMPTY, PCAN_ERROR_ILLHW
 
-from gui.definitions import KeyDefs
+# from gui.main_window.definitions import KeyDefs
 
-import PySimpleGUI as sg
+# import PySimpleGUI as sg
 
 import time, logging
 
