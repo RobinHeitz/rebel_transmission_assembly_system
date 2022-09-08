@@ -41,8 +41,8 @@ def function_prints(f):
 @function_prints
 def set_element_state(new_state:ElementVisibilityStates):
     if new_state not in ELEMENT_VISIBILITY_MAP:
-        print("*******"*5)
-        print("ERROR, set_element_state: new_state is not contained!")
+        logger.error("*******"*5)
+        logger.error("ERROR, set_element_state: new_state is not contained!")
     
     config = ELEMENT_VISIBILITY_MAP[new_state]
     for el in config.keys():
@@ -343,6 +343,7 @@ def _nav_next_page(event, values):
             
         _update_headline()
         _update_assembly_steps_data()
+        set_element_state(ElementVisibilityStates.assembly_state_1_can_start_measure)
     
 
 
