@@ -83,8 +83,12 @@ class KeyDefs(enum.Enum):
 class ElementVisibilityStates(enum.Enum):
     config_state_1_cannot_go_next = 1
     config_state_2_can_go_next = 2
+
     assembly_state_1_can_start_measure = 3
-    random_state = 5
+    assembly_state_2_is_doing_measure =  4
+    
+    assembly_state_3_measure_finished_no_failure_detected =  5
+    assembly_state_4_measure_finished_user_detects_additional_error = 6
 
 
 ELEMENT_VISIBILITY_MAP = {
@@ -101,15 +105,54 @@ ELEMENT_VISIBILITY_MAP = {
     ElementVisibilityStates.assembly_state_1_can_start_measure: {
         KeyDefs.BTN_NAV_NEXT_PAGE:{"disabled": True},
         KeyDefs.BTN_NAV_PREVIOUS_PAGE:{"visible": False},
-        
         KeyDefs.BTN_START_VELO_MODE: {"disabled": False},
         KeyDefs.CANVAS_GRAPH_PLOTTING: {"visible": True},
+
+        KeyDefs.FRAME_FAILURE_DETECTION: {"visible":False},
+        KeyDefs.TEXT_HIGH_CURRENT_FAILURE_DETECTED: {"visible":False},
+        KeyDefs.TEXT_MIN_MAX_CURRENT_VALUES: {"visible":False},
+        
+    },
+    
+    ElementVisibilityStates.assembly_state_2_is_doing_measure: {
+        KeyDefs.BTN_NAV_NEXT_PAGE:{"disabled": True},
+        KeyDefs.BTN_NAV_PREVIOUS_PAGE:{"visible": False},
+        KeyDefs.BTN_START_VELO_MODE: {"disabled": True, "visible":False},
+        KeyDefs.CANVAS_GRAPH_PLOTTING: {"visible": True},
+
+        KeyDefs.FRAME_FAILURE_DETECTION: {"visible":False},
+        KeyDefs.TEXT_HIGH_CURRENT_FAILURE_DETECTED: {"visible":False},
+        KeyDefs.TEXT_MIN_MAX_CURRENT_VALUES: {"visible":False},
+    },
+   
+   
+    ElementVisibilityStates.assembly_state_3_measure_finished_no_failure_detected: {
+        KeyDefs.BTN_NAV_NEXT_PAGE:{"disabled": False},
+        KeyDefs.BTN_NAV_PREVIOUS_PAGE:{"visible": False},
+        KeyDefs.BTN_START_VELO_MODE: {"disabled": True, "visible":False},
+        KeyDefs.CANVAS_GRAPH_PLOTTING: {"visible": True},
+
+        KeyDefs.FRAME_FAILURE_DETECTION: {"visible":False},
+        KeyDefs.TEXT_HIGH_CURRENT_FAILURE_DETECTED: {"visible":False},
+        KeyDefs.TEXT_MIN_MAX_CURRENT_VALUES: {"visible":True},
+    },
+    
+   
+    ElementVisibilityStates.assembly_state_4_measure_finished_user_detects_additional_error: {
+        KeyDefs.BTN_NAV_NEXT_PAGE:{"disabled": True},
+        KeyDefs.BTN_NAV_PREVIOUS_PAGE:{"visible": False},
+        KeyDefs.BTN_START_VELO_MODE: {"disabled": True, "visible":False},
+        KeyDefs.CANVAS_GRAPH_PLOTTING: {"visible": True},
+
+        KeyDefs.FRAME_FAILURE_DETECTION: {"visible":True},
+        KeyDefs.COL_FAILURE_SELECTION_CONTAINER: {"visible":True},
+        KeyDefs.TEXT_HIGH_CURRENT_FAILURE_DETECTED: {"visible":False},
+        KeyDefs.TEXT_MIN_MAX_CURRENT_VALUES: {"visible":True},
     },
     
 
 
 }
-
 
 
 

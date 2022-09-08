@@ -173,12 +173,13 @@ def check_moveability(event, values):
 @function_prints
 def start_velocity_mode(event, values, controller:RebelAxisController):
     """Invoked by Btn click: Start Measurement"""
-    _hide_failure_and_improvement_items()
+    set_element_state(ElementVisibilityStates.assembly_state_2_is_doing_measure)
+    # _hide_failure_and_improvement_items()
 
     step = get_assembly_step_for_page_index(current_page_index)
     
     page_key = get_page_key_for_index(current_page_index)
-    plotter = plotters[page_key]
+    # plotter = plotters[page_key]
     start_measurement.start_measurement(controller, step, measurement_finished_callback,measurement_error_callback ,plotter)
 
 
@@ -220,7 +221,7 @@ def handle_error_while_measurement(error):
 def measurement_finished(m:Measurement):
     logger.error(f"measurement = {m} / id = {m.id}")
     """Invoked by start_measurement.start_measurement. Callback function for updating gui elements based on finished measurement."""
-    text_field = window[(KeyDefs.TEXT_MIN_MAX_CURRENT_VALUES, LayoutPageKeys.layout_assembly_step_1_page)]
+    text_field = window[KeyDefs.TEXT_MIN_MAX_CURRENT_VALUES]
     text_field.update(f"Min current: {m.min_current} ||| Max. current: {m.max_current} || Mean current: {m.mean_current}", visible=True)
     predict_failure(m)
 
@@ -239,32 +240,42 @@ def predict_failure(measurement: Measurement):
         failures = session.query(Failure).filter_by(assembly_step = assembly_step, failure_type = FailureType.overcurrent).all()
         if len(failures) != 1: raise Exception("DataStruture is corrupt! There should be only 1 instance of failure for a given AssemblyStep with FailureType overcurrent.")
         session.close()
+       
+       # TODO:
         window[KeyDefs.TEXT_HIGH_CURRENT_FAILURE_DETECTED].update(f"Es wurde ein Fehler erkannt: {failures[0]}", text_color="red", visible=True)
         window[KeyDefs.COMBO_FAILURE_SELECT].update(values=failures, value=failures[0])
+       
         change_combo_failures_visibility(False)
         show_improvements(failures[0])
 
     else:
         answer  = sg.popup_yes_no("Strom ist nicht zu hoch", "Der Strom ist nicht zu hoch. Ist dir sonst noch ein Fehler aufgefallen?")
         if answer == "Yes":
-            show_combo_failure_selection()
+            set_element_state(ElementVisibilityStates.assembly_state_4_measure_finished_user_detects_additional_error)
+            
+            assembly_step = get_assembly_step_for_page_index(current_page_index)
+            failures = data_controller.sorted_failures_by_incidents(assembly_step)
+            window[KeyDefs.COMBO_FAILURE_SELECT].update(values=failures, value=failures[0])
+            show_improvements(failures[0])
+            # show_combo_failure_selection()
         elif answer == "No":
-            update_next_page_btn(True)
+            # update_next_page_btn(True)
+            set_element_state(ElementVisibilityStates.assembly_state_3_measure_finished_no_failure_detected)
         else:
             raise NotImplementedError("This Button Label is not checked against (yet)!")
 
 
-@function_prints
-def show_combo_failure_selection(*args, **kwargs):
-    """Btn click: Fehler manuell detektieren. Shows Combo-Box of possible Failures."""
-    assembly_step = get_assembly_step_for_page_index(current_page_index)
-    failures = data_controller.sorted_failures_by_incidents(assembly_step)
+# @function_prints
+# def show_combo_failure_selection(*args, **kwargs):
+#     """Btn click: Fehler manuell detektieren. Shows Combo-Box of possible Failures."""
+#     assembly_step = get_assembly_step_for_page_index(current_page_index)
+#     failures = data_controller.sorted_failures_by_incidents(assembly_step)
+#     window[KeyDefs.COMBO_FAILURE_SELECT].update(values=failures, value=failures[0])
         
-    window[KeyDefs.FRAME_FAILURE_DETECTION].update(visible=True)
-    window[KeyDefs.COMBO_FAILURE_SELECT].update(values=failures, value=failures[0])
+#     # window[KeyDefs.FRAME_FAILURE_DETECTION].update(visible=True)
 
-    change_combo_failures_visibility(True)
-    show_improvements(failures[0])
+#     change_combo_failures_visibility(True)
+    
 
 @function_prints
 def combo_value_changes(event, values):
@@ -320,7 +331,8 @@ def btn_improvement_selection_clicked(event, values):
 def _hide_failure_and_improvement_items():
     window[KeyDefs.FRAME_FAILURE_DETECTION].update(visible=False)
     window[KeyDefs.TEXT_HIGH_CURRENT_FAILURE_DETECTED].update(visible=False)
-    window[(KeyDefs.TEXT_MIN_MAX_CURRENT_VALUES, LayoutPageKeys.layout_assembly_step_1_page)].update(visible=False)
+    # window[(KeyDefs.TEXT_MIN_MAX_CURRENT_VALUES, LayoutPageKeys.layout_assembly_step_1_page)].update(visible=False)
+    window[KeyDefs.TEXT_MIN_MAX_CURRENT_VALUES].update(visible=False)
     
 
 ######################################################
@@ -462,13 +474,15 @@ if __name__ == "__main__":
     current_page_index = 0
 
 
+    plotter = GraphPlotter(window[KeyDefs.CANVAS_GRAPH_PLOTTING])
+    plotter.plot_data([],[])
 
-    plotters = {
-        l:GraphPlotter(window[(KeyDefs.CANVAS_GRAPH_PLOTTING, l)]) for l in get_page_keys()[1:]
-    }
+    # plotters = {
+    #     l:GraphPlotter(window[(KeyDefs.CANVAS_GRAPH_PLOTTING, l)]) for l in get_page_keys()[1:]
+    # }
 
-    for p in plotters.values():
-        p.plot_data([],[])
+    # for p in plotters.values():
+    #     p.plot_data([],[])
 
     window.maximize()
 
@@ -497,9 +511,12 @@ if __name__ == "__main__":
         KeyDefs.CHECKBOX_HAS_ENCODER: (lambda event, values: transmission_config.set_encoder_flag(values[event]), dict()),
         KeyDefs.CHECKBOX_HAS_BRAKE: (lambda event, values: transmission_config.set_brake_flag(values[event]), dict()),
         
-        (KeyDefs.BTN_START_VELO_MODE, LayoutPageKeys.layout_assembly_step_1_page): (start_velocity_mode, dict(controller=controller)),
-        (KeyDefs.BTN_START_VELO_MODE, LayoutPageKeys.layout_assembly_step_2_page): (start_velocity_mode, dict(controller=controller)),
-        (KeyDefs.BTN_START_VELO_MODE, LayoutPageKeys.layout_assembly_step_3_page): (start_velocity_mode, dict(controller=controller)),
+        # (KeyDefs.BTN_START_VELO_MODE, LayoutPageKeys.layout_assembly_step_1_page): (start_velocity_mode, dict(controller=controller)),
+        # (KeyDefs.BTN_START_VELO_MODE, LayoutPageKeys.layout_assembly_step_2_page): (start_velocity_mode, dict(controller=controller)),
+        # (KeyDefs.BTN_START_VELO_MODE, LayoutPageKeys.layout_assembly_step_3_page): (start_velocity_mode, dict(controller=controller)),
+
+        KeyDefs.BTN_START_VELO_MODE: (start_velocity_mode, dict(controller=controller)),
+        
 
         KeyDefs.COMBO_FAILURE_SELECT: (combo_value_changes, dict()),
         KeyDefs.BTN_SELECT_IMPROVEMENT: (btn_improvement_selection_clicked, dict()),

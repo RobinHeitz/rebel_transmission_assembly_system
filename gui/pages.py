@@ -22,8 +22,6 @@ layout_config_page = [
 
     [sg.Button("Verbindung herstellen", key=KeyDefs.BTN_CONNECT_CAN, enable_events=True, font=font_normal, size=(25,1)), sg.Text("Nicht verbunden", key=KeyDefs.TEXT_CAN_CONNECTED_STATUS, font=font_normal)],
     
-    # [sg.B("Fehlercodes auslesen", k=KeyDefs.BTN_READ_ERROR_CODES, enable_events=True, size=(25,1), font=font_normal)],
-    
     [sg.Frame("", layout=[
         [
             sg.Text("Getriebegröße", font=font_normal),
@@ -57,10 +55,11 @@ layout_assembly_step_1 = [
         sg.VSeparator(pad=(5,5,5,5,)),
         sg.Column([
             [
-                sg.Button("Messung starten",enable_events=True, k=(KeyDefs.BTN_START_VELO_MODE, LayoutPageKeys.layout_assembly_step_1_page) ),
+                sg.Button("Messung starten",enable_events=True, k=KeyDefs.BTN_START_VELO_MODE),
             ],
             [
-                sg.Canvas(key=(KeyDefs.CANVAS_GRAPH_PLOTTING, LayoutPageKeys.layout_assembly_step_1_page), size=(250,250)),
+                sg.Canvas(key=KeyDefs.CANVAS_GRAPH_PLOTTING, size=(250,250)),
+                # sg.Canvas(key=(KeyDefs.CANVAS_GRAPH_PLOTTING, LayoutPageKeys.layout_assembly_step_1_page), size=(250,250)),
                 
                 
                 sg.Frame("Fehler beheben:",font=font_headline,layout=[
@@ -77,7 +76,7 @@ layout_assembly_step_1 = [
 
                 ],
             
-            [sg.Text("", font=font_normal, key=(KeyDefs.TEXT_MIN_MAX_CURRENT_VALUES, LayoutPageKeys.layout_assembly_step_1_page), visible=False)],
+            [sg.Text("", font=font_normal, key=KeyDefs.TEXT_MIN_MAX_CURRENT_VALUES, visible=False)],
             [sg.T("Es wurde ein Fehler erkannt: ", k=KeyDefs.TEXT_HIGH_CURRENT_FAILURE_DETECTED, font=font_normal, visible=False)],
 
             
@@ -87,39 +86,39 @@ layout_assembly_step_1 = [
 ]
 
 
-layout_assembly_step_2 = [
-    [
-        # sg.Image("gui/assembly_pictures/step_2_resize.png", size=(300,300)),
-        get_image("gui/assembly_pictures/step2.png", size=(300,300)),
-        sg.VSeparator(pad=(5,5,5,5,)),
-        sg.Column([
-            [
-                sg.Button("Messung starten",enable_events=True, k=(KeyDefs.BTN_START_VELO_MODE, LayoutPageKeys.layout_assembly_step_2_page) ),
-            ],
-            [sg.Canvas(key=(KeyDefs.CANVAS_GRAPH_PLOTTING, LayoutPageKeys.layout_assembly_step_2_page), )],
-            [sg.Text("", font=font_normal, key=(KeyDefs.TEXT_MIN_MAX_CURRENT_VALUES, LayoutPageKeys.layout_assembly_step_2_page))]
-])
+# layout_assembly_step_2 = [
+#     [
+#         # sg.Image("gui/assembly_pictures/step_2_resize.png", size=(300,300)),
+#         get_image("gui/assembly_pictures/step2.png", size=(300,300)),
+#         sg.VSeparator(pad=(5,5,5,5,)),
+#         sg.Column([
+#             [
+#                 sg.Button("Messung starten",enable_events=True, k=(KeyDefs.BTN_START_VELO_MODE, LayoutPageKeys.layout_assembly_step_2_page) ),
+#             ],
+#             [sg.Canvas(key=(KeyDefs.CANVAS_GRAPH_PLOTTING, LayoutPageKeys.layout_assembly_step_2_page), )],
+#             [sg.Text("", font=font_normal, key=(KeyDefs.TEXT_MIN_MAX_CURRENT_VALUES, LayoutPageKeys.layout_assembly_step_2_page))]
+# ])
 
-    ],
-]
+#     ],
+# ]
 
 
-layout_assembly_step_3 = [
-    [
-        get_image("gui/assembly_pictures/step3.png", size=(300,300)),
-        # sg.Image("gui/assembly_pictures/step_3_resize.png", size=(300,300)),
-        sg.VSeparator(pad=(5,5,5,5,)),
-        sg.Column([
-            [
-                sg.Button("Messung starten",enable_events=True, k=(KeyDefs.BTN_START_VELO_MODE, LayoutPageKeys.layout_assembly_step_3_page) ),
-                # sg.Button("Abbrechen",enable_events=True, k=(KeyDefs.BTN_STOP_VELO_MODE, LayoutPageKeys.layout_assembly_step_3_page) ),
-            ],
-            [sg.Canvas(key=(KeyDefs.CANVAS_GRAPH_PLOTTING, LayoutPageKeys.layout_assembly_step_3_page), )],
-            [sg.Text("", font=font_normal, key=(KeyDefs.TEXT_MIN_MAX_CURRENT_VALUES, LayoutPageKeys.layout_assembly_step_3_page))]
-])
+# layout_assembly_step_3 = [
+#     [
+#         get_image("gui/assembly_pictures/step3.png", size=(300,300)),
+#         # sg.Image("gui/assembly_pictures/step_3_resize.png", size=(300,300)),
+#         sg.VSeparator(pad=(5,5,5,5,)),
+#         sg.Column([
+#             [
+#                 sg.Button("Messung starten",enable_events=True, k=(KeyDefs.BTN_START_VELO_MODE, LayoutPageKeys.layout_assembly_step_3_page) ),
+#                 # sg.Button("Abbrechen",enable_events=True, k=(KeyDefs.BTN_STOP_VELO_MODE, LayoutPageKeys.layout_assembly_step_3_page) ),
+#             ],
+#             [sg.Canvas(key=(KeyDefs.CANVAS_GRAPH_PLOTTING, LayoutPageKeys.layout_assembly_step_3_page), )],
+#             [sg.Text("", font=font_normal, key=(KeyDefs.TEXT_MIN_MAX_CURRENT_VALUES, LayoutPageKeys.layout_assembly_step_3_page))]
+# ])
 
-    ],
-]
+#     ],
+# ]
 
 
 
@@ -139,21 +138,21 @@ pages_config = [
         assembly_step = AssemblyStep.step_1_no_flexring,
         ),
 
-    dict(
-        headline="Schritt 2: Getriebe mit Flexring & Lagerring testen",
-        layout=layout_assembly_step_2,
-        layout_key=LayoutPageKeys.layout_assembly_step_2_page,
-        visible=False,
-        assembly_step = AssemblyStep.step_2_with_flexring, 
-        ),
+    # dict(
+    #     headline="Schritt 2: Getriebe mit Flexring & Lagerring testen",
+    #     layout=layout_assembly_step_2,
+    #     layout_key=LayoutPageKeys.layout_assembly_step_2_page,
+    #     visible=False,
+    #     assembly_step = AssemblyStep.step_2_with_flexring, 
+    #     ),
     
-    dict(
-        headline="Schritt 3: Getriebe mit Abtrieb testen",
-        layout=layout_assembly_step_3,
-        layout_key=LayoutPageKeys.layout_assembly_step_3_page,
-        visible=False,
-        assembly_step = AssemblyStep.step_3_gearoutput_not_screwed, 
-        ),
+    # dict(
+    #     headline="Schritt 3: Getriebe mit Abtrieb testen",
+    #     layout=layout_assembly_step_3,
+    #     layout_key=LayoutPageKeys.layout_assembly_step_3_page,
+    #     visible=False,
+    #     assembly_step = AssemblyStep.step_3_gearoutput_not_screwed, 
+    #     ),
 ]
 
 
@@ -212,7 +211,6 @@ main_layout = [
     [sg.HorizontalSeparator(pad=(5,5,5,5,))],
 
     *render_sub_layouts(),
-
 ]
 
 
