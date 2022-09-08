@@ -58,6 +58,7 @@ def function_prints(f):
 
 @function_prints
 def set_element_state(new_state:ElementVisibilityState):
+    logger.info(f"new State = {new_state}")
     if new_state not in ELEMENT_VISIBILITY_MAP:
         logger.error("ERROR: State is not part of ELEMENT_VISIBILITy_MAP")
         raise Exception("ERROR: State is not part of ELEMENT_VISIBILITy_MAP")
@@ -73,6 +74,10 @@ def set_element_state(new_state:ElementVisibilityState):
 ###################
 ### BUTTON CLICKED:
 ###################
+
+@function_prints
+def btn_close_improvement_window(*args):
+    ...
 
 @function_prints
 def close_window():
@@ -109,16 +114,14 @@ def btn_show_next_image(*args):
     elif current_image_index == 2:
         img_update("cable_connected.png")
     elif current_image_index == 3:
-        col = window[Key.COL_IMAGE_DESCRIPTION]
-
-        window[Key.COL_IMAGE_DESCRIPTION].update(visible=False)
-        return improvement_process_finished()
+        set_element_state(ElementVisibilityState.step_2_improvement_steps_done)
+        return improvement_process_steps_done()
     current_image_index += 1
 
 
 
 @function_prints
-def improvement_process_finished():
+def improvement_process_steps_done():
     ...
     try:
         controller.connect()
@@ -135,31 +138,36 @@ def improvement_process_finished():
 ### START REPEATING MEASUREMENT
 ###############################
 @function_prints
-def start_repeat_measurement(imp_instance:ImprovementInstance, ):
-    logger.debug(f"start_repeat_measurement() | imp_instance: {imp_instance}")
-    window[Key.COL_CANVAS].update(visible=True)
+def btn_start_measurement(imp_instance:ImprovementInstance, *args):
+    # logger.info(args)
+    set_element_state(ElementVisibilityState.step_3_doing_measure)
     start_measurement(controller, AssemblyStep.step_1_no_flexring, measurement_finished, measurement_aborted_due_to_error, plotter)
+
 
 @function_prints
 def measurement_finished(m:Measurement):
-    logger.debug(f"measurement_finished() | measurement: {m} | failure={fail_instance.failure}")
     data_controller.update_improvement_measurement_relation(m, imp_instance)    
-    
+   
+    # TODO: Sollte nicht unbedingt von der vorherigen Messung abhängig sein sondern generell Strom messen?? Evt. überdenken
+   
     if fail_instance.failure.failure_type == FailureType.overcurrent:
         passed = is_measurement_ok(m)
-        if passed == True:
-            window["-result-"].update("green")
-            data_controller.set_success_status(imp_instance, True)
-        else:
-            window["-result-"].update("red")
-            data_controller.set_success_status(imp_instance, False)
+        set_element_state(ElementVisibilityState.step_4_finished_measure)
         
-        window[Key.BTN_CLOSE_IMPROVEMENT_WINDOW].update(visible=True)
+        if passed == True:
+            data_controller.set_success_status(imp_instance, True)
+            window[Key.TEXT_MEASUREMENT_RESULT].update(f"Messung erfolgreich: Max. current is {m.max_current}", text_color=sg.GREENS[3])
+            window[Key.BTN_CLOSE_IMPROVEMENT_WINDOW].update(visible=True, color=sg.GREENS[3])
+        else:
+            data_controller.set_success_status(imp_instance, False)
+            window[Key.BTN_CLOSE_IMPROVEMENT_WINDOW].update(visible=True, color="red")
+            window[Key.TEXT_MEASUREMENT_RESULT].update(f"Messung nicht erfolgreich: Max. current is {m.max_current}", text_color="red")
+        
     
     else:
+        set_element_state(ElementVisibilityState.step_5_finished_measure_user_detects_additional_errors)
         logger.info(f"Failure is not measurable; Therefore personal feedback necessary")
-        window[Key.BTN_FAILURE_FIXED].update(visible=True)
-        window[Key.BTN_FAILURE_STILL_EXISTS].update(visible=True)
+       
 
 @function_prints
 def measurement_aborted_due_to_error(error_code, *args, **kwargs):
@@ -232,7 +240,7 @@ def improvement_window(c:RebelAxisController, t:Transmission, selected_failure:F
     plotter = GraphPlotter(window[Key.CANVAS])
     plotter.plot_data([],[])
 
-    set_element_state(ElementVisibilityState.step_1_start_improvement)
+    set_element_state(ElementVisibilityState.step_1_default_screen)
 
     window.maximize()
     
@@ -258,16 +266,16 @@ def improvement_window(c:RebelAxisController, t:Transmission, selected_failure:F
 
 
 key_function_map = {
+    Key.BTN_START_IMPROVEMENT_METHOD: lambda *args: btn_start_improvement(),
+    Key.BTN_NEXT_IMPROVEMENT_STEP: btn_show_next_image,
+    
     Key.BTN_CANCEL_IMPROVEMENT: btn_cancel_improvement, 
-    Key.BTN_START_MEASUREMENT: btn_start_improvement,
+    Key.BTN_START_MEASUREMENT: btn_start_measurement,
 
-
-    Key.FINISHED_MEASUREMENT: measurement_finished,
+    Key.BTN_CLOSE_IMPROVEMENT_WINDOW: lambda *args: btn_close_improvement_window(),
     Key.BTN_FAILURE_STILL_EXISTS: lambda *args: user_selected_failure_still_exists(),
     Key.BTN_FAILURE_FIXED: lambda *args: user_selected_failure_is_fixed(),
-    # Key.BTN_CLOSE_IMPROVEMENT_WINDOW: lambda *args: btn_close_window(),
-    Key.BTN_START_IMPROVEMENT_METHOD: lambda *args: btn_start_improvement(),
-    Key.BTN_SHOW_NEXT_IMAGE: btn_show_next_image,
 
+    Key.FINISHED_MEASUREMENT: measurement_finished,
 }
 
