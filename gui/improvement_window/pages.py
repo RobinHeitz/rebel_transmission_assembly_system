@@ -16,13 +16,9 @@ def generate_improvement_window_layout(title, description):
             
             ], expand_x=True, expand_y=False, vertical_alignment="top",background_color=get_color_arg())
         
-    # c_image = sg.Col([
-    #     [get_image("gui/assembly_pictures/step1.png", size=(300,300))],
-    #     ], vertical_alignment="top", background_color=get_color_arg())
-
     c_canvas = sg.Col([
         [sg.Canvas(key=Key.CANVAS, size=(50,50))],
-        [sg.T("", k=Key.TEXT_MEASUREMENT_RESULT)],
+        [sg.T("", k=Key.TEXT_MEASUREMENT_RESULT, font=font_normal)],
     ], expand_x=True, expand_y=True, visible=False, k=Key.COL_CANVAS, element_justification="center")
 
     c_image_assembly_steps = sg.Col([

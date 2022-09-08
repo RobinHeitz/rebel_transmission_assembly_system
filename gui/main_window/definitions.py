@@ -91,6 +91,9 @@ class ElementVisibilityStates(enum.Enum):
     assembly_state_4_measure_finished_user_detects_additional_error = 6
     assembly_state_5_measure_finished_failure_automatically_detected = 7
 
+    improvement_was_success = 8
+    improvement_was_no_success = 9
+
 
 
 _nav_disabled =  {
@@ -177,6 +180,16 @@ ELEMENT_VISIBILITY_MAP = {
         KeyDefs.LISTBOX_POSSIBLE_IMPROVEMENTS: {"visible": True},
         KeyDefs.TEXT_HIGH_CURRENT_FAILURE_DETECTED: {"visible":True},
         KeyDefs.TEXT_MIN_MAX_CURRENT_VALUES: {"visible":True},
+    },
+    
+    ElementVisibilityStates.improvement_was_success: {
+        **_nav_enabled, 
+        KeyDefs.FRAME_FAILURE_DETECTION: {"visible": False},
+    },
+
+    ElementVisibilityStates.improvement_was_no_success: {
+        **_nav_disabled, 
+        KeyDefs.COMBO_FAILURE_SELECT: {"visible": False},
     },
     
 

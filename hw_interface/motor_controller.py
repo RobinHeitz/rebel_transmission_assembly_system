@@ -91,6 +91,7 @@ class RebelAxisController:
             #     self.start_movement_thread()
         
         if status == PCAN_ERROR_ILLHW:
+            self.disconnect()
             raise ExceptionPcanIllHardware()
         logger.info("Connection was succesfull.")
 
@@ -98,7 +99,8 @@ class RebelAxisController:
     @function_prints
     def disconnect(self):
         """Gets called for user beeing able to unplug adapter and make changes to gear assembly."""
-        self.thread_read_msg.running = False
+        if hasattr(self, "thread_read_msg"):
+            self.thread_read_msg.running = False
         self.pcan.Uninitialize(self.channel)
         self.can_id = -1
         self.motor_enabled = False

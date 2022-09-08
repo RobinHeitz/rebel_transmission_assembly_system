@@ -75,7 +75,6 @@ def radio_size_is_clicked(event, values, size:TransmissionSize):
     if controller.connected:
         set_element_state(ElementVisibilityStates.config_state_2_can_go_next)
     
-    # update_next_page_btn(next_page_is_allowed=True)
     transmission_config.set_size(size)
     if size == TransmissionSize.size_80:
         window[KeyDefs.CHECKBOX_HAS_BRAKE].update(disabled=True)
@@ -100,6 +99,15 @@ def checkbox_has_encoder_clicked(event, values):
 def btn_connect_can(*args):
     """Btn 'Connect can' is clicked."""
     logger.debug(f"Controller: {controller} / can-id: {controller.can_id}")
+
+    try:
+        controller.connect()
+    except ExceptionPcanIllHardware as e:
+        logger.error(e)
+        logger.error(traceback.format_exc())
+    except ExceptionPcanNoCanIdFound as e:
+        logger.error(e)
+        logger.error(traceback.format_exc())
     
     if controller.can_id != -1:
         logger.debug(f"CAN ID has been found: {hex(controller.can_id)}")
@@ -261,7 +269,6 @@ def predict_failure(measurement: Measurement):
             show_improvements(failures[0])
             # show_combo_failure_selection()
         elif answer == "No":
-            # update_next_page_btn(True)
             set_element_state(ElementVisibilityStates.assembly_state_3_measure_finished_no_failure_detected)
         else:
             raise NotImplementedError("This Button Label is not checked against (yet)!")
@@ -321,20 +328,22 @@ def btn_improvement_selection_clicked(event, values):
     imp_instance = session.query(ImprovementInstance).get(imp_instance.id)
 
     if imp_instance.successful == True:
-        window[KeyDefs.FRAME_FAILURE_DETECTION].update(visible=False)
-        update_next_page_btn(True)
+        set_element_state(ElementVisibilityStates.improvement_was_success)
+        # window[KeyDefs.FRAME_FAILURE_DETECTION].update(visible=False)
+        # update_next_page_btn(True)
     else:
+        set_element_state(ElementVisibilityStates.improvement_was_no_success)
         show_improvements(selected_failure)
-        change_combo_failures_visibility(False)
+        # change_combo_failures_visibility(False)
 
     
 
-@function_prints
-def _hide_failure_and_improvement_items():
-    window[KeyDefs.FRAME_FAILURE_DETECTION].update(visible=False)
-    window[KeyDefs.TEXT_HIGH_CURRENT_FAILURE_DETECTED].update(visible=False)
-    # window[(KeyDefs.TEXT_MIN_MAX_CURRENT_VALUES, LayoutPageKeys.layout_assembly_step_1_page)].update(visible=False)
-    window[KeyDefs.TEXT_MIN_MAX_CURRENT_VALUES].update(visible=False)
+# @function_prints
+# def _hide_failure_and_improvement_items():
+#     window[KeyDefs.FRAME_FAILURE_DETECTION].update(visible=False)
+#     window[KeyDefs.TEXT_HIGH_CURRENT_FAILURE_DETECTED].update(visible=False)
+#     # window[(KeyDefs.TEXT_MIN_MAX_CURRENT_VALUES, LayoutPageKeys.layout_assembly_step_1_page)].update(visible=False)
+#     window[KeyDefs.TEXT_MIN_MAX_CURRENT_VALUES].update(visible=False)
     
 
 ######################################################
@@ -463,7 +472,7 @@ if __name__ == "__main__":
     except ExceptionPcanIllHardware as e:
         logger.warning(e)
         window[KeyDefs.TEXT_CAN_CONNECTED_STATUS].update(str(e))
-        window[KeyDefs.BTN_CONNECT_CAN].update(disabled=True)
+        window[KeyDefs.BTN_CONNECT_CAN].update("Verbindung herstellen")
     
     except ExceptionPcanNoCanIdFound as e:
         window[KeyDefs.TEXT_CAN_CONNECTED_STATUS].update(str(e))
@@ -478,13 +487,6 @@ if __name__ == "__main__":
 
     plotter = GraphPlotter(window[KeyDefs.CANVAS_GRAPH_PLOTTING])
     plotter.plot_data([],[])
-
-    # plotters = {
-    #     l:GraphPlotter(window[(KeyDefs.CANVAS_GRAPH_PLOTTING, l)]) for l in get_page_keys()[1:]
-    # }
-
-    # for p in plotters.values():
-    #     p.plot_data([],[])
 
     window.maximize()
 
@@ -513,10 +515,6 @@ if __name__ == "__main__":
         KeyDefs.CHECKBOX_HAS_ENCODER: (lambda event, values: transmission_config.set_encoder_flag(values[event]), dict()),
         KeyDefs.CHECKBOX_HAS_BRAKE: (lambda event, values: transmission_config.set_brake_flag(values[event]), dict()),
         
-        # (KeyDefs.BTN_START_VELO_MODE, LayoutPageKeys.layout_assembly_step_1_page): (start_velocity_mode, dict(controller=controller)),
-        # (KeyDefs.BTN_START_VELO_MODE, LayoutPageKeys.layout_assembly_step_2_page): (start_velocity_mode, dict(controller=controller)),
-        # (KeyDefs.BTN_START_VELO_MODE, LayoutPageKeys.layout_assembly_step_3_page): (start_velocity_mode, dict(controller=controller)),
-
         KeyDefs.BTN_START_VELO_MODE: (start_velocity_mode, dict(controller=controller)),
         
 

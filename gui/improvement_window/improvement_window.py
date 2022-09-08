@@ -91,8 +91,13 @@ def btn_cancel_improvement(*args):
 @function_prints
 def btn_start_improvement(*args):
     """Invoked by button click, calls motor_controller's disconnect-method."""
-    window[Key.BTN_START_IMPROVEMENT_METHOD].update(visible=False)
-    window[Key.COL_IMAGE_DESCRIPTION].update(visible=True)
+    set_element_state(ElementVisibilityState.startig_improvement_steps)
+
+    # TODO: Make this via changes of state
+    # window[Key.BTN_START_IMPROVEMENT_METHOD].update(visible=False)
+    # window[Key.COL_IMAGE_DESCRIPTION].update(visible=True)
+    global current_image_index
+    current_image_index = 1
     controller.disconnect()
     
 
@@ -103,7 +108,7 @@ def btn_show_next_image(*args):
     
     def img_update(img_name):
         path = f"gui/assembly_pictures/{img_name}"
-        s = (300,300)
+        s = (350,350)
         img = image_resize.resize_bin_output(path, size=s)
         window[Key.IMG_IMPROVEMENT].update(img, size=s)
     
@@ -114,7 +119,7 @@ def btn_show_next_image(*args):
     elif current_image_index == 2:
         img_update("cable_connected.png")
     elif current_image_index == 3:
-        set_element_state(ElementVisibilityState.step_2_improvement_steps_done)
+        set_element_state(ElementVisibilityState.improvement_steps_done)
         return improvement_process_steps_done()
     current_image_index += 1
 
@@ -140,7 +145,7 @@ def improvement_process_steps_done():
 @function_prints
 def btn_start_measurement(imp_instance:ImprovementInstance, *args):
     # logger.info(args)
-    set_element_state(ElementVisibilityState.step_3_doing_measure)
+    set_element_state(ElementVisibilityState.doing_measurement)
     start_measurement(controller, AssemblyStep.step_1_no_flexring, measurement_finished, measurement_aborted_due_to_error, plotter)
 
 
@@ -152,12 +157,12 @@ def measurement_finished(m:Measurement):
    
     if fail_instance.failure.failure_type == FailureType.overcurrent:
         passed = is_measurement_ok(m)
-        set_element_state(ElementVisibilityState.step_4_finished_measure)
+        set_element_state(ElementVisibilityState.finished_measurement)
         
         if passed == True:
             data_controller.set_success_status(imp_instance, True)
             window[Key.TEXT_MEASUREMENT_RESULT].update(f"Messung erfolgreich: Max. current is {m.max_current}", text_color=sg.GREENS[3])
-            window[Key.BTN_CLOSE_IMPROVEMENT_WINDOW].update(visible=True, color=sg.GREENS[3])
+            window[Key.BTN_CLOSE_IMPROVEMENT_WINDOW].update(visible=True, button_color=sg.GREENS[3])
         else:
             data_controller.set_success_status(imp_instance, False)
             window[Key.BTN_CLOSE_IMPROVEMENT_WINDOW].update(visible=True, color="red")
@@ -165,7 +170,7 @@ def measurement_finished(m:Measurement):
         
     
     else:
-        set_element_state(ElementVisibilityState.step_5_finished_measure_user_detects_additional_errors)
+        set_element_state(ElementVisibilityState.measurement_user_detects_additional_errors)
         logger.info(f"Failure is not measurable; Therefore personal feedback necessary")
        
 
@@ -240,7 +245,7 @@ def improvement_window(c:RebelAxisController, t:Transmission, selected_failure:F
     plotter = GraphPlotter(window[Key.CANVAS])
     plotter.plot_data([],[])
 
-    set_element_state(ElementVisibilityState.step_1_default_screen)
+    set_element_state(ElementVisibilityState.starting_default_screen)
 
     window.maximize()
     
