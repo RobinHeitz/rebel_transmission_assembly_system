@@ -60,7 +60,6 @@ def function_prints(f):
 def set_element_state(new_state:ElementVisibilityState):
     logger.info(f"new State = {new_state}")
     if new_state not in ELEMENT_VISIBILITY_MAP:
-        logger.error("ERROR: State is not part of ELEMENT_VISIBILITy_MAP")
         raise Exception("ERROR: State is not part of ELEMENT_VISIBILITy_MAP")
     
     config = ELEMENT_VISIBILITY_MAP.get(new_state)
@@ -91,42 +90,43 @@ def btn_cancel_improvement(*args):
 @function_prints
 def btn_start_improvement(*args):
     """Invoked by button click, calls motor_controller's disconnect-method."""
-    set_element_state(ElementVisibilityState.startig_improvement_steps)
-
-    # TODO: Make this via changes of state
-    # window[Key.BTN_START_IMPROVEMENT_METHOD].update(visible=False)
-    # window[Key.COL_IMAGE_DESCRIPTION].update(visible=True)
-    global current_image_index
-    current_image_index = 1
-    controller.disconnect()
     
+    cable_disconnect = improvement.cable_must_disconnected
+    if cable_disconnect:
+        global current_image_index
+        current_image_index = 1
+        controller.disconnect()
+        set_element_state(ElementVisibilityState.doing_improvement_steps)
+    else:
+        img_update(improvement.image_filename)
+        set_element_state(ElementVisibilityState.doing_last_improvement_step)
 
 
 @function_prints
 def btn_show_next_image(*args):
     global current_image_index
-    
-    def img_update(img_name):
-        path = f"gui/assembly_pictures/{img_name}"
-        s = (350,350)
-        img = image_resize.resize_bin_output(path, size=s)
-        window[Key.IMG_IMPROVEMENT].update(img, size=s)
-    
 
-    if current_image_index == 1:
+    current_image_index += 1
+    if current_image_index == 2:
         img_update(improvement.image_filename)
 
-    elif current_image_index == 2:
-        img_update("cable_connected.png")
     elif current_image_index == 3:
-        set_element_state(ElementVisibilityState.improvement_steps_done)
-        return improvement_process_steps_done()
-    current_image_index += 1
-
+        img_update("cable_connected.png")
+        set_element_state(ElementVisibilityState.doing_last_improvement_step)
+    
 
 
 @function_prints
-def improvement_process_steps_done():
+def img_update(img_name):
+    path = f"gui/assembly_pictures/{img_name}"
+    s = (350,350)
+    img = image_resize.resize_bin_output(path, size=s)
+    window[Key.IMG_IMPROVEMENT].update(img, size=s)
+    
+
+
+@function_prints
+def improvement_process_steps_done(*args):
     ...
     try:
         controller.connect()
@@ -134,6 +134,8 @@ def improvement_process_steps_done():
         import traceback
         logger.warning("Received exception: CAN-ID could not be found.")
         logger.warning(traceback.format_exc())
+    
+    set_element_state(ElementVisibilityState.improvement_steps_done)
 
 
 
@@ -275,7 +277,10 @@ def improvement_window(c:RebelAxisController, t:Transmission, selected_failure:F
 key_function_map = {
     Key.BTN_START_IMPROVEMENT_METHOD: lambda *args: btn_start_improvement(),
     Key.BTN_NEXT_IMPROVEMENT_STEP: btn_show_next_image,
-    
+    # Key.BTN_FINISHED_IMPROVEMENT_STEPS: lambda *args: set_element_state(ElementVisibilityState.improvement_steps_done),
+    Key.BTN_FINISHED_IMPROVEMENT_STEPS: improvement_process_steps_done,
+
+
     Key.BTN_CANCEL_IMPROVEMENT: btn_cancel_improvement, 
     Key.BTN_START_MEASUREMENT: btn_start_measurement,
 

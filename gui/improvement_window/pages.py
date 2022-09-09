@@ -25,7 +25,7 @@ def generate_improvement_window_layout(title, description):
         [
             get_image("gui/assembly_pictures/cable_not_connected.png", size=(350,350), k=Key.IMG_IMPROVEMENT),
         ],
-        [sg.B("Weiter", k=Key.BTN_NEXT_IMPROVEMENT_STEP, size=(20,2),font=font_normal)],
+        [sg.B("Weiter", k=Key.BTN_NEXT_IMPROVEMENT_STEP, size=(20,2),font=font_normal), sg.B("Behebungsmaßnahme durchgeführt", k=Key.BTN_FINISHED_IMPROVEMENT_STEPS, size=(20,2), font=font_normal, visible=False)],
 
     ], visible=False, k=Key.COL_IMAGE_DESCRIPTION, justification="center", element_justification="center", )
 
