@@ -266,7 +266,7 @@ def predict_failure(measurement: Measurement):
             failures = data_controller.sorted_failures_by_incidents(current_assembly_step)
             window[KeyDefs.COMBO_FAILURE_SELECT].update(values=failures, value=failures[0])
             show_improvements(failures[0])
-        elif answer == "No":
+        elif answer == "No" or answer == None:
             set_element_state(ElementVisibilityStates.assembly_state_3_measure_finished_no_failure_detected)
         else:
             raise NotImplementedError("This Button Label is not checked against (yet)!")
@@ -311,9 +311,9 @@ def btn_improvement_selection_clicked(event, values):
     imp_instance = session.query(ImprovementInstance).get(imp_instance.id)
 
     if imp_instance.successful == True:
-        set_element_state(ElementVisibilityStates.improvement_was_success)
+        set_element_state(ElementVisibilityStates.improvement_success)
     else:
-        set_element_state(ElementVisibilityStates.improvement_was_no_success)
+        set_element_state(ElementVisibilityStates.improvement_no_success)
         show_improvements(selected_failure)
 
     
@@ -357,6 +357,7 @@ def _update_assembly_steps_data():
     image_path = get_assembly_step_data(active_layout, current_assembly_step)
     data = image_resize.resize_bin_output(image_path, (300,300))
     window[KeyDefs.IMAGE_ASSEMBLY].update(data, size=(300,300))
+    plotter.plot_data([],[])
 
 @function_prints
 def _nav_previous_page(event, values):
