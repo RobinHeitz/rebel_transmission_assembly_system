@@ -1,10 +1,8 @@
 import PySimpleGUI as sg
 import traceback
 
-from .pages import layout
-from .definitions import AddFailureKeys as Keys
-
-
+from gui.add_failure.pages import layout
+from gui.add_failure.definitions import AddFailureKeys as Keys
 
 
 from logs.setup_logger import setup_logger
@@ -43,7 +41,8 @@ def add_failure_window():
     ...
 
     window = sg.Window(f"Fehler hinzufügen", layout, modal=True, size=(500,600), finalize=True, resizable=False, no_titlebar=True)
-
+    # sg.main_get_debug_data()
+    
     while True:
         event, values = window.read()
         if event == "Exit" or event == sg.WIN_CLOSED:
@@ -57,3 +56,7 @@ def add_failure_window():
             except:
                 logger.error(f"Error while executing function from key-function-dict: Event={event}")
                 logger.error(traceback.format_exc())
+
+
+if __name__ == "__main__":
+    add_failure_window()

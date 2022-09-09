@@ -129,7 +129,11 @@ def get_assembly_step_data(layout:LayoutTypes, assembly_step:AssemblyStep):
 ############################################
 # Main Layout with navigatin bar at the top
 ############################################
-main_layout = [
+
+
+
+
+main_layout2 = [
 
     [
         sg.Column(expand_x=True, element_justification="center",layout=[
@@ -153,4 +157,15 @@ main_layout = [
         sg.B("Fehler hinzufügen", size=(30,1), font=font_normal, button_color=("black",sg.YELLOWS[0]), k=KeyDefs.BTN_ADD_FAILURE ),
         sg.B("Behebungsmaßnahmen hinzufügen",size=(30,1), font=font_normal, button_color=("black", sg.YELLOWS[0]), k=KeyDefs.BTN_ADD_IMPROVEMENT)]
 
+]
+
+
+main_layout = [
+    [
+
+        sg.Column(layout=[
+            *main_layout2
+        ], expand_x=True, expand_y=True, k="-K-")
+
+    ],
 ]

@@ -385,6 +385,11 @@ def _nav_previous_page(event, values):
 @function_prints
 def btn_add_failure(*args):
 
+    # window["-K-"].update(background_color = "black")
+
+    # window.alpha_channel(0.4)
+
+    window.set_alpha(0.4)
     add_failure.add_failure_window()
 
     ...
@@ -515,7 +520,11 @@ if __name__ == "__main__":
     }
     # Event loop
     while True:
-        event, values = window.read()
+        try:
+            event, values = window.read()
+        except KeyboardInterrupt:
+            break
+    
 
         if event in (sg.WIN_CLOSED, 'Exit'):
             break
@@ -526,8 +535,6 @@ if __name__ == "__main__":
                 func = key_function_map.get(event)
                 func(event, values)
             
-            except KeyboardInterrupt:
-                break
             
             except TypeError as e:
                 logger.error(f"WARNING: Missing event in 'key_functin_map': Event = {event} // values = {values.get(event)}")
