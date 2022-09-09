@@ -70,6 +70,8 @@ class KeyDefs(enum.Enum):
     CANVAS_GRAPH_PLOTTING = "-CANVAS_GRAPH_PLOTTING-"
     TEXT_MIN_MAX_CURRENT_VALUES = "-TEXT_MIN_MAX_CURRENT_VALUES-"
 
+    BTN_REJECT_TRANSMISSION_NO_IMPROVEMENT = "-BTN_REJECT_TRANSMISSION_NO_IMPROVEMENT-"
+
 
 
 class ElementVisibilityStates(enum.Enum):
@@ -85,6 +87,7 @@ class ElementVisibilityStates(enum.Enum):
 
     improvement_success = 8
     improvement_no_success = 9
+    no_more_improvements_reject_transmission = 10
 
 
 
@@ -182,6 +185,14 @@ ELEMENT_VISIBILITY_MAP = {
     ElementVisibilityStates.improvement_no_success: {
         **_nav_disabled, 
         KeyDefs.COMBO_FAILURE_SELECT: {"visible": False},
+    },
+    
+    ElementVisibilityStates.no_more_improvements_reject_transmission: {
+        KeyDefs.BTN_NAV_NEXT_PAGE: {"visible": False},
+        KeyDefs.BTN_NAV_PREVIOUS_PAGE: {"visible": False},
+
+        KeyDefs.FRAME_FAILURE_DETECTION: {"visible": False},
+        KeyDefs.BTN_REJECT_TRANSMISSION_NO_IMPROVEMENT: {"visible": True},
     },
 }
 

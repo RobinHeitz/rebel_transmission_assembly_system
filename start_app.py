@@ -50,13 +50,26 @@ def get_condition_for_next_page():
     return condition_functions_dictionary[(active_layout, current_assembly_step)]
 
 
+
+################################################
+### CLOSING/ ABORTION OF PROGRAMM OR PARTS OF IT
+################################################
+
+
+@function_prints
+def btn_reject_transmission_no_improvements_left(*args):
+    """When a specific failure selected, there might be no more improvements left. Transmission is regarded as rejected or n.i.o output."""
+    close_application()
+
+
+
+
+
 @function_prints
 def close_application():
     controller.stop_movement()
     controller.shut_down()
     window.close()
-
-
 
 
 ###################################################################
@@ -139,9 +152,9 @@ def search_for_can_id_thread(window:sg.Window, controller:RebelAxisController):
 
 
 
-#############################
-### BUTTON CHECK ERROR CODES:
-#############################
+######################
+### CHECK ERROR CODES:
+######################
 
 @function_prints
 def is_estop_error(*args):
@@ -158,6 +171,7 @@ def is_estop_error(*args):
         sg.popup("24V Versorgung fehlt","Dem Controller fehlt die 24V-Versorgung. Bitte das Kabel überprüfen.",)
         return True
     return False
+
 
 
 
@@ -189,7 +203,7 @@ def check_moveability(event, values):
 ###############
 
 @function_prints
-def start_velocity_mode(event, values, controller:RebelAxisController):
+def start_velocity_mode(event, values, *args):
     """Invoked by Btn click: Start Measurement"""
     set_element_state(ElementVisibilityStates.assembly_state_2_is_doing_measure)
     start_measurement.start_measurement(controller, current_assembly_step, measurement_finished_callback,measurement_error_callback ,plotter)
@@ -292,7 +306,7 @@ def show_improvements(f:Failure, *args, **kwargs):
     else:
         window[KeyDefs.FRAME_FAILURE_DETECTION].update(visible=False)
         sg.popup("Keine weitere Behebungsmaßnahme","Es ist keine weitere Fehlerbehebungsmaßnahme hinterlegt. Wenn du eine weiter findest, füge sie bitte hinzu. Solltest du den Fehler nicht finden können, ist das Getriebe Ausschuss.")
-
+        set_element_state(ElementVisibilityStates.no_more_improvements_reject_transmission)
 
 @function_prints
 def btn_improvement_selection_clicked(event, values):
@@ -442,7 +456,6 @@ if __name__ == "__main__":
         (LayoutTypes.assembly, AssemblyStep.step_1_no_flexring):condition_leave_assembly_step_1,
         (LayoutTypes.assembly, AssemblyStep.step_2_with_flexring):condition_leave_assembly_step_2,
         (LayoutTypes.assembly, AssemblyStep.step_3_gearoutput_not_screwed):condition_leave_assembly_step_3,
-        # (LayoutTypes.assembly, AssemblyStep.step_4_gearoutput_screwed):condition_leave_assembly_step_4,
 
     }
 
@@ -464,13 +477,15 @@ if __name__ == "__main__":
         KeyDefs.CHECKBOX_HAS_ENCODER: (lambda event, values: transmission_config.set_encoder_flag(values[event]), dict()),
         KeyDefs.CHECKBOX_HAS_BRAKE: (lambda event, values: transmission_config.set_brake_flag(values[event]), dict()),
         
-        KeyDefs.BTN_START_VELO_MODE: (start_velocity_mode, dict(controller=controller)),
+        KeyDefs.BTN_START_VELO_MODE: (start_velocity_mode, dict()),
         
 
         KeyDefs.COMBO_FAILURE_SELECT: (combo_value_changes, dict()),
         KeyDefs.BTN_SELECT_IMPROVEMENT: (btn_improvement_selection_clicked, dict()),
 
         KeyDefs.EVENT_CALLBACK_FUNCTION_MAIN_THREAD : ( lambda event, values: invoked_callback_in_main_thread(event, values), dict()),
+
+        KeyDefs.BTN_REJECT_TRANSMISSION_NO_IMPROVEMENT : (btn_reject_transmission_no_improvements_left, dict()),
 
 
 

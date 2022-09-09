@@ -107,57 +107,12 @@ pages_config = {
         image="gui/assembly_pictures/step3.png",
     ),
 
-
-
 }
-
-
-
-# pages_config = [
-#     dict(
-#         headline="Getriebe Konfigurieren:", 
-#         layout=layout_config_page, 
-#         # layout_key=LayoutPageKeys.layout_config_page,
-#         visible=True,
-#         ),
-    
-#     dict(
-#         headline="Schritt 1: Getriebe ohne Flexring testen", 
-#         image="gui/assembly_pictures/step1.png",
-#         layout=layout_assembly_step_1, 
-#         # layout_key=LayoutPageKeys.layout_assembly_step_1_page,
-#         visible=False,
-#         assembly_step = AssemblyStep.step_1_no_flexring,
-#         ),
-
-#     dict(
-#         headline="Schritt 2: Getriebe mit Flexring & Lagerring testen",
-#         image="gui/assembly_pictures/step2.png",
-#         # layout=layout_assembly_step_2,
-#         # layout_key=LayoutPageKeys.layout_assembly_step_2_page,
-#         visible=False,
-#         assembly_step = AssemblyStep.step_2_with_flexring, 
-#         ),
-    
-#     dict(
-#         headline="Schritt 3: Getriebe mit Abtrieb testen",
-#         image="gui/assembly_pictures/step3.png",
-#         # layout=layout_assembly_step_3,
-#         # layout_key=LayoutPageKeys.layout_assembly_step_3_page,
-#         visible=False,
-#         assembly_step = AssemblyStep.step_3_gearoutput_not_screwed, 
-#         ),
-# ]
-
-
 
 
 #######################################################
 # HELPER Functions for returning data from pages_config
 #######################################################
-
-# def get_headline_for_index(index: int):
-#     return pages_config[index].get("headline", f"Es ist leider ein Fehler aufgetreten: Page-index = {index}")
 
 def get_headline(layout:LayoutTypes, assembly_step: AssemblyStep):
     conf = pages_config.get((layout, assembly_step))
@@ -169,25 +124,6 @@ def get_assembly_step_data(layout:LayoutTypes, assembly_step:AssemblyStep):
     ...
     conf = pages_config.get((layout, assembly_step))
     return conf.get("image")
-
-
-
-# def render_sub_layouts():
-#     """Returns a list with each sub-layout (also called page)."""
-#     return [
-#         [sg.pin(sg.Column(i.get("layout"), expand_x=True, expand_y=True, visible=i.get("visible"), key=i.get("layout_key")))] for i in pages_config
-#     ]
-
-# def get_page_keys():
-#     return [i.get("layout_key") for i in pages_config]
-
-# def get_page_key_for_index(index:int) -> LayoutPageKeys:
-#     return pages_config[index].get("layout_key")
-
-# def get_assembly_step_for_page_index(index:int) -> AssemblyStep:
-#     return pages_config[index].get("assembly_step")
-
-
 
 
 ############################################
@@ -202,6 +138,7 @@ main_layout = [
             sg.Push(),
             sg.Text("Getriebe konfigurieren:", key="-headline-", font=font_headline),
             sg.Push(),
+            sg.B("Getriebe ist ausschuss", key=KeyDefs.BTN_REJECT_TRANSMISSION_NO_IMPROVEMENT, visible=False, font=font_normal, size=(20,2), button_color="red"),
             sg.Button("Weiter", key=KeyDefs.BTN_NAV_NEXT_PAGE, enable_events=True,  font=font_normal, disabled=True),
             ],
         ]),
