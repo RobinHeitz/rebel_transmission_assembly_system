@@ -18,10 +18,10 @@ from current_limits import get_current_limit_for_assembly_step
 
 from gui.main_window.definitions import KeyDefs, ElementVisibilityStates, get_element_update_values, LayoutTypes
 from gui.main_window.definitions import TransmissionConfigHelper, TransmissionSize
-# from gui import can_connection_functions
 from gui.main_window.pages import get_headline, main_layout, get_assembly_step_data
-# from gui.main_window.pages import get_headline_for_index, get_page_keys, get_page_key_for_index,get_assembly_step_for_page_index
 from gui.plotting import GraphPlotter
+
+from gui.add_failure import add_failure
 
 import gui.improvement_window.improvement_window as improvement_window
 
@@ -384,6 +384,9 @@ def _nav_previous_page(event, values):
 
 @function_prints
 def btn_add_failure(*args):
+
+    add_failure.add_failure_window()
+
     ...
 
 @function_prints
