@@ -376,6 +376,24 @@ def _nav_previous_page(event, values):
     """Called when user clicks on "Previous"-Button. Manages hide/show of layouts etc."""
 
 
+
+
+##################################################
+### BTN Clicks for adding Failure/ Improvement ###
+##################################################
+
+@function_prints
+def btn_add_failure(*args):
+    ...
+
+@function_prints
+def btn_add_improvement(*args):
+    ...
+
+
+
+
+
 #################################
 ### CONDITIONS FOR NAVIGATION ###
 #################################
@@ -487,6 +505,8 @@ if __name__ == "__main__":
 
         KeyDefs.BTN_REJECT_TRANSMISSION_NO_IMPROVEMENT : btn_reject_transmission_no_improvements_left,
 
+        KeyDefs.BTN_ADD_FAILURE: btn_add_failure, 
+        KeyDefs.BTN_ADD_IMPROVEMENT: btn_add_improvement, 
 
 
     }

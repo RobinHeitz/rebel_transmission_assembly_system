@@ -72,6 +72,9 @@ class KeyDefs(enum.Enum):
 
     BTN_REJECT_TRANSMISSION_NO_IMPROVEMENT = "-BTN_REJECT_TRANSMISSION_NO_IMPROVEMENT-"
 
+    BTN_ADD_FAILURE = "-BTN_ADD_FAILURE-"
+    BTN_ADD_IMPROVEMENT = "-BTN_ADD_IMPROVEMENT-"
+
 
 
 class ElementVisibilityStates(enum.Enum):
@@ -89,6 +92,18 @@ class ElementVisibilityStates(enum.Enum):
     improvement_no_success = 9
     no_more_improvements_reject_transmission = 10
 
+
+
+
+_btn_add_failure_improvement_visible = {
+    KeyDefs.BTN_ADD_FAILURE: {"visible": True, "disabled": False},
+    KeyDefs.BTN_ADD_IMPROVEMENT: {"visible": True, "disabled": False},
+}
+
+_btn_add_failure_improvement_invisible = {
+    KeyDefs.BTN_ADD_FAILURE: {"visible": False, "disabled": True},
+    KeyDefs.BTN_ADD_IMPROVEMENT: {"visible": False, "disabled": True},
+}
 
 
 _nav_disabled =  {
@@ -114,10 +129,12 @@ _failure_frames_invisible = {
 ELEMENT_VISIBILITY_MAP = {
     ElementVisibilityStates.config_state_1_cannot_go_next : {
         **_nav_disabled,
+        **_btn_add_failure_improvement_invisible,
     },
 
     ElementVisibilityStates.config_state_2_can_go_next: {
         **_nav_enabled,
+        **_btn_add_failure_improvement_invisible,
     },
     
     ElementVisibilityStates.assembly_state_1_can_start_measure: {
@@ -127,6 +144,7 @@ ELEMENT_VISIBILITY_MAP = {
 
         **_failure_frames_invisible,
         KeyDefs.TEXT_MIN_MAX_CURRENT_VALUES: {"visible":False},
+        **_btn_add_failure_improvement_visible,
     },
     
     ElementVisibilityStates.assembly_state_2_is_doing_measure: {
@@ -135,6 +153,7 @@ ELEMENT_VISIBILITY_MAP = {
         KeyDefs.CANVAS_GRAPH_PLOTTING: {"visible": True},
         **_failure_frames_invisible,
         KeyDefs.TEXT_MIN_MAX_CURRENT_VALUES: {"visible":False},
+        **_btn_add_failure_improvement_visible,
     },
    
    
@@ -146,6 +165,7 @@ ELEMENT_VISIBILITY_MAP = {
 
         **_failure_frames_invisible,
         KeyDefs.TEXT_MIN_MAX_CURRENT_VALUES: {"visible":True},
+        **_btn_add_failure_improvement_visible,
     },
     
    
@@ -162,6 +182,7 @@ ELEMENT_VISIBILITY_MAP = {
 
         KeyDefs.TEXT_HIGH_CURRENT_FAILURE_DETECTED: {"visible":False},
         KeyDefs.TEXT_MIN_MAX_CURRENT_VALUES: {"visible":True},
+        **_btn_add_failure_improvement_visible,
     },
     
     ElementVisibilityStates.assembly_state_5_measure_finished_failure_automatically_detected: {
@@ -175,16 +196,19 @@ ELEMENT_VISIBILITY_MAP = {
         KeyDefs.LISTBOX_POSSIBLE_IMPROVEMENTS: {"visible": True},
         KeyDefs.TEXT_HIGH_CURRENT_FAILURE_DETECTED: {"visible":True},
         KeyDefs.TEXT_MIN_MAX_CURRENT_VALUES: {"visible":True},
+        **_btn_add_failure_improvement_visible,
     },
     
     ElementVisibilityStates.improvement_success: {
         **_nav_enabled, 
         KeyDefs.FRAME_FAILURE_DETECTION: {"visible": False},
+        **_btn_add_failure_improvement_visible,
     },
 
     ElementVisibilityStates.improvement_no_success: {
         **_nav_disabled, 
         KeyDefs.COMBO_FAILURE_SELECT: {"visible": False},
+        **_btn_add_failure_improvement_visible,
     },
     
     ElementVisibilityStates.no_more_improvements_reject_transmission: {
@@ -193,6 +217,7 @@ ELEMENT_VISIBILITY_MAP = {
 
         KeyDefs.FRAME_FAILURE_DETECTION: {"visible": False},
         KeyDefs.BTN_REJECT_TRANSMISSION_NO_IMPROVEMENT: {"visible": True},
+        **_btn_add_failure_improvement_visible,
     },
 }
 

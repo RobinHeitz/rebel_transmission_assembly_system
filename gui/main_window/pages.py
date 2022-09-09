@@ -147,5 +147,10 @@ main_layout = [
 
     [sg.pin(sg.Column(layout_config_page, expand_x=True, expand_y=True, visible=True, key=KeyDefs.LAYOUT_CONFIG))],
     [sg.pin(sg.Column(layout_assembly_step_1, expand_x=True, expand_y=True, visible=False, key=KeyDefs.LAYOUT_ASSEMBLY))],
-    
+    [sg.VPush()],
+    [
+        sg.Push() , 
+        sg.B("Fehler hinzufügen", size=(30,1), font=font_normal, button_color=("black",sg.YELLOWS[0]), k=KeyDefs.BTN_ADD_FAILURE ),
+        sg.B("Behebungsmaßnahmen hinzufügen",size=(30,1), font=font_normal, button_color=("black", sg.YELLOWS[0]), k=KeyDefs.BTN_ADD_IMPROVEMENT)]
+
 ]
