@@ -93,7 +93,7 @@ def invoked_callback_in_main_thread(event, values):
 ### TRANSMISSION CONFIG  ########
 #################################
 @function_prints
-def radio_size_is_clicked(event, values, size:TransmissionSize):
+def radio_size_is_clicked(size:TransmissionSize):
     if controller.connected:
         set_element_state(ElementVisibilityStates.config_state_2_can_go_next)
     
@@ -461,31 +461,31 @@ if __name__ == "__main__":
 
 
     key_function_map = {
-        KeyDefs.BTN_NAV_NEXT_PAGE: (_nav_next_page, dict()),
-        KeyDefs.BTN_NAV_PREVIOUS_PAGE: (_nav_previous_page, dict()),
+        KeyDefs.BTN_NAV_NEXT_PAGE: _nav_next_page,
+        KeyDefs.BTN_NAV_PREVIOUS_PAGE: _nav_previous_page,
 
-        KeyDefs.RADIO_BUTTON_80_CLICKED: (radio_size_is_clicked, dict(size=TransmissionSize.size_80)),
-        KeyDefs.RADIO_BUTTON_105_CLICKED:( radio_size_is_clicked, dict(size=TransmissionSize.size_105)),
+        KeyDefs.RADIO_BUTTON_80_CLICKED: lambda *args: radio_size_is_clicked(size=TransmissionSize.size_80),
+        KeyDefs.RADIO_BUTTON_105_CLICKED: lambda *args: radio_size_is_clicked(size=TransmissionSize.size_105),
 
-        KeyDefs.BTN_CONNECT_CAN: (btn_connect_can, dict()),
+        KeyDefs.BTN_CONNECT_CAN: btn_connect_can,
 
 
-        KeyDefs.BTN_SOFTWARE_UPDATE: (perform_software_update, dict()),
-        KeyDefs.SOFTWARE_UPDATE_FEEDBACK: (lambda event, values: window[KeyDefs.PROGRESSBAR_SOFTWARE_UPDATE].update_bar(values.get(event)), dict()),
-        KeyDefs.SOFTWARE_UPDATE_DONE : (lambda *args: window[KeyDefs.TEXT_SOFTWARE_UPDATE_STATUS_TEXT].update("Software upgedated") , dict()),
+        KeyDefs.BTN_SOFTWARE_UPDATE: perform_software_update,
+        KeyDefs.SOFTWARE_UPDATE_FEEDBACK: lambda event, values: window[KeyDefs.PROGRESSBAR_SOFTWARE_UPDATE].update_bar(values.get(event)),
+        KeyDefs.SOFTWARE_UPDATE_DONE : lambda *args: window[KeyDefs.TEXT_SOFTWARE_UPDATE_STATUS_TEXT].update("Software upgedated"),
 
-        KeyDefs.CHECKBOX_HAS_ENCODER: (lambda event, values: transmission_config.set_encoder_flag(values[event]), dict()),
-        KeyDefs.CHECKBOX_HAS_BRAKE: (lambda event, values: transmission_config.set_brake_flag(values[event]), dict()),
+        KeyDefs.CHECKBOX_HAS_ENCODER: lambda event, values: transmission_config.set_encoder_flag(values[event]),
+        KeyDefs.CHECKBOX_HAS_BRAKE: lambda event, values: transmission_config.set_brake_flag(values[event]),
         
-        KeyDefs.BTN_START_VELO_MODE: (start_velocity_mode, dict()),
+        KeyDefs.BTN_START_VELO_MODE: start_velocity_mode,
         
 
-        KeyDefs.COMBO_FAILURE_SELECT: (combo_value_changes, dict()),
-        KeyDefs.BTN_SELECT_IMPROVEMENT: (btn_improvement_selection_clicked, dict()),
+        KeyDefs.COMBO_FAILURE_SELECT: combo_value_changes,
+        KeyDefs.BTN_SELECT_IMPROVEMENT: btn_improvement_selection_clicked,
 
-        KeyDefs.EVENT_CALLBACK_FUNCTION_MAIN_THREAD : ( lambda event, values: invoked_callback_in_main_thread(event, values), dict()),
+        KeyDefs.EVENT_CALLBACK_FUNCTION_MAIN_THREAD : lambda event, values: invoked_callback_in_main_thread(event, values),
 
-        KeyDefs.BTN_REJECT_TRANSMISSION_NO_IMPROVEMENT : (btn_reject_transmission_no_improvements_left, dict()),
+        KeyDefs.BTN_REJECT_TRANSMISSION_NO_IMPROVEMENT : btn_reject_transmission_no_improvements_left,
 
 
 
@@ -500,8 +500,8 @@ if __name__ == "__main__":
             event()
         else:
             try:
-                func, args = key_function_map.get(event)
-                func(event, values, **args)
+                func = key_function_map.get(event)
+                func(event, values)
             
             except KeyboardInterrupt:
                 break
