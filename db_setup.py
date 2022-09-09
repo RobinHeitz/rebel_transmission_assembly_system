@@ -32,38 +32,51 @@ def create_assembly_step_1(session:Session):
     imp_1 = Improvement(
         title = "Motor tauschen", 
         assembly_step = assembly_step, 
-        description = "Zum Tauschend es Motors müssen die Schrauben auf der Unterseite gelöst werden. ACHTUNG: Der Bremskolben könnte dann herausfallen.")
+        description = "Zum Tauschend es Motors müssen die Schrauben auf der Unterseite gelöst werden. ACHTUNG: Der Bremskolben könnte dann herausfallen.",
+        cable_must_disconnected = True, 
+        )
     
     imp_2 = Improvement(
         title = "Encoder tauschen", 
         assembly_step = assembly_step,
-        description = "Encoder mit Halter von Welle ziehen und neuen mit der Montagehülse auf die Welle pressen.")
+        description = "Encoder mit Halter von Welle ziehen und neuen mit der Montagehülse auf die Welle pressen.",
+        cable_must_disconnected = True, 
+        )
     
     imp_3 = Improvement(
         title = "Kabel verbinden/ tauschen", 
         assembly_step = assembly_step,
-        description = "Stecker am Encoder lösen, Kabel wechseln und einstecken. ACHTUNG: Auf Kabelführung achten, bei der das Kabel nicht gequetscht wird!")
+        description = "Stecker am Encoder lösen, Kabel wechseln und einstecken. ACHTUNG: Auf Kabelführung achten, bei der das Kabel nicht gequetscht wird!",
+        cable_must_disconnected = True, 
+        )
     
     imp_4 = Improvement(
         title = "Paramter auf Controller updaten", 
         assembly_step = assembly_step,
-        description = "Mithilfe von ModuleControl die Parameter updaten!")
+        description = "Mithilfe von ModuleControl die Parameter updaten!",
+        cable_must_disconnected = False, 
+        )
     
     imp_5 = Improvement(
         title = "Encoder & Halter auf Welle pressen", 
         assembly_step = assembly_step,
-        description = "Mit der Montagehülse Encoder tiefer pressen. Darauf achten, dass Encoder auf der Unterseite nicht über Magnetring schleift - Ansonsten sind unterlegscheiben erforderlich!")
+        description = "Mit der Montagehülse Encoder tiefer pressen. Darauf achten, dass Encoder auf der Unterseite nicht, über Magnetring schleift - Ansonsten sind unterlegscheiben erforderlich!",
+        cable_must_disconnected = False, 
+        )
     
     imp_6 = Improvement(
         title = "Bremse tauschen", 
         assembly_step = assembly_step,
-        description = "Die Bremse durch drehen lösen und wechseln. ACHTUNG: Der Bremskolben samt Feder kann herausfallen!")
+        description = "Die Bremse durch drehen lösen und wechseln. ACHTUNG: Der Bremskolben samt Feder kann herausfallen!",
+        cable_must_disconnected = True, 
+        )
 
     imp_7 = Improvement(
         title = "Encoder verbinden", 
         assembly_step = assembly_step,
         description = "Der Encoder ist nicht mit dem Controller verbunden. Überprüfe, ob das 5-polige Kabel verbunden bzw. beschädigt ist.",
         image_filename = "encoder_cable.png",
+        cable_must_disconnected = True,
         )
 
 
@@ -91,22 +104,30 @@ def create_assembly_step_2(session):
     i1 = Improvement(
         title = "Flexring tauschen", 
         assembly_step = assembly_step, 
-        description = "Flexring tauschen, dieser kann falschen Maße haben.")
+        description = "Flexring tauschen, dieser kann falschen Maße haben.",
+        cable_must_disconnected = False, 
+        )
     
     i2 = Improvement(
         title = "Zahnringeinleger (motorseitig) tauschen", 
         assembly_step = assembly_step, 
-        description = "Zahnringeinleger überprüfen und eventuell tauschen.")
+        description = "Zahnringeinleger überprüfen und eventuell tauschen.",
+        cable_must_disconnected = True, 
+        )
     
     i3 = Improvement(
         title = "Gehäuseunterteil tauschen", 
         assembly_step = assembly_step, 
-        description = "Gehäuseunterteil entspricht eventuell nicht den geforderten Toleranzen und verformt dammit den Zahnringeinleger.")
+        description = "Gehäuseunterteil entspricht eventuell nicht den geforderten Toleranzen und verformt dammit den Zahnringeinleger.",
+        cable_must_disconnected = True, 
+        )
     
     i4 = Improvement(
         title = "Nadelrollenlager tauschen", 
         assembly_step = assembly_step, 
-        description = "Eventuell können sich Nadelrollen nicht in dem Käfig bewegen.")
+        description = "Eventuell können sich Nadelrollen nicht in dem Käfig bewegen.",
+        cable_must_disconnected = False, 
+        )
     
     
     add_to_session(session, i1, i2, i3, i4)
@@ -125,22 +146,30 @@ def create_assembly_step_3(session):
     i1 = Improvement(
         title = "Flexring tauschen", 
         assembly_step = assembly_step, 
-        description = "Flexring tauschen, dieser kann falschen Maße haben.")
+        description = "Flexring tauschen, dieser kann falschen Maße haben.",
+        cable_must_disconnected = True, 
+        )
     
     i2 = Improvement(
         title = "Zahnringeinleger (abtriebsseitig) tauschen", 
         assembly_step = assembly_step, 
-        description = "Zahnringeinleger überprüfen und eventuell tauschen.")
+        description = "Zahnringeinleger überprüfen und eventuell tauschen.",
+        cable_must_disconnected = False, 
+        )
     
     i3 = Improvement(
         title = "Gehäuseoberteil tauschen", 
         assembly_step = assembly_step, 
-        description = "Gehäuseoberteil entspricht eventuell nicht den geforderten Toleranzen und verformt dammit den Zahnringeinleger.")
+        description = "Gehäuseoberteil entspricht eventuell nicht den geforderten Toleranzen und verformt dammit den Zahnringeinleger.",
+        cable_must_disconnected = False, 
+        )
     
     i4 = Improvement(
         title = "Step 3 Improvement", 
         assembly_step = assembly_step, 
-        description = "Gehäuseoberteil entspricht eventuell nicht den geforderten Toleranzen und verformt dammit den Zahnringeinleger.")
+        description = "Gehäuseoberteil entspricht eventuell nicht den geforderten Toleranzen und verformt dammit den Zahnringeinleger.",
+        cable_must_disconnected = False, 
+        )
     
 
 
@@ -200,10 +229,6 @@ def __test_method(session):
 
 
 if __name__ == "__main__":
-
-    # setup_session()
-
-    # session = data_controller.create_session()
 
     with data_controller.session_context() as session:
         model_classes = [Transmission, Assembly, Measurement, DataPoint, Failure, FailureInstance, Improvement, ImprovementInstance]

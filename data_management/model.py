@@ -191,6 +191,8 @@ class Improvement(Base):
     description = Column(String, nullable=False)
     image_filename = Column(String, default="no_img.png")
 
+    cable_must_disconnected = Column(Boolean, default = True)
+
     assembly_step = Column(Enum(AssemblyStep))
     
     improvement_instances = relationship("ImprovementInstance", backref=backref("improvement"))
