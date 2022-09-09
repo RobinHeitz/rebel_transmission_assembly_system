@@ -4,9 +4,11 @@ import traceback
 from gui.add_failure.pages import layout
 from gui.add_failure.definitions import AddFailureKeys as Keys
 
-from data_management.model import AssemblyStep
+from data_management.model import AssemblyStep, FailureType, Improvement, Failure
+from data_management import data_controller
 
 from logs.setup_logger import setup_logger
+from start_app import combo_value_changes
 logger = setup_logger("start_app")
 
 
@@ -32,6 +34,16 @@ def function_prints(f):
 #################
 
 # @function_prints
+
+@function_prints
+def assembly_step_changed(event, values):
+    input_values_changed(event, values)
+    step = values[event]
+    with data_controller.session_context() as session:
+        improvements = session.query(Improvement).filter_by(assembly_step = step).all()
+        window[Keys.LISTBOX_IMPROVEMENTS].update(values = improvements)
+
+
 def input_values_changed(event, values):
     global input_values
     input_values[event] = values[event]
@@ -45,7 +57,10 @@ def validate_values():
             return False
         if len(input_values[Keys.MULTI_LINE_DESCRIPTION]) == 0:
             return False
-    
+        
+        if len(input_values[Keys.LISTBOX_IMPROVEMENTS]) == 0:
+            return False
+
     except KeyError:
         return False
     return True    
@@ -59,8 +74,20 @@ def btn_cancel_window(*args):
 
 
 @function_prints
-def btn_save_failure(*args):
+def btn_save_failure(event, values):
     ...
+    with data_controller.session_context() as session:
+        description = input_values[Keys.MULTI_LINE_DESCRIPTION]
+        assembly_step = input_values[Keys.COMBO_ASSEMBLY_STEP]
+        failure_type = FailureType.not_measurable.name
+        
+        f = Failure(description = description, assembly_step = assembly_step, failure_type = failure_type)
+        session.add(f)
+        f.improvements = input_values[Keys.LISTBOX_IMPROVEMENTS]
+        session.commit()
+    window.close()
+
+
 
 
 
@@ -74,8 +101,9 @@ KEY_FUNCTION_MAP = {
     Keys.BTN_SAVE_FAILURE: btn_save_failure, 
     Keys.BTN_CANCEL_ADD_FAILURE: btn_cancel_window,
 
-    Keys.COMBO_ASSEMBLY_STEP: input_values_changed,
+    Keys.COMBO_ASSEMBLY_STEP: assembly_step_changed,
     Keys.MULTI_LINE_DESCRIPTION: input_values_changed,
+    Keys.LISTBOX_IMPROVEMENTS: input_values_changed,
 
 }
 
@@ -86,10 +114,12 @@ input_values = {}
 
 def add_failure_window():
     global window
-    ...
-
     window = sg.Window(f"Fehler hinzufügen", layout, modal=True, size=(500,600), finalize=True, resizable=False, no_titlebar=True)
     # sg.main_get_debug_data()
+
+    
+
+
     
     while True:
         try:
