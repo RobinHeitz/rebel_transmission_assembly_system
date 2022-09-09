@@ -45,6 +45,12 @@ def set_element_state(new_state:ElementVisibilityStates):
         logger.error("ERROR, set_element_state: new_state is not contained!")
     
     config = ELEMENT_VISIBILITY_MAP[new_state]
+
+    if is_last_assembly_step == True:
+        ...
+        config[KeyDefs.BTN_NAV_NEXT_PAGE] = {"button_color": sg.GREENS[3], "text":"Fertig", "disabled":True}
+
+
     for el in config.keys():
         settings = config.get(el)
         window[el].update(**settings)
@@ -325,7 +331,7 @@ def btn_improvement_selection_clicked(event, values):
 @function_prints
 def _nav_next_page(event, values):
     """Called when user clicks on "Next"-Button. Manages hide/show of layouts etc."""
-    global current_assembly_step, active_layout
+    global current_assembly_step, active_layout, is_last_assembly_step
     condition = get_condition_for_next_page()
     
     if not callable(condition):
@@ -340,6 +346,7 @@ def _nav_next_page(event, values):
 
         else:
             current_assembly_step = AssemblyStep.next_step(current_assembly_step)
+            is_last_assembly_step = AssemblyStep.is_last_step(current_assembly_step)
             
         _update_headline()
         _update_assembly_steps_data()
@@ -393,12 +400,14 @@ def condition_leave_assembly_step_2():
 @function_prints
 def condition_leave_assembly_step_3():
     ...
+    window.write_event_value["Exit"]
     return True
 
-@function_prints
-def condition_leave_assembly_step_4():
-    ...
-    return True
+# @function_prints
+# def condition_leave_assembly_step_4():
+
+#     ...
+#     return True
 
 
 
@@ -411,6 +420,9 @@ if __name__ == "__main__":
     sg.theme("DarkTeal10")
     window = sg.Window("ReBeL Getriebe Montage & Kalibrierung", main_layout, size=(1200,1000), finalize=True, location=(0,0),resizable=True)
 
+    active_layout = LayoutTypes.config
+    current_assembly_step = AssemblyStep.step_1_no_flexring
+    is_last_assembly_step = False
     set_element_state(ElementVisibilityStates.config_state_1_cannot_go_next)
 
     logger.info(f"Currently used background color: {sg.theme_background_color()}")
@@ -434,8 +446,6 @@ if __name__ == "__main__":
     
     transmission_config = TransmissionConfigHelper()
     
-    active_layout = LayoutTypes.config
-    current_assembly_step = AssemblyStep.step_1_no_flexring
 
 
     plotter = GraphPlotter(window[KeyDefs.CANVAS_GRAPH_PLOTTING])
@@ -449,7 +459,7 @@ if __name__ == "__main__":
         (LayoutTypes.assembly, AssemblyStep.step_1_no_flexring):condition_leave_assembly_step_1,
         (LayoutTypes.assembly, AssemblyStep.step_2_with_flexring):condition_leave_assembly_step_2,
         (LayoutTypes.assembly, AssemblyStep.step_3_gearoutput_not_screwed):condition_leave_assembly_step_3,
-        (LayoutTypes.assembly, AssemblyStep.step_4_gearoutput_screwed):condition_leave_assembly_step_4,
+        # (LayoutTypes.assembly, AssemblyStep.step_4_gearoutput_screwed):condition_leave_assembly_step_4,
 
     }
 

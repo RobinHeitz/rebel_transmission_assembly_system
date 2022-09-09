@@ -107,10 +107,6 @@ pages_config = {
         image="gui/assembly_pictures/step3.png",
     ),
 
-    (LayoutTypes.assembly, AssemblyStep.step_4_gearoutput_screwed): dict(
-        headline="Schritt 3: Getriebe mit Abtrieb testen",
-        image="gui/assembly_pictures/step3.png",
-    ),
 
 
 }
