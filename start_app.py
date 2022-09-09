@@ -16,7 +16,7 @@ from hw_interface.motor_controller import RebelAxisController
 from hw_interface.definitions import ExceptionPcanIllHardware, ExceptionPcanNoCanIdFound
 from current_limits import get_current_limit_for_assembly_step
 
-from gui.main_window.definitions import KeyDefs, ElementVisibilityStates, ELEMENT_VISIBILITY_MAP, LayoutTypes
+from gui.main_window.definitions import KeyDefs, ElementVisibilityStates, get_element_update_values, LayoutTypes
 from gui.main_window.definitions import TransmissionConfigHelper, TransmissionSize
 # from gui import can_connection_functions
 from gui.main_window.pages import get_headline, main_layout, get_assembly_step_data
@@ -40,28 +40,22 @@ def function_prints(f):
 
 @function_prints
 def set_element_state(new_state:ElementVisibilityStates):
-    if new_state not in ELEMENT_VISIBILITY_MAP:
-        logger.error("*******"*5)
-        logger.error("ERROR, set_element_state: new_state is not contained!")
-    
-    config = ELEMENT_VISIBILITY_MAP[new_state]
-
-    if is_last_assembly_step == True:
-        ...
-        config[KeyDefs.BTN_NAV_NEXT_PAGE] = {"button_color": sg.GREENS[3], "text":"Fertig", "disabled":True}
-
-
+    config = get_element_update_values(new_state, is_last_page=is_last_assembly_step)
     for el in config.keys():
         settings = config.get(el)
         window[el].update(**settings)
 
 @function_prints
 def get_condition_for_next_page():
-    cond = condition_functions_dictionary[(active_layout, current_assembly_step)]
-    # if callable(cond):
-    #     return cond
-    # return cond.get(current_assembly_step)
-    return cond
+    return condition_functions_dictionary[(active_layout, current_assembly_step)]
+
+
+@function_prints
+def close_application():
+    controller.stop_movement()
+    controller.shut_down()
+    window.close()
+
 
 
 
@@ -399,16 +393,8 @@ def condition_leave_assembly_step_2():
 
 @function_prints
 def condition_leave_assembly_step_3():
-    ...
-    window.write_event_value["Exit"]
-    return True
-
-# @function_prints
-# def condition_leave_assembly_step_4():
-
-#     ...
-#     return True
-
+    close_application()
+    return False
 
 
 
@@ -497,8 +483,6 @@ if __name__ == "__main__":
         event, values = window.read()
 
         if event in (sg.WIN_CLOSED, 'Exit'):
-            controller.stop_movement()
-            controller.shut_down()
             break
         elif callable(event):
             event()
@@ -508,8 +492,6 @@ if __name__ == "__main__":
                 func(event, values, **args)
             
             except KeyboardInterrupt:
-                controller.stop_movement()
-                controller.shut_down()
                 break
             
             except TypeError as e:
@@ -521,4 +503,4 @@ if __name__ == "__main__":
                 logger.error(traceback.format_exc())
             
 
-    window.close()
+    close_application()

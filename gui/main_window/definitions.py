@@ -1,5 +1,6 @@
 from data_management.model import TransmissionConfiguration
 import enum
+import PySimpleGUI as sg
 
 ##################
 # Style definitions
@@ -182,11 +183,18 @@ ELEMENT_VISIBILITY_MAP = {
         **_nav_disabled, 
         KeyDefs.COMBO_FAILURE_SELECT: {"visible": False},
     },
-    
-
-
 }
 
+
+def get_element_update_values(state: ElementVisibilityStates, is_last_page = False):
+    if state not in ELEMENT_VISIBILITY_MAP: raise NotImplementedError(f"State is not implemented: {state}")
+    conf = ELEMENT_VISIBILITY_MAP[state]
+    if is_last_page:
+        updates = {"button_color": sg.GREENS[3], "text":"Fertig"}
+        current_btn_conf = conf[KeyDefs.BTN_NAV_NEXT_PAGE]
+        conf[KeyDefs.BTN_NAV_NEXT_PAGE] = {**current_btn_conf, **updates}
+    return conf
+    
 
 
 
