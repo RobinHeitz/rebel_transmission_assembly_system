@@ -1,8 +1,10 @@
-"""empty message
+"""init
 
-Revision ID: 64697a0361b7
+
+
+Revision ID: 0b49663c6de6
 Revises: 
-Create Date: 2022-09-07 15:04:12.158603
+Create Date: 2022-09-09 09:59:00.973738
 
 """
 from alembic import op
@@ -10,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '64697a0361b7'
+revision = '0b49663c6de6'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -22,7 +24,7 @@ def upgrade() -> None:
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('created_at', sa.DateTime(), nullable=True),
     sa.Column('description', sa.String(), nullable=True),
-    sa.Column('assembly_step', sa.Enum('step_1_no_flexring', 'step_2_with_flexring', 'step_3_gearoutput_not_screwed', 'step_4_gearoutput_screwed', name='assemblystep'), nullable=True),
+    sa.Column('assembly_step', sa.Enum('step_1_no_flexring', 'step_2_with_flexring', 'step_3_gearoutput_not_screwed', name='assemblystep'), nullable=True),
     sa.Column('failure_type', sa.Enum('overcurrent', 'not_moving_oc', 'calibration_both_tracks_values', 'not_measurable', name='failuretype'), nullable=True),
     sa.PrimaryKeyConstraint('id')
     )
@@ -32,7 +34,7 @@ def upgrade() -> None:
     sa.Column('title', sa.String(), nullable=False),
     sa.Column('description', sa.String(), nullable=False),
     sa.Column('image_filename', sa.String(), nullable=True),
-    sa.Column('assembly_step', sa.Enum('step_1_no_flexring', 'step_2_with_flexring', 'step_3_gearoutput_not_screwed', 'step_4_gearoutput_screwed', name='assemblystep'), nullable=True),
+    sa.Column('assembly_step', sa.Enum('step_1_no_flexring', 'step_2_with_flexring', 'step_3_gearoutput_not_screwed', name='assemblystep'), nullable=True),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('transmission',
@@ -54,7 +56,7 @@ def upgrade() -> None:
     op.create_table('assembly',
     sa.Column('created_at', sa.DateTime(), nullable=True),
     sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('assembly_step', sa.Enum('step_1_no_flexring', 'step_2_with_flexring', 'step_3_gearoutput_not_screwed', 'step_4_gearoutput_screwed', name='assemblystep'), nullable=True),
+    sa.Column('assembly_step', sa.Enum('step_1_no_flexring', 'step_2_with_flexring', 'step_3_gearoutput_not_screwed', name='assemblystep'), nullable=True),
     sa.Column('transmission_id', sa.Integer(), nullable=True),
     sa.ForeignKeyConstraint(['transmission_id'], ['transmission.id'], ),
     sa.PrimaryKeyConstraint('id')
@@ -82,7 +84,7 @@ def upgrade() -> None:
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('failure_id', sa.Integer(), nullable=True),
     sa.Column('transmission_id', sa.Integer(), nullable=True),
-    sa.Column('assembly_step', sa.Enum('step_1_no_flexring', 'step_2_with_flexring', 'step_3_gearoutput_not_screwed', 'step_4_gearoutput_screwed', name='assemblystep'), nullable=True),
+    sa.Column('assembly_step', sa.Enum('step_1_no_flexring', 'step_2_with_flexring', 'step_3_gearoutput_not_screwed', name='assemblystep'), nullable=True),
     sa.Column('measurement_id', sa.Integer(), nullable=True),
     sa.ForeignKeyConstraint(['failure_id'], ['failure.id'], ),
     sa.ForeignKeyConstraint(['measurement_id'], ['measurement.id'], ),
@@ -94,7 +96,7 @@ def upgrade() -> None:
     sa.Column('improvement_id', sa.Integer(), nullable=True),
     sa.Column('transmission_id', sa.Integer(), nullable=True),
     sa.Column('successful', sa.Boolean(), nullable=True),
-    sa.Column('assembly_step', sa.Enum('step_1_no_flexring', 'step_2_with_flexring', 'step_3_gearoutput_not_screwed', 'step_4_gearoutput_screwed', name='assemblystep'), nullable=True),
+    sa.Column('assembly_step', sa.Enum('step_1_no_flexring', 'step_2_with_flexring', 'step_3_gearoutput_not_screwed', name='assemblystep'), nullable=True),
     sa.Column('measurement_id', sa.Integer(), nullable=True),
     sa.Column('failure_instance_id', sa.Integer(), nullable=True),
     sa.ForeignKeyConstraint(['failure_instance_id'], ['failureinstance.id'], ),

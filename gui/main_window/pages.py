@@ -57,7 +57,7 @@ layout_assembly_step_1 = [
         sg.VSeparator(pad=(5,5,5,5,)),
         sg.Column([
             [
-                sg.Button("Messung starten",enable_events=True, k=KeyDefs.BTN_START_VELO_MODE),
+                sg.Button("Messung starten",enable_events=True, k=KeyDefs.BTN_START_VELO_MODE, size=(20,2)),
             ],
             [
                 sg.Canvas(key=KeyDefs.CANVAS_GRAPH_PLOTTING, size=(250,250)),

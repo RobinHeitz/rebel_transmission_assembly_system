@@ -146,7 +146,7 @@ def improvement_process_steps_done():
 def btn_start_measurement(imp_instance:ImprovementInstance, *args):
     # logger.info(args)
     set_element_state(ElementVisibilityState.doing_measurement)
-    start_measurement(controller, AssemblyStep.step_1_no_flexring, measurement_finished, measurement_aborted_due_to_error, plotter)
+    start_measurement(controller, assembly_step, measurement_finished, measurement_aborted_due_to_error, plotter)
 
 
 @function_prints

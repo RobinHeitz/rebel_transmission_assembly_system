@@ -18,7 +18,9 @@ def add_to_session(session:Session, *args):
         session.add(i)
 
 
-def create_assembly_step_1(session:Session, assembly_step:AssemblyStep):
+def create_assembly_step_1(session:Session):
+    assembly_step = AssemblyStep.step_1_no_flexring
+
     f1 = Failure(description="Strom > Nennwert", assembly_step = assembly_step, failure_type = FailureType.overcurrent)
     f2 = Failure(description="Encoderfehler", assembly_step = assembly_step, failure_type = FailureType.not_measurable)
     f3 = Failure(description="Ruckeln beim Anfahren", assembly_step = assembly_step, failure_type = FailureType.not_measurable)
@@ -76,6 +78,79 @@ def create_assembly_step_1(session:Session, assembly_step:AssemblyStep):
     f4.improvements = [imp_4, imp_6, imp_7]
     
     f5.improvements = [imp_1]
+
+
+def create_assembly_step_2(session):
+    assembly_step = AssemblyStep.step_2_with_flexring
+
+    f1 = Failure(description="Strom > Nennwert", assembly_step = assembly_step, failure_type = FailureType.overcurrent)
+    f2 = Failure(description="Schleifen", assembly_step = assembly_step, failure_type = FailureType.not_measurable)
+    f3 = Failure(description="Ruckeln", assembly_step = assembly_step, failure_type = FailureType.not_measurable)
+    add_to_session(session, f1, f2, f3)
+
+    i1 = Improvement(
+        title = "Flexring tauschen", 
+        assembly_step = assembly_step, 
+        description = "Flexring tauschen, dieser kann falschen Maße haben.")
+    
+    i2 = Improvement(
+        title = "Zahnringeinleger (motorseitig) tauschen", 
+        assembly_step = assembly_step, 
+        description = "Zahnringeinleger überprüfen und eventuell tauschen.")
+    
+    i3 = Improvement(
+        title = "Gehäuseunterteil tauschen", 
+        assembly_step = assembly_step, 
+        description = "Gehäuseunterteil entspricht eventuell nicht den geforderten Toleranzen und verformt dammit den Zahnringeinleger.")
+    
+    i4 = Improvement(
+        title = "Nadelrollenlager tauschen", 
+        assembly_step = assembly_step, 
+        description = "Eventuell können sich Nadelrollen nicht in dem Käfig bewegen.")
+    
+    
+    add_to_session(session, i1, i2, i3, i4)
+    f1.improvements = [i1, i2, i3, i4]
+    f2.improvements = [i1, i4]
+    f3.improvements = [i4]
+    
+
+def create_assembly_step_3(session):
+    assembly_step = AssemblyStep.step_3_gearoutput_not_screwed
+
+    f1 = Failure(description="Strom > Nennwert", assembly_step = assembly_step, failure_type = FailureType.overcurrent)
+    f2 = Failure(description="Step 3 Desc", assembly_step = assembly_step, failure_type = FailureType.not_measurable)
+    add_to_session(session, f1, f2)
+
+    i1 = Improvement(
+        title = "Flexring tauschen", 
+        assembly_step = assembly_step, 
+        description = "Flexring tauschen, dieser kann falschen Maße haben.")
+    
+    i2 = Improvement(
+        title = "Zahnringeinleger (abtriebsseitig) tauschen", 
+        assembly_step = assembly_step, 
+        description = "Zahnringeinleger überprüfen und eventuell tauschen.")
+    
+    i3 = Improvement(
+        title = "Gehäuseoberteil tauschen", 
+        assembly_step = assembly_step, 
+        description = "Gehäuseoberteil entspricht eventuell nicht den geforderten Toleranzen und verformt dammit den Zahnringeinleger.")
+    
+    i4 = Improvement(
+        title = "Step 3 Improvement", 
+        assembly_step = assembly_step, 
+        description = "Gehäuseoberteil entspricht eventuell nicht den geforderten Toleranzen und verformt dammit den Zahnringeinleger.")
+    
+
+
+    add_to_session(session, i1, i2, i3, i4)
+    f1.improvements = [i1, i2, i3]
+    f2.improvements = [i4]
+
+
+
+
     
 
 def create_instances(session:Session,t:Transmission):
@@ -140,7 +215,9 @@ if __name__ == "__main__":
         session.flush()
         session.commit()
 
-        create_assembly_step_1(session, AssemblyStep.step_1_no_flexring)
+        create_assembly_step_1(session)
+        create_assembly_step_2(session)
+        create_assembly_step_3(session)
 
 
         # test_sort_failures(session)

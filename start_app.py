@@ -230,8 +230,8 @@ def handle_error_while_measurement(error):
 
 @function_prints
 def measurement_finished(m:Measurement):
-    logger.error(f"measurement = {m} / id = {m.id}")
     """Invoked by start_measurement.start_measurement. Callback function for updating gui elements based on finished measurement."""
+    logger.error(f"measurement = {m} / id = {m.id}")
     text_field = window[KeyDefs.TEXT_MIN_MAX_CURRENT_VALUES]
     text_field.update(f"Min current: {m.min_current} ||| Max. current: {m.max_current} || Mean current: {m.mean_current}", visible=True)
     predict_failure(m)
@@ -251,11 +251,8 @@ def predict_failure(measurement: Measurement):
         session.close()
        
         set_element_state(ElementVisibilityStates.assembly_state_5_measure_finished_failure_automatically_detected)
-       # TODO:
         window[KeyDefs.TEXT_HIGH_CURRENT_FAILURE_DETECTED].update(f"Es wurde ein Fehler erkannt: {failures[0]}", text_color="red")
         window[KeyDefs.COMBO_FAILURE_SELECT].update(values=failures, value=failures[0])
-       
-        # change_combo_failures_visibility(False)
         show_improvements(failures[0])
 
     else:
