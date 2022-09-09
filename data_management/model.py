@@ -38,29 +38,26 @@ class AssemblyStep(enum.Enum):
         elif step == cls.step_2_with_flexring:
             return cls.step_3_gearoutput_not_screwed
      
-
     @classmethod
     def is_last_step(cls, step):
         if step == cls.step_3_gearoutput_not_screwed:
             return True
         return False
-        
-        
+
+    def __str__(self):
+        return DESCRIPTION_STEP_MAP[self]
 
 
-    @classmethod
-    def get_all_steps(cls):
-        return [cls.step_1_no_flexring, cls.step_2_with_flexring, cls.step_3_gearoutput_not_screwed, cls.step_4_gearoutput_screwed]
-
+DESCRIPTION_STEP_MAP = {
+    AssemblyStep.step_1_no_flexring: "Schritt 1: Getriebe ohne Flexring",
+    AssemblyStep.step_2_with_flexring: "Schritt 2: Getriebe mit Flexring und Nadelrollenlager",
+    AssemblyStep.step_3_gearoutput_not_screwed: "Schritt 3: Getriebe mit Abtrieb",
+}
 
 
 #####################
 ### MODEL CLASSES ###
 #####################
-
-# TODOS:
-# - ERROR/ FAILURE CLS
-# - CORRECTIVE ACTION (Behebungsmaßnahme)
 
 
 
