@@ -1,8 +1,8 @@
 import PySimpleGUI as sg
 import traceback
 
-from gui.add_failure.pages import layout
-from gui.add_failure.definitions import AddFailureKeys as Keys
+from gui.add_improvement.pages import layout
+from gui.add_improvement.definitions import AddImprovementKeys as Keys
 
 from data_management.model import AssemblyStep, FailureType, Improvement, Failure
 from data_management import data_controller
@@ -74,7 +74,7 @@ def btn_cancel_window(*args):
 
 
 @function_prints
-def btn_save_failure(event, values):
+def btn_save_improvement(event, values):
     ...
     with data_controller.session_context() as session:
         description = input_values[Keys.MULTI_LINE_DESCRIPTION]
@@ -83,7 +83,7 @@ def btn_save_failure(event, values):
         
         f = Failure(description = description, assembly_step = assembly_step, failure_type = failure_type)
         session.add(f)
-        f.improvements = input_values[Keys.LISTBOX_IMPROVEMENTS]
+        f.improvements = input_values[Keys.LISTBOX_FAILURES]
         session.commit()
     window.close()
 
@@ -98,12 +98,12 @@ def btn_save_failure(event, values):
 
 
 KEY_FUNCTION_MAP = {
-    Keys.BTN_SAVE_FAILURE: btn_save_failure, 
-    Keys.BTN_CANCEL_ADD_FAILURE: btn_cancel_window,
+    Keys.BTN_SAVE_IMPROVEMENT: btn_save_improvement, 
+    Keys.BTN_CANCEL_ADD_IMPROVEMENT: btn_cancel_window,
 
     Keys.COMBO_ASSEMBLY_STEP: assembly_step_changed,
     Keys.MULTI_LINE_DESCRIPTION: input_values_changed,
-    Keys.LISTBOX_IMPROVEMENTS: input_values_changed,
+    Keys.LISTBOX_FAILURES: input_values_changed,
 
 }
 
@@ -142,4 +142,4 @@ def add_improvement_window():
     window.close()
 
 if __name__ == "__main__":
-    add_failure_window()
+    add_improvement_window()
