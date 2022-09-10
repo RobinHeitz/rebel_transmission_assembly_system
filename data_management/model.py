@@ -149,6 +149,7 @@ FailureImprovementTable = Table(
 
 
 class Failure(Base):
+    # TODO: Must implement Flag: is_supervised
     __tablename__ = 'failure'
     id = Column(Integer, primary_key=True)
     created_at = Column(DateTime, default=datetime.now)
@@ -181,6 +182,7 @@ class FailureInstance(Base):
 
 class Improvement(Base):
     __tablename__ = "improvement"
+    # TODO: Must implement Flag: is_supervised
     id = Column(Integer, primary_key = True)
     created_at = Column(DateTime, default=datetime.now)
     

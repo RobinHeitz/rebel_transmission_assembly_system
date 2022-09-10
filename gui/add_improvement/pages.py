@@ -26,10 +26,10 @@ def create_layout():
         [sg.Text("Strom bei Behebung trennen:", font=Fonts.font_normal)],
         [
             # sg.Push(),
-            sg.T("Nicht erforderlich:", font=Fonts.font_small),
+            sg.T("Nicht erforderlich", font=Fonts.font_small),
             sg.Button(image_data=TI.toggle_btn_off, k=Keys.BTN_TOGGLE_CABLE_DISCONNECT, button_color=(
                 sg.theme_background_color(), sg.theme_background_color()), border_width=0, metadata=False),
-            sg.T("Erforderlich:", font=Fonts.font_small),
+            sg.T("Erforderlich", font=Fonts.font_small),
 
         ],
 

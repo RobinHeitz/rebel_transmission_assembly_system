@@ -238,8 +238,22 @@ def handle_error_while_measurement(error):
     
     window[KeyDefs.TEXT_HIGH_CURRENT_FAILURE_DETECTED].update(f"Es wurde ein Fehler erkannt: {failures[0]}", text_color="red", visible=True)
     window[KeyDefs.COMBO_FAILURE_SELECT].update(values=failures, value=failures[0])
-    change_combo_failures_visibility(False)
+    # change_combo_failures_visibility(False)
     show_improvements(failures[0])
+
+
+
+
+@function_prints
+def update_combo_failures():
+    ...
+    # TODO:
+
+
+@function_prints
+def update_listbox_improvements():
+    ...
+    # TODO: 
 
 
 
@@ -290,10 +304,10 @@ def combo_value_changes(event, values):
     show_improvements(values[event])
 
 
-@function_prints
-def change_combo_failures_visibility(visible):
-    t = window[KeyDefs.COL_FAILURE_SELECTION_CONTAINER]
-    t.update(visible=visible)
+# @function_prints
+# def change_combo_failures_visibility(visible):
+#     t = window[KeyDefs.COL_FAILURE_SELECTION_CONTAINER]
+#     t.update(visible=visible)
         
 
 @function_prints

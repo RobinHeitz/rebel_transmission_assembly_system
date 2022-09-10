@@ -9,8 +9,6 @@ def main():
     shaded_overlay.shaded_overlay(top_window = add_failure.add_failure_window)
 
 
-    # add_failure.add_failure_window()
-
 
 
 if __name__ == "__main__":

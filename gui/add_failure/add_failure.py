@@ -1,3 +1,4 @@
+from turtle import position
 import PySimpleGUI as sg
 import traceback
 
@@ -113,7 +114,7 @@ input_values = {}
 
 def add_failure_window():
     global window
-    window = sg.Window(f"Fehler hinzufügen", create_layout(), modal=True, size=(500,600), finalize=True, resizable=False, no_titlebar=True)
+    window = sg.Window(f"Fehler hinzufügen", create_layout(), modal=True, size=(500,600), finalize=True, resizable=False, no_titlebar=True, )
     # sg.main_get_debug_data()
 
     
