@@ -4,6 +4,8 @@ import traceback
 from gui.add_improvement.pages import layout
 from gui.add_improvement.definitions import AddImprovementKeys as Keys
 
+from gui.gui_helpers import ToggleButtonImageData as TI
+
 from data_management.model import AssemblyStep, FailureType, Improvement, Failure
 from data_management import data_controller
 
@@ -40,15 +42,26 @@ def assembly_step_changed(event, values):
     input_values_changed(event, values)
     step = values[event]
     with data_controller.session_context() as session:
-        improvements = session.query(Improvement).filter_by(assembly_step = step).all()
-        window[Keys.LISTBOX_IMPROVEMENTS].update(values = improvements)
+        failures = session.query(Failure).filter_by(assembly_step = step).all()
+        window[Keys.LISTBOX_FAILURES].update(values = failures)
+
+@function_prints
+def btn_toggle_cable_disconnect(event, values):
+    
+    toggle_state = window[Keys.BTN_TOGGLE_CABLE_DISCONNECT].metadata
+    toggle_state = not toggle_state
+    window[Keys.BTN_TOGGLE_CABLE_DISCONNECT].metadata = toggle_state
+    window[Keys.BTN_TOGGLE_CABLE_DISCONNECT].update(image_data=TI.toggle_btn_on if window[Keys.BTN_TOGGLE_CABLE_DISCONNECT].metadata else TI.toggle_btn_off)
+    global input_values
+    input_values[event] = toggle_state
+
 
 
 def input_values_changed(event, values):
     global input_values
     input_values[event] = values[event]
     valid_values = validate_values()
-    window[Keys.BTN_SAVE_FAILURE].update(disabled=(not valid_values))
+    window[Keys.BTN_SAVE_IMPROVEMENT].update(disabled=(not valid_values))
 
 
 def validate_values():
@@ -58,7 +71,10 @@ def validate_values():
         if len(input_values[Keys.MULTI_LINE_DESCRIPTION]) == 0:
             return False
         
-        if len(input_values[Keys.LISTBOX_IMPROVEMENTS]) == 0:
+        if len(input_values[Keys.LISTBOX_FAILURES]) == 0:
+            return False
+
+        if len(input_values[Keys.INPUT_IMPROVEMENT_TITLE]) == 0:
             return False
 
     except KeyError:
@@ -77,13 +93,19 @@ def btn_cancel_window(*args):
 def btn_save_improvement(event, values):
     ...
     with data_controller.session_context() as session:
-        description = input_values[Keys.MULTI_LINE_DESCRIPTION]
-        assembly_step = input_values[Keys.COMBO_ASSEMBLY_STEP]
-        failure_type = FailureType.not_measurable.name
         
-        f = Failure(description = description, assembly_step = assembly_step, failure_type = failure_type)
-        session.add(f)
-        f.improvements = input_values[Keys.LISTBOX_FAILURES]
+        attributes = dict(
+            title = input_values[Keys.INPUT_IMPROVEMENT_TITLE],
+            description = input_values[Keys.MULTI_LINE_DESCRIPTION],
+            assembly_step = input_values[Keys.COMBO_ASSEMBLY_STEP],
+            image_filename = None,
+            cable_must_disconnected = input_values[Keys.BTN_TOGGLE_CABLE_DISCONNECT],
+        )
+        
+        improvement = Improvement(**attributes)
+        session.add(improvement)
+        improvement.failures = input_values[Keys.LISTBOX_FAILURES]
+        session.commit()
         session.commit()
     window.close()
 
@@ -100,8 +122,11 @@ def btn_save_improvement(event, values):
 KEY_FUNCTION_MAP = {
     Keys.BTN_SAVE_IMPROVEMENT: btn_save_improvement, 
     Keys.BTN_CANCEL_ADD_IMPROVEMENT: btn_cancel_window,
+    
+    Keys.BTN_TOGGLE_CABLE_DISCONNECT: btn_toggle_cable_disconnect,
 
     Keys.COMBO_ASSEMBLY_STEP: assembly_step_changed,
+    Keys.INPUT_IMPROVEMENT_TITLE: input_values_changed,
     Keys.MULTI_LINE_DESCRIPTION: input_values_changed,
     Keys.LISTBOX_FAILURES: input_values_changed,
 
