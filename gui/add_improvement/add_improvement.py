@@ -10,7 +10,6 @@ from data_management.model import AssemblyStep, FailureType, Improvement, Failur
 from data_management import data_controller
 
 from logs.setup_logger import setup_logger
-from start_app import combo_value_changes
 logger = setup_logger("start_app")
 
 

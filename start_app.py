@@ -19,11 +19,13 @@ from current_limits import get_current_limit_for_assembly_step
 from gui.main_window.definitions import KeyDefs, ElementVisibilityStates, get_element_update_values, LayoutTypes
 from gui.main_window.definitions import TransmissionConfigHelper, TransmissionSize
 from gui.main_window.pages import get_headline, main_layout, get_assembly_step_data
+
 from gui.plotting import GraphPlotter
+from gui.shaded_overlay import shaded_overlay
 
-from gui.add_failure import add_failure
-
-import gui.improvement_window.improvement_window as improvement_window
+from gui.improvement_window import improvement_window
+from gui.add_improvement.add_improvement import add_improvement_window
+from gui.add_failure.add_failure import add_failure_window
 
 from gui.main_window import start_measurement
 
@@ -385,17 +387,20 @@ def _nav_previous_page(event, values):
 @function_prints
 def btn_add_failure(*args):
 
+    shaded_overlay(top_window=add_failure_window)
+
     # window["-K-"].update(background_color = "black")
 
     # window.alpha_channel(0.4)
 
-    window.set_alpha(0.4)
-    add_failure.add_failure_window()
+    # window.set_alpha(0.4)
+    # add_failure.add_failure_window()
 
     ...
 
 @function_prints
 def btn_add_improvement(*args):
+    shaded_overlay(top_window=add_improvement_window)
     ...
 
 
