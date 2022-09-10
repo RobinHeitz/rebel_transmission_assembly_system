@@ -5,14 +5,10 @@ import PySimpleGUI as sg
 ##################
 # Style definitions
 ###################
-font_headline = "Helvetiva 25"
-font_normal = "Helvetica 15"
-font_small = "Helvetica 13"
 
 class LayoutTypes(enum.Enum):
     config = 1
     assembly = 2
-
 
 
 class KeyDefs(enum.Enum):
