@@ -149,10 +149,11 @@ FailureImprovementTable = Table(
 
 
 class Failure(Base):
-    # TODO: Must implement Flag: is_supervised
     __tablename__ = 'failure'
     id = Column(Integer, primary_key=True)
+    is_verified = Column(Boolean, default=False)
     created_at = Column(DateTime, default=datetime.now)
+    
     description = Column(String)
     assembly_step = Column(Enum(AssemblyStep))
 
@@ -182,8 +183,8 @@ class FailureInstance(Base):
 
 class Improvement(Base):
     __tablename__ = "improvement"
-    # TODO: Must implement Flag: is_supervised
     id = Column(Integer, primary_key = True)
+    is_verified = Column(Boolean, default=False)
     created_at = Column(DateTime, default=datetime.now)
     
     title = Column(String, nullable=False)

@@ -230,7 +230,7 @@ def handle_error_while_measurement(error):
     logger.info(f"Error code: {error} / assembly_step = {current_assembly_step}")
     session:Session = data_controller.create_session()
     
-    failures = session.query(Failure).filter_by(assembly_step = current_assembly_step, failure_type = FailureType.not_moving_oc).all()
+    failures = session.query(Failure).filter_by(assembly_step = current_assembly_step, failure_type = FailureType.not_moving_oc, is_verified=True).all()
     
     
     if len(failures) != 1: raise Exception("DataStruture is corrupt! There should be only 1 instance of failure for a given AssemblyStep with FailureType overcurrent_not_moving.")
@@ -245,13 +245,13 @@ def handle_error_while_measurement(error):
 
 
 @function_prints
-def update_combo_failures():
+def update_combo_failure_values():
     ...
     # TODO:
 
 
 @function_prints
-def update_listbox_improvements():
+def update_listbox_improvement_values():
     ...
     # TODO: 
 
@@ -276,7 +276,7 @@ def predict_failure(measurement: Measurement):
     
     if measurement.max_current > limit:
         session:Session = data_controller.create_session()
-        failures = session.query(Failure).filter_by(assembly_step = current_assembly_step, failure_type = FailureType.overcurrent).all()
+        failures = session.query(Failure).filter_by(assembly_step = current_assembly_step, failure_type = FailureType.overcurrent, is_verified = True).all()
         if len(failures) != 1: raise Exception("DataStruture is corrupt! There should be only 1 instance of failure for a given AssemblyStep with FailureType overcurrent.")
         session.close()
        
@@ -456,10 +456,13 @@ if __name__ == "__main__":
     is_last_assembly_step = False
     set_element_state(ElementVisibilityStates.config_state_1_cannot_go_next)
 
-    logger.info(f"Currently used background color: {sg.theme_background_color()}")
-    logger.info(f"Currently used button color: {sg.theme_button_color()} and {sg.theme_button_color_background()}")
-
     controller, thread_velocity, thread_graph_updater, current_transmission = (None, )*4
+
+    database_last_filter = dict(
+        failure = None, 
+        improvement = None,
+    )
+
 
     try:
         controller = RebelAxisController(verbose=False)

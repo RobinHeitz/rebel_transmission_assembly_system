@@ -192,13 +192,10 @@ def create_data_point_to_current_measurement(session:Session, current, timestamp
 
 
 
-# def get_failures_list_for_assembly_step(step:AssemblyStep):
-#     logger.info("get_failures_list_for_assembly_step()")
-#     session = get_session()
-#     failures = session.query(Failure).filter_by(assembly_step = step).all()
-#     if failures == None:
-#         return []
-    # return failures
+
+################
+### FAILURES ###
+################
 
 @catch_exceptions
 def create_failure_instance(session:Session, failure:Failure):
@@ -207,11 +204,6 @@ def create_failure_instance(session:Session, failure:Failure):
     session.add(f)
     session.commit()
     return f
-
-
-################
-### FAILURES ###
-################
 
 @catch_exceptions
 def delete_failure_instance(session:Session, fail_instance: FailureInstance):
@@ -227,7 +219,8 @@ def sorted_failures_by_incidents(session:Session, step:AssemblyStep):
         filter(
             Failure.failure_type != FailureType.overcurrent,
             Failure.failure_type != FailureType.not_moving_oc,
-            Failure.assembly_step == step).all()
+            Failure.assembly_step == step,
+            Failure.is_verified == True,).all()
     failures_sorted = sorted(failures_without_oc, key=lambda f: len(f.failure_instances), reverse=True)
 
     logger.info(f"Before: {failures_without_oc}")
