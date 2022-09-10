@@ -21,7 +21,7 @@ from gui.main_window.definitions import TransmissionConfigHelper, TransmissionSi
 from gui.main_window.pages import get_headline, main_layout, get_assembly_step_data
 
 from gui.plotting import GraphPlotter
-from gui.shaded_overlay import shaded_overlay, ShadedOverlay
+from gui.shaded_overlay import shaded_overlay
 
 from gui.improvement_window import improvement_window
 from gui.add_improvement.add_improvement import add_improvement_window
@@ -386,14 +386,11 @@ def _nav_previous_page(event, values):
 
 @function_prints
 def btn_add_failure(*args):
-    # shaded_overlay(add_failure_window)
-    ShadedOverlay(add_failure_window)
-
+    shaded_overlay(add_failure_window)
 
 @function_prints
 def btn_add_improvement(*args):
-    # shaded_overlay(add_improvement_window)
-    ShadedOverlay(add_improvement_window)
+    shaded_overlay(add_improvement_window)
 
 
 

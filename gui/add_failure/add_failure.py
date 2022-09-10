@@ -1,7 +1,7 @@
 import PySimpleGUI as sg
 import traceback
 
-from gui.add_failure.pages import layout
+from gui.add_failure.pages import create_layout
 from gui.add_failure.definitions import AddFailureKeys as Keys
 
 from data_management.model import AssemblyStep, FailureType, Improvement, Failure
@@ -113,7 +113,7 @@ input_values = {}
 
 def add_failure_window():
     global window
-    window = sg.Window(f"Fehler hinzufügen", layout, modal=True, size=(500,600), finalize=True, resizable=False, no_titlebar=True)
+    window = sg.Window(f"Fehler hinzufügen", create_layout(), modal=True, size=(500,600), finalize=True, resizable=False, no_titlebar=True)
     # sg.main_get_debug_data()
 
     

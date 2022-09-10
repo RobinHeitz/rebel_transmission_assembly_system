@@ -1,7 +1,7 @@
 import PySimpleGUI as sg
 import traceback
 
-from gui.add_improvement.pages import layout
+from gui.add_improvement.pages import create_layout
 from gui.add_improvement.definitions import AddImprovementKeys as Keys
 
 from gui.gui_helpers import ToggleButtonImageData as TI
@@ -138,7 +138,7 @@ input_values = {}
 
 def add_improvement_window():
     global window
-    window = sg.Window(f"Fehler hinzufügen", layout, modal=True, size=(500,600), finalize=True, resizable=False, no_titlebar=True)
+    window = sg.Window(f"Fehler hinzufügen", create_layout(), modal=True, size=(500,600), finalize=True, resizable=False, no_titlebar=True)
     # sg.main_get_debug_data()
 
     
