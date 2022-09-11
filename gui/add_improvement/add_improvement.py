@@ -98,7 +98,6 @@ def btn_save_improvement(event, values):
             description = input_values[Keys.MULTI_LINE_DESCRIPTION],
             assembly_step = input_values[Keys.COMBO_ASSEMBLY_STEP],
             image_filename = None,
-            # cable_must_disconnected = input_values[Keys.BTN_TOGGLE_CABLE_DISCONNECT],
             cable_must_disconnected = input_values.get(Keys.BTN_TOGGLE_CABLE_DISCONNECT, False)
         )
         
@@ -133,7 +132,8 @@ KEY_FUNCTION_MAP = {
 }
 
 window:sg.Window = None
-input_values = {}
+input_values = {
+}
 
 
 
