@@ -189,7 +189,7 @@ class Improvement(Base):
     
     title = Column(String, nullable=False)
     description = Column(String, nullable=False)
-    image_filename = Column(String, default="no_img.png")
+    image_filename = Column(String)
 
     cable_must_disconnected = Column(Boolean, default = True)
 
@@ -207,6 +207,10 @@ class Improvement(Base):
     def __eq__(self, anotherItem):
         if self.id == anotherItem.id: return True
         return False
+    
+    def get_img(self):
+        if self.image_filename == None:
+            return "gui/assembly_pictures/no_img.png"
 
 
 class ImprovementInstance(Base):

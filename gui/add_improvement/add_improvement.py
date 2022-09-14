@@ -5,6 +5,8 @@ import traceback
 from PIL import Image
 import io
 
+import shutil
+
 from gui.add_improvement.pages import create_layout
 from gui.add_improvement.definitions import AddImprovementKeys as Keys
 
@@ -12,6 +14,8 @@ from gui.gui_helpers import ToggleButtonImageData as TI
 
 from data_management.model import AssemblyStep, FailureType, Improvement, Failure
 from data_management import data_controller
+
+from gui.assembly_pictures import assembly_pictures_destination
 
 from logs.setup_logger import setup_logger
 logger = setup_logger("start_app")
@@ -79,6 +83,9 @@ def validate_values():
 
         if len(input_values[Keys.INPUT_IMPROVEMENT_TITLE]) == 0:
             return False
+        
+        if len(input_values[Keys.INPUT_FILE_BROWSER_PATH]) == 0:
+            return False
 
     except KeyError:
         return False
@@ -93,47 +100,56 @@ def btn_cancel_window(*args):
 @function_prints
 def copy_image_to_src(p:Path):
     print(p)
+    destination = assembly_pictures_destination._get_img_dir()
 
-def get_img_data(f, maxsize=(1200, 850), first=False):
-    """Generate image data using PIL
-    """
-    img = Image.open(f)
-    img.thumbnail(maxsize)
-    if first:                     # tkinter is inactive the first time
-        bio = io.BytesIO()
-        img.save(bio, format="PNG")
-        del img
-        return bio.getvalue()
+    shutil.copyfile(p, destination)
+
+
+
+
+# def get_img_data(f, maxsize=(1200, 850), first=False):
+#     """Generate image data using PIL
+#     """
+#     img = Image.open(f)
+#     img.thumbnail(maxsize)
+#     if first:                     # tkinter is inactive the first time
+#         bio = io.BytesIO()
+#         img.save(bio, format="PNG")
+#         del img
+#         return bio.getvalue()
     # return ImageTk.PhotoImage(img)
 
 
-@function_prints
-def btn_image_picker_finished(event, values):
-    # if not event in values:
-    #     return
+# @function_prints
+# def btn_image_picker_finished(event, values):
+#     # if not event in values:
+#     #     return
 
-    # path = Path(values[event])
-    # copy_image_to_src(path)
+#     # path = Path(values[event])
+#     # copy_image_to_src(path)
 
-    print(event)
-    print(values)
+#     print(event)
+#     print(values)
 
 
 
-    ...
+#     ...
 
 
 
 @function_prints
 def btn_save_improvement(event, values):
-    ...
+    """Gets called when improvement should be done."""
+
+    # copy_image_to_src(Path(input_values[Keys.INPUT_FILE_BROWSER_PATH]))
+    
     with data_controller.session_context() as session:
         
         attributes = dict(
             title = input_values[Keys.INPUT_IMPROVEMENT_TITLE],
             description = input_values[Keys.MULTI_LINE_DESCRIPTION],
             assembly_step = input_values[Keys.COMBO_ASSEMBLY_STEP],
-            image_filename = None,
+            image_filename = input_values[Keys.INPUT_FILE_BROWSER_PATH],
             cable_must_disconnected = input_values.get(Keys.BTN_TOGGLE_CABLE_DISCONNECT, False)
         )
         
@@ -165,7 +181,7 @@ KEY_FUNCTION_MAP = {
     Keys.MULTI_LINE_DESCRIPTION: input_values_changed,
     Keys.LISTBOX_FAILURES: input_values_changed,
 
-    Keys.FILE_BROWSER: btn_image_picker_finished,
+    Keys.INPUT_FILE_BROWSER_PATH: input_values_changed,
 
 }
 
@@ -177,7 +193,7 @@ input_values = {
 
 def add_improvement_window():
     global window
-    window = sg.Window(f"Fehler hinzufügen", create_layout(), modal=True, size=(500,600), finalize=True, resizable=False, no_titlebar=True)
+    window = sg.Window(f"Maßnahme hinzufügen", create_layout(), modal=True, size=(500,800), finalize=True, resizable=False, no_titlebar=True)
     # sg.main_get_debug_data()
 
     

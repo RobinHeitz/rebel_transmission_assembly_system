@@ -4,7 +4,23 @@ from data_management.model import AssemblyStep
 from gui.gui_helpers import Fonts, ToggleButtonImageData as TI
 from .definitions import AddImprovementKeys as Keys
 
+DEFAULT_PROGRESS_BAR_COMPUTE = ('#000000', '#000000')
+DarkTeal10 =  {
+    "BACKGROUND": "#0d3446", 
+    "TEXT": "#d8dfe2", 
+    "INPUT": "#71adb5", 
+    "TEXT_INPUT": "#000000", 
+    "SCROLL": "#71adb5",
+    "BUTTON": ("#FFFFFF", "#176d81"), "PROGRESS": DEFAULT_PROGRESS_BAR_COMPUTE, "BORDER": 1, "SLIDER_DEPTH": 0, "PROGRESS_DEPTH": 0,
+    "COLOR_LIST": ["#0d3446", "#176d81", "#71adb5", "#d8dfe2"], "DESCRIPTION": ["Grey", "Turquoise", "Winter", "Cold"], },
+
 sg.theme("DarkTeal10")
+
+sub_title_args = dict(
+    pad = ((0,0), (25,0)),
+    font = Fonts.font_normal,
+)
+
 
 
 def create_layout():
@@ -14,36 +30,30 @@ def create_layout():
                  background_color=sg.theme_background_color())],
         [sg.HorizontalSeparator()],
 
-        [sg.Text("Name der Maßnahme", font=Fonts.font_normal)],
+        [sg.Text("Name der Maßnahme", **sub_title_args)],
         [sg.Input(size=(None, 5), font=Fonts.font_normal,
                   k=Keys.INPUT_IMPROVEMENT_TITLE, enable_events=True, expand_x=True)],
 
-        [sg.Text("Beschreibung", font=Fonts.font_normal)],
+        [sg.Text("Beschreibung", **sub_title_args)],
         [sg.Multiline(size=(None, 4), font=Fonts.font_normal,
                       k=Keys.MULTI_LINE_DESCRIPTION, enable_events=True)],
 
-        [sg.Text("Bild der Behebung", font=Fonts.font_normal)],
-        [
+        [sg.Text("Bild der Behebung", **sub_title_args)],
+        [  
+            sg.Input(expand_x=True, k=Keys.INPUT_FILE_BROWSER_PATH, enable_events=True, disabled=True, background_color="Turquoise"),
+
             sg.FileBrowse(
             "Bild auswählen", 
             file_types = [("Bild-Dateien (PNG, JPG, etc.)", ".png", ".jpg"),],
-            enable_events=True, 
-            k=Keys.FILE_BROWSER, 
             ),
 
-        
-            
-            sg.Image(k=Keys.IMG_PREVIEW, visible=False,),
+
+
         ],
 
-        # [
 
-        # ],
-
-
-        [sg.Text("Strom bei Behebung trennen:", font=Fonts.font_normal)],
+        [sg.Text("Strom bei Behebung trennen:", **sub_title_args)],
         [
-            # sg.Push(),
             sg.T("Nicht erforderlich", font=Fonts.font_small),
             sg.Button(image_data=TI.toggle_btn_off, k=Keys.BTN_TOGGLE_CABLE_DISCONNECT, button_color=(
                 sg.theme_background_color(), sg.theme_background_color()), border_width=0, metadata=False),
@@ -51,11 +61,11 @@ def create_layout():
 
         ],
 
-        [sg.Text("Montageschritt", font=Fonts.font_normal)],
+        [sg.Text("Montageschritt", **sub_title_args)],
         [sg.Combo(values=[step for step in AssemblyStep], expand_x=True, font=Fonts.font_normal,
                   readonly=True, k=Keys.COMBO_ASSEMBLY_STEP, enable_events=True)],
 
-        [sg.Text("Fehler", font=Fonts.font_normal)],
+        [sg.Text("Fehler", **sub_title_args)],
         [sg.Listbox(values=[], select_mode=sg.LISTBOX_SELECT_MODE_MULTIPLE, k=Keys.LISTBOX_FAILURES,
                     expand_x=True, size=(None, 4), font=Fonts.font_normal, enable_events=True)],
 

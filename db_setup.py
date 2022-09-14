@@ -67,7 +67,7 @@ def create_assembly_step_1(session:Session):
         title="Encoder Verbindung überprüfen", 
         description="Überprüfe, ob der Encoder mit dem Controller verbunden ist. Eventuell ist das Kabel beschädigt, dann muss dieses ausgewechselt werden.",
         cable_must_disconnected = True, 
-        image_filename = "encoder_cable_connect.png",
+        image_filename = "gui/assembly_pictures/encoder_cable_connect.png",
         **improvement_std_kwargs, 
     )
     
@@ -167,7 +167,7 @@ def create_assembly_step_2(session:Session):
         title="Encoder Verbindung überprüfen", 
         description="Überprüfe, ob der Encoder mit dem Controller verbunden ist. Eventuell ist das Kabel beschädigt, dann muss dieses ausgewechselt werden.",
         cable_must_disconnected = True, 
-        image_filename = "encoder_cable_connect.png",
+        image_filename = "gui/assembly_pictures/encoder_cable_connect.png",
         **improvement_std_kwargs, 
     )
 
@@ -266,7 +266,7 @@ def create_assembly_step_3(session:Session):
         title="Encoder Verbindung überprüfen", 
         description="Überprüfe, ob der Encoder mit dem Controller verbunden ist. Eventuell ist das Kabel beschädigt, dann muss dieses ausgewechselt werden.",
         cable_must_disconnected = True, 
-        image_filename = "encoder_cable_connect.png",
+        image_filename = "gui/assembly_pictures/encoder_cable_connect.png",
         **improvement_std_kwargs, 
     )
 
