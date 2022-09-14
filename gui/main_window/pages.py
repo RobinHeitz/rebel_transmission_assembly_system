@@ -5,6 +5,8 @@ import image_resize
 from .definitions import KeyDefs, LayoutTypes
 from gui.gui_helpers import Fonts
 
+from typing import Tuple
+
 sg.theme("DarkTeal10")
 
 
@@ -54,11 +56,11 @@ layout_config_page = [
 
 layout_assembly_step_1 = [
     [
-        sg.Col(element_justification="center", background_color="yellow", vertical_alignment="top", layout=[
+        sg.Col(element_justification="center", vertical_alignment="top", layout=[
             [
                 sg.Col([
                     [sg.Multiline("Mein Text", enter_submits=False, auto_size_text=True, enable_events=False, expand_x=True,
-                                  write_only=True, size=(None, 6), font=Fonts.font_normal, no_scrollbar=True, expand_y=True)],
+                                  write_only=True, size=(None, 6), font=Fonts.font_normal, no_scrollbar=True, expand_y=True, k=KeyDefs.MULTILINE_ASSEMBLY_INSTRUCTION)],
                 ], vertical_alignment="top", expand_y=True),
 
                 get_image("gui/assembly_pictures/step1.png",
@@ -74,7 +76,7 @@ layout_assembly_step_1 = [
 
         ]),
         sg.VSeparator(pad=(5, 5, 5, 5,), ),
-        sg.Column(vertical_alignment="top", expand_y=True, expand_x = True, background_color="red" ,layout = [
+        sg.Column(vertical_alignment="top", expand_y=True, expand_x = True, layout = [
             
             [
                 sg.pin(
@@ -108,13 +110,7 @@ layout_assembly_step_1 = [
                 sg.B("Maßnahme hinzufügen", size=(20, 2), font=Fonts.font_normal, button_color=(
                     "black", sg.YELLOWS[0]), k=KeyDefs.BTN_ADD_IMPROVEMENT)
             ],
-
-
-
-
-
         ]),
-
     ],
 ]
 
@@ -128,16 +124,20 @@ pages_config = {
     (LayoutTypes.assembly, AssemblyStep.step_1_no_flexring): dict(
         headline="Schritt 1: Getriebe ohne Flexring testen",
         image="gui/assembly_pictures/step1.png",
+        assembly_instruction = "1) Zuerst wird der Motor mit dem Gehäuseunterteil verschraubt. \n2) Überprüfe, ob der magnetische Polpaarring auf dem Rotor verklebt ist!\n3) Anschließend werden der Encoder mit dem Encoderhalter verklebt und auf die Welle gesteckt.\n4) Die Kabel werden durch die Welle gezogen und mit dem Encoder verbunden, dabei dürfen die Kabel nicht geklemmt oder die Isolierung beschädigt werden!",
     ),
 
     (LayoutTypes.assembly, AssemblyStep.step_2_with_flexring): dict(
         headline="Schritt 2: Getriebe mit Flexring & Lagerring testen",
         image="gui/assembly_pictures/step2.png",
+        assembly_instruction = "Biege das Nadelrollenlager leicht, um es in den Flexring zu stecken. \nAnschließend kann beides zusammen in den Zahnringeinleger gesteckt werden.",
+
     ),
 
     (LayoutTypes.assembly, AssemblyStep.step_3_gearoutput_not_screwed): dict(
         headline="Schritt 3: Getriebe mit Abtrieb testen",
         image="gui/assembly_pictures/step3.png",
+        assembly_instruction = "Stecke den Abtreib auf. Durch leichtes verdrehen packen die Zähne leichter ineinander.\nWICHTIG: Den Abtrieb nicht schief aufstecken, dadurch können die Kratzer beschädigt werden!",
     ),
 
 }
@@ -150,6 +150,11 @@ pages_config = {
 def get_headline(layout: LayoutTypes, assembly_step: AssemblyStep):
     conf = pages_config.get((layout, assembly_step))
     headline = conf.get("headline")
+    return headline
+
+def get_assembly_instruction(layout: LayoutTypes, assembly_step: AssemblyStep):
+    conf = pages_config.get((layout, assembly_step))
+    headline = conf.get("assembly_instruction")
     return headline
 
 

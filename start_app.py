@@ -17,7 +17,7 @@ from current_limits import get_current_limit_for_assembly_step
 
 from gui.main_window.definitions import KeyDefs, ElementVisibilityStates, get_element_update_values, LayoutTypes
 from gui.main_window.definitions import TransmissionConfigHelper, TransmissionSize
-from gui.main_window.pages import get_headline, main_layout, get_assembly_step_data
+from gui.main_window.pages import get_assembly_instruction, get_headline, main_layout, get_assembly_step_data
 
 from gui.plotting import GraphPlotter
 from gui.shaded_overlay import shaded_overlay
@@ -377,8 +377,11 @@ def _nav_next_page(event, values):
 
 @function_prints
 def _update_headline():
+    """Updates headline and assembly description"""
     new_headline = get_headline(active_layout, current_assembly_step)
+    instruction = get_assembly_instruction(active_layout, current_assembly_step)
     window["-headline-"].update(new_headline)
+    window[KeyDefs.MULTILINE_ASSEMBLY_INSTRUCTION].update(instruction)
 
 @function_prints
 def _update_assembly_steps_data():
