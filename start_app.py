@@ -288,14 +288,11 @@ def predict_failure(measurement: Measurement, passed:bool):
     
     if passed == False:
         session:Session = data_controller.create_session()
-        failures = session.query(Failure).filter_by(assembly_step = current_assembly_step, failure_type = FailureType.overcurrent, is_verified = True).all()
-        if len(failures) != 1: raise Exception("DataStruture is corrupt! There should be only 1 instance of failure for a given AssemblyStep with FailureType overcurrent.")
-        session.close()
-       
+        failure = data_controller.get_failure_overcurrent(current_assembly_step)
         set_element_state(ElementVisibilityStates.assembly_state_5_measure_finished_failure_automatically_detected)
-        window[KeyDefs.TEXT_HIGH_CURRENT_FAILURE_DETECTED].update(f"Es wurde ein Fehler erkannt: {failures[0]}", text_color="red")
-        window[KeyDefs.COMBO_FAILURE_SELECT].update(values=failures, value=failures[0])
-        show_improvements(failures[0])
+        window[KeyDefs.TEXT_HIGH_CURRENT_FAILURE_DETECTED].update(f"Es wurde ein Fehler erkannt: {failure}", text_color="red")
+        window[KeyDefs.COMBO_FAILURE_SELECT].update(values=[failure], value=failure)
+        show_improvements(failure)
 
     else:
         answer  = sg.popup_yes_no("Kein Fehler erkannt", "Die Messung ist in Ordnung, es wurde kein Fehler erkannt. Ist dir sonst noch ein Fehler aufgefallen?")

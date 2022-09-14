@@ -19,30 +19,33 @@ from logs.setup_logger import setup_logger
 logger = setup_logger("data_controller")
 
 
-engine = db.create_engine("sqlite:///rebel.sqlite", connect_args={'check_same_thread':False},)
-connection = engine.connect()
-metadata = db.MetaData()
+# engine = db.create_engine("sqlite:///rebel.sqlite", connect_args={'check_same_thread':False},)
+# connection = engine.connect()
+# metadata = db.MetaData()
 
 current_transmission = None
 
 
-session = None
-######################
-#### helper functions
-######################
-factory = sessionmaker(bind=engine, expire_on_commit=False)
-SessionCreate = scoped_session(factory)
-
+# session = None
+def create_database(db_name = "rebel.sqlite"):
+    engine_str = f"sqlite:///{db_name}"
+    engine = db.create_engine(engine_str, connect_args={'check_same_thread':False},)
+    connection = engine.connect()
+    # metadata = db.MetaData()
+    factory = sessionmaker(bind=engine, expire_on_commit=False)
+    return scoped_session(factory)
 
 def create_session() -> Session:
-    # factory = sessionmaker(bind=engine, expire_on_commit=True)
-    session = SessionCreate()
-    return session
+    return SessionCreate()
+
+SessionCreate = create_database()
+
+
 
 #Alternative: Using context-manager
 @contextmanager
 def session_context():
-    session = SessionCreate()
+    session = create_session()
     try:
         yield session
     finally:
@@ -210,6 +213,13 @@ def delete_failure_instance(session:Session, fail_instance: FailureInstance):
     # session = get_session()
     session.delete(fail_instance)
     session.commit()
+
+
+@catch_exceptions
+def get_failure_overcurrent(session:Session, step: AssemblyStep):
+    failures = session.query(Failure).filter_by(assembly_step = step, failure_type = FailureType.overcurrent, is_verified = True).all()
+    if len(failures) != 1: raise Exception("DataStruture is corrupt! There should be only 1 instance of failure for a given AssemblyStep with FailureType overcurrent.")
+    return failures[0]
 
 
 
