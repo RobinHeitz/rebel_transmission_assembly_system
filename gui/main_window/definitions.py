@@ -136,7 +136,7 @@ ELEMENT_VISIBILITY_MAP = {
     ElementVisibilityStates.assembly_state_1_can_start_measure: {
         **_nav_disabled, 
         KeyDefs.BTN_START_VELO_MODE: {"visible": True, "disabled": False},
-        KeyDefs.CANVAS_GRAPH_PLOTTING: {"visible": True},
+        KeyDefs.CANVAS_GRAPH_PLOTTING: {"visible": False},
 
         **_failure_frames_invisible,
         KeyDefs.TEXT_MIN_MAX_CURRENT_VALUES: {"visible":False},

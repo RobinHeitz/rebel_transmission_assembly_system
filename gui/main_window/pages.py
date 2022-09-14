@@ -52,15 +52,23 @@ layout_config_page = [
 layout_assembly_step_1 = [
     [
         sg.Col(layout=[
-            [ get_image("gui/assembly_pictures/step1.png", size=(300,300), k=KeyDefs.IMAGE_ASSEMBLY)],
-        ], vertical_alignment="top"),
-        sg.VSeparator(pad=(5,5,5,5,)),
+            [
+                sg.Col([
+                    [sg.Multiline("Mein Text", enter_submits=False, auto_size_text=True, enable_events=False, expand_x=True, write_only=True, size=(None, 6), font=Fonts.font_normal, no_scrollbar=True, expand_y=True)],
+                ], vertical_alignment="top", expand_y=True),
+
+                get_image("gui/assembly_pictures/step1.png", size=(300,300), k=KeyDefs.IMAGE_ASSEMBLY),
+            ],
+            [sg.HSep(pad=10),],
+
+            [sg.Button("Messung starten",enable_events=True, k=KeyDefs.BTN_START_VELO_MODE, size=(20,2))],
+            [sg.Canvas(key=KeyDefs.CANVAS_GRAPH_PLOTTING, size=(250,250))],
+            [sg.Text("", font=Fonts.font_normal, key=KeyDefs.TEXT_MIN_MAX_CURRENT_VALUES, visible=False)],
+        
+        ], element_justification="center", vertical_alignment="top"),
+        sg.VSeparator(pad=(5,5,5,5,), ),
         sg.Column([
             [
-                sg.Button("Messung starten",enable_events=True, k=KeyDefs.BTN_START_VELO_MODE, size=(20,2)),
-            ],
-            [
-                sg.Canvas(key=KeyDefs.CANVAS_GRAPH_PLOTTING, size=(250,250)),
                 
                 sg.Frame("Fehler beheben:",font=Fonts.font_headline,layout=[
                     [sg.T("Es wurde ein Fehler erkannt: ", k=KeyDefs.TEXT_HIGH_CURRENT_FAILURE_DETECTED, font=Fonts.font_normal, visible=False)],
@@ -73,14 +81,13 @@ layout_assembly_step_1 = [
                     [sg.Listbox([], size=(50,8), enable_events=False, k=KeyDefs.LISTBOX_POSSIBLE_IMPROVEMENTS, font=Fonts.font_normal ),],
                     [sg.B("Maßnahme anwenden", enable_events=True ,k=KeyDefs.BTN_SELECT_IMPROVEMENT, font=Fonts.font_normal)],
                     
-                ], visible=False, k=KeyDefs.FRAME_FAILURE_DETECTION, vertical_alignment="top"),
+                ], visible=False, k=KeyDefs.FRAME_FAILURE_DETECTION),
 
                 ],
             
-            [sg.Text("", font=Fonts.font_normal, key=KeyDefs.TEXT_MIN_MAX_CURRENT_VALUES, visible=False)],
 
             
-        ])
+        ], vertical_alignment="top"),
 
     ],
 ]
@@ -133,7 +140,7 @@ def get_assembly_step_data(layout:LayoutTypes, assembly_step:AssemblyStep):
 
 
 
-main_layout2 = [
+main_layout = [
 
     [
         sg.Column(expand_x=True, element_justification="center",layout=[
@@ -154,18 +161,18 @@ main_layout2 = [
     [sg.VPush()],
     [
         sg.Push() , 
-        sg.B("Fehler hinzufügen", size=(30,1), font=Fonts.font_normal, button_color=("black",sg.YELLOWS[0]), k=KeyDefs.BTN_ADD_FAILURE ),
-        sg.B("Behebungsmaßnahmen hinzufügen",size=(30,1), font=Fonts.font_normal, button_color=("black", sg.YELLOWS[0]), k=KeyDefs.BTN_ADD_IMPROVEMENT)]
+        sg.B("Fehler hinzufügen", size=(20,1), font=Fonts.font_normal, button_color=("black",sg.YELLOWS[0]), k=KeyDefs.BTN_ADD_FAILURE ),
+        sg.B("Maßnahme hinzufügen",size=(20,1), font=Fonts.font_normal, button_color=("black", sg.YELLOWS[0]), k=KeyDefs.BTN_ADD_IMPROVEMENT)]
 
 ]
 
 
-main_layout = [
-    [
+# main_layout = [
+#     [
 
-        sg.Column(layout=[
-            *main_layout2
-        ], expand_x=True, expand_y=True, k="-K-")
+#         sg.Column(layout=[
+#             *main_layout2
+#         ], expand_x=True, expand_y=True, k="-K-")
 
-    ],
-]
+#     ],
+# ]
