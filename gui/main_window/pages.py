@@ -71,7 +71,7 @@ layout_assembly_step_1 = [
             [sg.Button("Messung starten", enable_events=True,
                        k=KeyDefs.BTN_START_VELO_MODE, size=(20, 2))],
             [sg.Canvas(key=KeyDefs.CANVAS_GRAPH_PLOTTING, size=(250, 250))],
-            [sg.Text("", font=Fonts.font_normal,
+            [sg.Text("", font=Fonts.font_headline,
                      key=KeyDefs.TEXT_MIN_MAX_CURRENT_VALUES, visible=False)],
 
         ]),

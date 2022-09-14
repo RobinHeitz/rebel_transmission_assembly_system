@@ -18,7 +18,7 @@ def generate_improvement_window_layout(title, description):
         
     c_canvas = sg.Col([
         [sg.Canvas(key=Key.CANVAS, size=(50,50))],
-        [sg.T("", k=Key.TEXT_MEASUREMENT_RESULT, font=font_normal)],
+        [sg.T("", k=Key.TEXT_MEASUREMENT_RESULT, font=font_headline)],
     ], expand_x=True, expand_y=True, visible=False, k=Key.COL_CANVAS, element_justification="center")
 
     c_image_assembly_steps = sg.Col([

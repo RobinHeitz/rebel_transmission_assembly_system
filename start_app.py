@@ -233,13 +233,14 @@ def handle_error_while_measurement(error):
     failures = session.query(Failure).filter_by(assembly_step = current_assembly_step, failure_type = FailureType.not_moving_oc, is_verified=True).all()
     
     
-    if len(failures) != 1: raise Exception("DataStruture is corrupt! There should be only 1 instance of failure for a given AssemblyStep with FailureType overcurrent_not_moving.")
+    if len(failures) != 1: raise Exception("DataStruture is corrupt! There should be exactly 1 instance of failure for a given AssemblyStep with FailureType overcurrent_not_moving.")
     session.close()
     
     window[KeyDefs.TEXT_HIGH_CURRENT_FAILURE_DETECTED].update(f"Es wurde ein Fehler erkannt: {failures[0]}", text_color="red", visible=True)
     window[KeyDefs.COMBO_FAILURE_SELECT].update(values=failures, value=failures[0])
     # change_combo_failures_visibility(False)
     show_improvements(failures[0])
+    set_element_state(ElementVisibilityStates.assembly_state_5_measure_finished_failure_automatically_detected)
 
 
 

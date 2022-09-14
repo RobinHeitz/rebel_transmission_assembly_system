@@ -101,7 +101,7 @@ def create_assembly_step_1(session:Session):
 
     add_to_session(session, i_change_motor,i_cable_encoder, i_change_encoder, i_connect_encoder, i_check_encoder_distance, i_locking_ring, i_tigthen_screw)
 
-    f_too_much_current.improvements = [i_change_motor]
+    f_too_much_current.improvements = [i_change_motor, i_check_encoder_distance]
     f_not_moving_oc.improvements = [i_change_motor, i_change_encoder, i_connect_encoder, i_check_encoder_distance, i_cable_encoder]
     f_noise.improvements = [i_change_motor, i_tigthen_screw, i_locking_ring]
 
@@ -149,12 +149,12 @@ def create_assembly_step_2(session:Session):
         **improvement_std_kwargs, 
     )
     
-    # i_change_gehaeuse = Improvement(
-    #     title="Gehäuseunterteil tauschen", 
-    #     description="Gehäuseunterteil entspricht eventuell nicht den Toleranzen und verformt damit den Zahnradeinleger. Zum Tauschen muss unter anderem der Motor und die Bremse (ACHTUNG: Bremskolben + Feder lose) demontiert werden.",
-    #     cable_must_disconnected = True,
-    #     **improvement_std_kwargs, 
-    # )
+    i_change_gehaeuse = Improvement(
+        title="Gehäuseunterteil tauschen", 
+        description="Gehäuseunterteil entspricht eventuell nicht den Toleranzen und verformt damit den Zahnradeinleger. Zum Tauschen muss unter anderem der Motor und die Bremse (ACHTUNG: Bremskolben + Feder lose) demontiert werden.",
+        cable_must_disconnected = True,
+        **improvement_std_kwargs, 
+    )
 
     i_change_encoder = Improvement(
         title="Encoder tauschen", 
@@ -193,9 +193,9 @@ def create_assembly_step_2(session:Session):
     )
 
     add_to_session(session, i_change_flexring, i_change_nadelrollenlager, i_change_zahnringeinleger,  
-    i_check_encoder_distance, i_connect_encoder, i_change_encoder, i_tigthen_screw, i_locking_ring)
+    i_check_encoder_distance, i_connect_encoder, i_change_encoder, i_tigthen_screw, i_locking_ring, i_change_gehaeuse)
 
-    f_too_much_current.improvements = [i_change_flexring, i_change_nadelrollenlager, i_change_zahnringeinleger]
+    f_too_much_current.improvements = [i_change_flexring, i_change_nadelrollenlager, i_change_zahnringeinleger, i_check_encoder_distance, i_change_gehaeuse]
     f_not_moving_oc.improvements = [i_check_encoder_distance, i_connect_encoder, i_change_encoder]
 
     f_noise.improvements = [i_tigthen_screw, i_locking_ring]
@@ -243,7 +243,7 @@ def create_assembly_step_3(session:Session):
     
     i_abtrieb = Improvement(
         title="Baugruppe 'Abtrieb' wechseln", 
-        description="Probiere einen anderen Abtrieb aus.", 
+        description="Tausche die Abtriebsbaugruppe aus. Achte darauf, die Kratzer nicht zu verbiegen.", 
         cable_must_disconnected = False,
         **improvement_std_kwargs, 
     )
@@ -277,19 +277,19 @@ def create_assembly_step_3(session:Session):
         **improvement_std_kwargs, 
     )
     
-    i_tigthen_screw = Improvement(
-        title="Prüfe Schraubverbindung des Motors", 
-        description="Eventuell ist der Motor nicht fest angeschraubt oder sitzt schief, überprüfe die Einbaulage des Motors. ",
-        cable_must_disconnected = False, 
-        **improvement_std_kwargs, 
-    )
+    # i_tigthen_screw = Improvement(
+    #     title="Prüfe Schraubverbindung des Motors", 
+    #     description="Eventuell ist der Motor nicht fest angeschraubt oder sitzt schief, überprüfe die Einbaulage des Motors. ",
+    #     cable_must_disconnected = False, 
+    #     **improvement_std_kwargs, 
+    # )
     
-    i_locking_ring = Improvement(
-        title="Prüfe Sicherungsringe", 
-        description="Eventuell sitzen die Sicherungsringe des Motors nicht richtig, überprüfe diese.",
-        cable_must_disconnected = False, 
-        **improvement_std_kwargs, 
-    )
+    # i_locking_ring = Improvement(
+    #     title="Prüfe Sicherungsringe", 
+    #     description="Eventuell sitzen die Sicherungsringe des Motors nicht richtig, überprüfe diese.",
+    #     cable_must_disconnected = False, 
+    #     **improvement_std_kwargs, 
+    # )
    
     i_encoder_halter_falsch_verklebt = Improvement(
         title="Prüfe Verklebung Encoder und Halter", 
@@ -315,15 +315,15 @@ def create_assembly_step_3(session:Session):
 
 
     add_to_session(session, i_change_flexring, i_change_zahnringeinleger, i_abtrieb, i_change_gehaeuse, i_change_encoder, i_connect_encoder,
-    i_check_encoder_distance, i_tigthen_screw, i_locking_ring, i_encoder_halter_falsch_verklebt, i_encoder_pins_loetung, i_encoder_unterlegscheibe)
+    i_check_encoder_distance, i_encoder_halter_falsch_verklebt, i_encoder_pins_loetung, i_encoder_unterlegscheibe)
 
     
     f_too_much_current.improvements = [i_change_flexring, i_change_zahnringeinleger, i_abtrieb, i_change_gehaeuse, 
-        i_encoder_halter_falsch_verklebt, i_encoder_pins_loetung, i_encoder_unterlegscheibe]
+        i_encoder_halter_falsch_verklebt, i_encoder_pins_loetung, i_encoder_unterlegscheibe, i_check_encoder_distance]
     
     f_not_moving_oc.improvements = [i_change_encoder, i_connect_encoder, i_check_encoder_distance]
 
-    f_noise.improvements = [i_abtrieb, i_tigthen_screw, i_locking_ring, ]
+    f_noise.improvements = [i_abtrieb, ]
 
 
 
