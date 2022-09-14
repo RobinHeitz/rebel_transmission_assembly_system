@@ -28,11 +28,16 @@ class TestClass(unittest.TestCase):
 
         assembly_counter = self.session.query(Assembly).count()
         self.assertEqual(numb_steps * transmission_counter, assembly_counter)
+
     
 
     def test_get_failure_overcurrent(self):
-        ...
-
+        for s in AssemblyStep:
+            f = data_controller.get_failure_overcurrent(step=s)
+            self.assertIsNotNone(f)
+            self.assertEqual(type(f), Failure)
+        
+        
 
 
 
