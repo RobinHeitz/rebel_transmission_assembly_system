@@ -256,25 +256,36 @@ def update_listbox_improvement_values():
     # TODO: 
 
 
+@function_prints
+def is_measurement_ok(m:Measurement):
+    logger.debug(f"evaluate_measurable_failures()")
+    limit = get_current_limit_for_assembly_step(current_assembly_step)
+    if m.max_current > limit:
+        return False
+    return True
 
 
 @function_prints
 def measurement_finished(m:Measurement):
     """Invoked by start_measurement.start_measurement. Callback function for updating gui elements based on finished measurement."""
     logger.error(f"measurement = {m} / id = {m.id}")
-    text_field = window[KeyDefs.TEXT_MIN_MAX_CURRENT_VALUES]
-    text_field.update(f"Min current: {m.min_current} ||| Max. current: {m.max_current} || Mean current: {m.mean_current}", visible=True)
-    predict_failure(m)
-
-
+    
+    def _update_text(passed:bool):
+        if passed:
+            window[KeyDefs.TEXT_MIN_MAX_CURRENT_VALUES].update(f"Messung erfolgreich! Max. current: {m.max_current}", text_color=sg.GREENS[3], visible=True)
+        else:
+            window[KeyDefs.TEXT_MIN_MAX_CURRENT_VALUES].update(f"Messung nicht erfolgreich: Max. current is {m.max_current}", text_color="red", visible=True)
+    
+    passed = is_measurement_ok(m)
+    _update_text(passed)
+    predict_failure(m, passed)
 
 
 @function_prints
-def predict_failure(measurement: Measurement):
+def predict_failure(measurement: Measurement, passed:bool):
     """Tries to predict < Indicator > (e.g. Overcurrent) based on currently measurement taken. Gets called after graph updating has stopped. """
-    limit = get_current_limit_for_assembly_step(current_assembly_step)
     
-    if measurement.max_current > limit:
+    if passed == False:
         session:Session = data_controller.create_session()
         failures = session.query(Failure).filter_by(assembly_step = current_assembly_step, failure_type = FailureType.overcurrent, is_verified = True).all()
         if len(failures) != 1: raise Exception("DataStruture is corrupt! There should be only 1 instance of failure for a given AssemblyStep with FailureType overcurrent.")
@@ -286,7 +297,7 @@ def predict_failure(measurement: Measurement):
         show_improvements(failures[0])
 
     else:
-        answer  = sg.popup_yes_no("Strom ist nicht zu hoch", "Der Strom ist nicht zu hoch. Ist dir sonst noch ein Fehler aufgefallen?")
+        answer  = sg.popup_yes_no("Kein Fehler erkannt", "Die Messung ist in Ordnung, es wurde kein Fehler erkannt. Ist dir sonst noch ein Fehler aufgefallen?")
         if answer == "Yes":
             set_element_state(ElementVisibilityStates.assembly_state_4_measure_finished_user_detects_additional_error)
             
@@ -303,12 +314,6 @@ def combo_value_changes(event, values):
     """If combo's selected value changes, Possible Improvement Window should hide."""
     show_improvements(values[event])
 
-
-# @function_prints
-# def change_combo_failures_visibility(visible):
-#     t = window[KeyDefs.COL_FAILURE_SELECTION_CONTAINER]
-#     t.update(visible=visible)
-        
 
 @function_prints
 def show_improvements(f:Failure, *args, **kwargs):
