@@ -22,6 +22,24 @@ def create_layout():
         [sg.Multiline(size=(None, 4), font=Fonts.font_normal,
                       k=Keys.MULTI_LINE_DESCRIPTION, enable_events=True)],
 
+        [sg.Text("Bild der Behebung", font=Fonts.font_normal)],
+        [
+            sg.FileBrowse(
+            "Bild auswählen", 
+            file_types = [("Bild-Dateien (PNG, JPG, etc.)", ".png", ".jpg"),],
+            enable_events=True, 
+            k=Keys.FILE_BROWSER, 
+            ),
+
+        
+            
+            sg.Image(k=Keys.IMG_PREVIEW, visible=False,),
+        ],
+
+        # [
+
+        # ],
+
 
         [sg.Text("Strom bei Behebung trennen:", font=Fonts.font_normal)],
         [

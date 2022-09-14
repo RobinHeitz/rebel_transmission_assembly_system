@@ -1,5 +1,9 @@
+from pathlib import Path
 import PySimpleGUI as sg
 import traceback
+
+from PIL import Image
+import io
 
 from gui.add_improvement.pages import create_layout
 from gui.add_improvement.definitions import AddImprovementKeys as Keys
@@ -86,6 +90,38 @@ def btn_cancel_window(*args):
     ...
     window.close()
 
+@function_prints
+def copy_image_to_src(p:Path):
+    print(p)
+
+def get_img_data(f, maxsize=(1200, 850), first=False):
+    """Generate image data using PIL
+    """
+    img = Image.open(f)
+    img.thumbnail(maxsize)
+    if first:                     # tkinter is inactive the first time
+        bio = io.BytesIO()
+        img.save(bio, format="PNG")
+        del img
+        return bio.getvalue()
+    # return ImageTk.PhotoImage(img)
+
+
+@function_prints
+def btn_image_picker_finished(event, values):
+    # if not event in values:
+    #     return
+
+    # path = Path(values[event])
+    # copy_image_to_src(path)
+
+    print(event)
+    print(values)
+
+
+
+    ...
+
 
 
 @function_prints
@@ -128,6 +164,8 @@ KEY_FUNCTION_MAP = {
     Keys.INPUT_IMPROVEMENT_TITLE: input_values_changed,
     Keys.MULTI_LINE_DESCRIPTION: input_values_changed,
     Keys.LISTBOX_FAILURES: input_values_changed,
+
+    Keys.FILE_BROWSER: btn_image_picker_finished,
 
 }
 
