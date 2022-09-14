@@ -1,10 +1,9 @@
-from email.policy import default
 from sqlalchemy import Column, Integer, String, ForeignKey, Table, Enum, DateTime, Float, Boolean
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.ext.declarative import declarative_base
 import enum
 from datetime import datetime
-from sqlalchemy.orm import session 
+from sqlalchemy.orm import session
 
 Base = declarative_base()
 
@@ -211,6 +210,7 @@ class Improvement(Base):
     def get_img(self):
         if self.image_filename == None:
             return "gui/assembly_pictures/no_img.png"
+        return self.image_filename
 
 
 class ImprovementInstance(Base):

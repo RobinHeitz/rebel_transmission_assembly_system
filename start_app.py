@@ -1,7 +1,6 @@
-import random
 import traceback 
 import PySimpleGUI as sg
-import logging, time, threading
+import time, threading
 
 from sqlalchemy.orm.session import Session
 
@@ -42,6 +41,7 @@ def function_prints(f):
 
 @function_prints
 def set_element_state(new_state:ElementVisibilityStates):
+    logger.info(f"New Element State: {new_state}")
     config = get_element_update_values(new_state, is_last_page=is_last_assembly_step)
     for el in config.keys():
         settings = config.get(el)

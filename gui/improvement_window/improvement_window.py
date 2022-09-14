@@ -98,7 +98,9 @@ def btn_start_improvement(*args):
         controller.disconnect()
         set_element_state(ElementVisibilityState.doing_improvement_steps)
     else:
-        img_update(improvement.get_img())
+        img_path = improvement.get_img()
+        img_update(img_path)
+        
         set_element_state(ElementVisibilityState.doing_last_improvement_step)
 
 
@@ -108,7 +110,10 @@ def btn_show_next_image(*args):
 
     current_image_index += 1
     if current_image_index == 2:
-        img_update(improvement.get_img())
+        img_path = improvement.get_img()
+
+        
+        img_update(img_path)
 
     elif current_image_index == 3:
         img_update("gui/assembly_pictures/cable_connected.png")

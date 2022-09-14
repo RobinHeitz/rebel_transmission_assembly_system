@@ -204,6 +204,7 @@ ELEMENT_VISIBILITY_MAP = {
     ElementVisibilityStates.improvement_no_success: {
         **_nav_disabled, 
         KeyDefs.COMBO_FAILURE_SELECT: {"visible": False},
+        KeyDefs.COL_FAILURE_SELECTION_CONTAINER: {"visible":False},
         **_btn_add_failure_improvement_visible,
     },
     

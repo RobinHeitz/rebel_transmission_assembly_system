@@ -2,6 +2,7 @@
 
 from PIL import Image
 import io, base64
+import traceback
 
 # def resize_image(path, size, output_path):
 
@@ -28,13 +29,24 @@ import io, base64
 
 
 def resize_bin_output(path, size):
+    try:
+        image = Image.open(path)
+        image = image.resize(size, Image.Resampling.LANCZOS)
+        output = io.BytesIO()
+        image.save(output, format="PNG")
+        return base64.b64encode(output.getvalue())
+
+    except AttributeError as e:
+        print("*"*10, "Error while resizing image at: ", str(path))
+        print(e)
+        print(traceback.format_exc())
+        return None
     
-    image = Image.open(path)
-    image = image.resize(size, Image.ANTIALIAS)
-    output = io.BytesIO()
-    image.save(output, format="PNG")
-    return base64.b64encode(output.getvalue())
+    except Exception as e:
+        print(e)
+        print(traceback.format_exc())
+        return None
 
 
 p = "gui/assembly_pictures/cable_connected.png"
-resize_bin_output(p, (300,300))
+str(resize_bin_output(p, (300,300)))
