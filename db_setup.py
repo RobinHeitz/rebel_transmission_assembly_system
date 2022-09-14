@@ -23,7 +23,7 @@ def add_to_session(session:Session, *args):
 ################################################
 
 _too_much_current = dict(description = "Strom > Nennwert", failure_type = FailureType.overcurrent, is_verified = True)
-_not_moving_oc = dict(description = "Overcurrent (OC) beim Anfahren, Motor dreht sich nicht.", failure_type = FailureType.not_moving_oc, is_verified = True)
+_not_moving_oc = dict(description = "Overcurrent (OC) beim Anfahren", failure_type = FailureType.not_moving_oc, is_verified = True)
 
 
 
@@ -45,7 +45,7 @@ def create_assembly_step_1(session:Session):
     f_too_much_current = Failure(assembly_step = current_step, **_too_much_current)
     f_not_moving_oc = Failure(assembly_step = current_step, **_not_moving_oc)
 
-    f_noise = Failure(description = "Beim Bewegen des Motors treten komische Geräusche wie knacken/ schleifen auf.", **failure_std_kwargs)
+    f_noise = Failure(description = "Geräusche wie knacken/ schleifen", **failure_std_kwargs)
 
     add_to_session(session, f_too_much_current, f_not_moving_oc, f_noise)
 
@@ -124,7 +124,7 @@ def create_assembly_step_2(session:Session):
     f_too_much_current = Failure(assembly_step = current_step, **_too_much_current)
     f_not_moving_oc = Failure(assembly_step = current_step, **_not_moving_oc)
 
-    f_noise = Failure(description = "Beim Bewegen des Motors treten komische Geräusche wie knacken/ schleifen auf.", **failure_std_kwargs)
+    f_noise = Failure(description = "Geräusche wie knacken/ schleifen", **failure_std_kwargs)
 
     add_to_session(session, f_too_much_current, f_not_moving_oc, f_noise)
 
@@ -223,7 +223,7 @@ def create_assembly_step_3(session:Session):
     f_too_much_current = Failure(assembly_step = current_step, **_too_much_current)
     f_not_moving_oc = Failure(assembly_step = current_step, **_not_moving_oc)
 
-    f_noise = Failure(description = "Beim Bewegen des Motors treten komische Geräusche wie knacken/ schleifen auf.", **failure_std_kwargs)
+    f_noise = Failure(description = "Geräusche wie knacken/ schleifen", **failure_std_kwargs)
 
     add_to_session(session, f_too_much_current, f_not_moving_oc, f_noise)
 
