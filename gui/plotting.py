@@ -37,20 +37,6 @@ class GraphPlotter:
             self.limit_line.remove()
             del self.limit_line
 
-
-
-
-
-        # self.logger.debug
-        # if self.limit_line != None:
-        #     self.logger.debug("self.limit_line != None")
-
-        #     self.limit_line.remove()
-        
-        # if limit != None:
-        #     self.logger.debug("self.limit != None")
-        #     self.limit_line, _ = self.ax.axhline(y = limit, color="red", linestyle = "dashed")
-        
         self.ax.set_title("Stromaufnahme eines Bewegungsablaufs")
         self.ax.set_ylabel("Strom [mA]")
         self.ax.set_xlabel("Zeitstempel")
