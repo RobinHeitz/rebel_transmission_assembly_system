@@ -2,8 +2,6 @@ import traceback
 import PySimpleGUI as sg
 import time, threading
 
-from sqlalchemy.orm.session import Session
-
 import traceback
 
 import image_resize
@@ -307,7 +305,7 @@ def combo_value_changes(event, values):
 @function_prints
 def show_improvements(f:Failure, *args, **kwargs):
     """Shows Frame + Listbox with possible Improvements."""
-    improvements = data_controller.get_improvements_for_failure(f, current_assembly_step, *args, **kwargs)
+    improvements = data_controller.get_improvements_for_failure(current_assembly_step, f, *args, **kwargs)
     
     if len(improvements) > 0:
         window[KeyDefs.FRAME_FAILURE_DETECTION].update(visible=True)

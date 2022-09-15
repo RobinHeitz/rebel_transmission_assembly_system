@@ -11,7 +11,7 @@ from contextlib import contextmanager
 
 import traceback
 import threading
-from typing import List, Tuple
+from typing import List, Tuple, Set
 
 # logger setup
 
@@ -259,24 +259,61 @@ def create_improvement_instance(session:Session, imp:Improvement):
     return i
 
 
-@catch_exceptions
-def get_improvements_for_failure(session:Session, fail:Failure, assembly_step, *args, **kwargs) -> List[Improvement]:
+# @catch_exceptions
+# def get_improvements_for_failure(session:Session, fail:Failure, assembly_step, *args, **kwargs) -> List[Improvement]:
+    
+#     fail = session.query(Failure).get(fail.id)
+#     improvements:List[Improvement] = fail.improvements
+    
+#     t = get_current_transmission()
+
+#     def __item_not_in_list(item, list_):
+#         for i in list_:
+#             if i == item: return False
+#         return True
+
+#     imp_instances: List[ImprovementInstance] = session.query(ImprovementInstance).filter_by(assembly_step = assembly_step, transmission = t).all()
+#     done_improvements = [i.improvement for i in imp_instances]
+#     filtered = filter(lambda item: __item_not_in_list(item, done_improvements) ,improvements)
+#     improvements = list(filtered)
+
+#     return improvements
+
+
+    
+@catch_exceptions  
+def get_improvements_for_failure(session:Session, step:AssemblyStep, fail:Failure) -> List[Improvement]:
+    """Based on parameter fail, query not yet tried improvements for this current transmission.
+    Set of not tried improvement is than sorted by global (over all transmissions) success rate (Based on ImprovementInstances).
+    If success rate of 2 improvement equals, second sort-key is the total (global) number of ImprovementInstances of this improvement.  
+    """
+    
+    def _sort_improvements_by_success_probability(improvements:Set[Improvement], session:Session):
+        def _get_success_prop(element:Improvement, session:Session):
+            ...
+            num_total = session.query(ImprovementInstance).filter_by(improvement = element).count()
+            if num_total == 0: return (0,0)
+            num_success = session.query(ImprovementInstance).filter_by(improvement = element, successful = True).count()
+            return (num_success/num_total, num_total)
+        
+        return sorted(improvements, key=lambda element: _get_success_prop(element, session), reverse=True)
+
+    
     
     fail = session.query(Failure).get(fail.id)
-    improvements:List[Improvement] = fail.improvements
-    
-    t = get_current_transmission()
+    t = session.query(Transmission).order_by(Transmission.id.desc()).first()
+    possible_improvements = set(fail.improvements)
 
-    def __item_not_in_list(item, list_):
-        for i in list_:
-            if i == item: return False
-        return True
+    done_imp_instances:List[ImprovementInstance] = session.query(ImprovementInstance).filter_by(transmission = t, assembly_step = step).all()
+    done_improvements = {instance.improvement for instance in done_imp_instances}
 
-    imp_instances: List[ImprovementInstance] = session.query(ImprovementInstance).filter_by(assembly_step = assembly_step, transmission = t).all()
-    done_improvements = [i.improvement for i in imp_instances]
-    filtered = filter(lambda item: __item_not_in_list(item, done_improvements) ,improvements)
-    improvements = list(filtered)
-    return improvements
+    improvements_not_tried_yet = possible_improvements - done_improvements
+    sorted_items = _sort_improvements_by_success_probability(improvements_not_tried_yet, session)
+    return sorted_items
+
+
+
+
 
 @catch_exceptions
 def delete_improvement_instance(session:Session, imp_instance: ImprovementInstance):

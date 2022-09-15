@@ -212,6 +212,9 @@ class Improvement(Base):
             return "gui/assembly_pictures/no_img.png"
         return self.image_filename
 
+    def __hash__(self):
+        return self.id
+
 
 class ImprovementInstance(Base):
     __tablename__ = "improvementinstance"
@@ -228,3 +231,6 @@ class ImprovementInstance(Base):
 
     def __str__(self):
         return f"ImprovementInstance: Improvement-ID = {self.improvement_id} | Transmission-ID = {self.transmission_id}"
+    
+    def __repr__(self):
+        return f"Imp-Instance {self.id} / improvement-id: {self.improvement_id} / successful: {self.successful}"
