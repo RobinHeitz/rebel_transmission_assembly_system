@@ -31,6 +31,10 @@ from gui.main_window import start_measurement
 from logs.setup_logger import setup_logger
 logger = setup_logger("start_app")
 
+def get_image(path, size, **kwargs):
+    data = image_resize.resize_bin_output(path, size)
+    return sg.Image(data, size=size, **kwargs)
+
 
 def function_prints(f):
     def wrap(*args, **kwargs):
@@ -477,6 +481,12 @@ def condition_leave_assembly_step_3():
 
 if __name__ == "__main__":
     sg.theme("DarkTeal10")
+
+    
+    splash_window = sg.Window("igus", [[get_image("gui/assembly_pictures/igus_logo_transparent.png",size=(640,360))]], transparent_color=sg.theme_background_color(), no_titlebar=True, keep_on_top=True, ).read(timeout=3500, close=True)
+   
+   
+   
     window = sg.Window("ReBeL Getriebe Montage & Kalibrierung", main_layout, size=(1200,1000), finalize=True, location=(0,0),resizable=True)
 
     active_layout = LayoutTypes.config
