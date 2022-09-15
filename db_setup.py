@@ -53,9 +53,17 @@ def create_assembly_step_1(session:Session):
         title="Motor tauschen", 
         description="Zum Tauschend es Motors müssen die Schrauben auf der Unterseite gelöst werden. ACHTUNG: Der Bremskolben könnte dann herausfallen.",
         cable_must_disconnected = True,
+        image_filename = "gui/assembly_pictures/motor_wechseln.png",
         **improvement_std_kwargs, 
     )
 
+    i_change_lager_rotor = Improvement(
+        title="Kugellager Rotor prüfen", 
+        description="Prüfe das Kugellager im Rotor auf Schwergängigkeit.",
+        cable_must_disconnected = True, 
+        image_filename = "gui/assembly_pictures/lager_rotor.jpg",
+        **improvement_std_kwargs, 
+    )
     i_change_encoder = Improvement(
         title="Encoder tauschen", 
         description="Den alten Encoder von Welle abziehen und mit neuem Encoder ersetzen. Anschließend müssen die Kabel verbunden werden.",
@@ -96,14 +104,15 @@ def create_assembly_step_1(session:Session):
         title="Prüfe Sicherungsringe", 
         description="Eventuell sitzen die Sicherungsringe des Motors nicht richtig, überprüfe diese.",
         cable_must_disconnected = False, 
+        image_filename = "gui/assembly_pictures/sicherungsring.png",
         **improvement_std_kwargs, 
     )
 
-    add_to_session(session, i_change_motor,i_cable_encoder, i_change_encoder, i_connect_encoder, i_check_encoder_distance, i_locking_ring, i_tigthen_screw)
+    add_to_session(session, i_change_motor,i_cable_encoder, i_change_encoder, i_connect_encoder, i_check_encoder_distance, i_locking_ring, i_tigthen_screw, i_change_lager_rotor)
 
-    f_too_much_current.improvements = [i_change_motor, i_check_encoder_distance]
+    f_too_much_current.improvements = [i_change_motor, i_check_encoder_distance, i_change_lager_rotor]
     f_not_moving_oc.improvements = [i_change_motor, i_change_encoder, i_connect_encoder, i_check_encoder_distance, i_cable_encoder]
-    f_noise.improvements = [i_change_motor, i_tigthen_screw, i_locking_ring]
+    f_noise.improvements = [i_change_motor, i_tigthen_screw, i_locking_ring, i_change_lager_rotor]
 
    
 def create_assembly_step_2(session:Session):
@@ -189,6 +198,7 @@ def create_assembly_step_2(session:Session):
         title="Prüfe Sicherungsringe", 
         description="Eventuell sitzen die Sicherungsringe des Motors nicht richtig, überprüfe diese.",
         cable_must_disconnected = False, 
+        image_filename = "gui/assembly_pictures/sicherungsring.png",
         **improvement_std_kwargs, 
     )
 
@@ -245,6 +255,7 @@ def create_assembly_step_3(session:Session):
         title="Baugruppe 'Abtrieb' wechseln", 
         description="Tausche die Abtriebsbaugruppe aus. Achte darauf, die Kratzer nicht zu verbiegen.", 
         cable_must_disconnected = False,
+        image_filename = "gui/assembly_pictures/abtrieb_wechseln.jpg",
         **improvement_std_kwargs, 
     )
     
@@ -277,20 +288,6 @@ def create_assembly_step_3(session:Session):
         **improvement_std_kwargs, 
     )
     
-    # i_tigthen_screw = Improvement(
-    #     title="Prüfe Schraubverbindung des Motors", 
-    #     description="Eventuell ist der Motor nicht fest angeschraubt oder sitzt schief, überprüfe die Einbaulage des Motors. ",
-    #     cable_must_disconnected = False, 
-    #     **improvement_std_kwargs, 
-    # )
-    
-    # i_locking_ring = Improvement(
-    #     title="Prüfe Sicherungsringe", 
-    #     description="Eventuell sitzen die Sicherungsringe des Motors nicht richtig, überprüfe diese.",
-    #     cable_must_disconnected = False, 
-    #     **improvement_std_kwargs, 
-    # )
-   
     i_encoder_halter_falsch_verklebt = Improvement(
         title="Prüfe Verklebung Encoder und Halter", 
         description="Eventuell ist der Encoder nicht bündig mit dem Halter verklebt. Wenn es einen Spalt gibt (bereits 1 mm reicht), muss die Verklebung erneuert werden.",
@@ -302,6 +299,7 @@ def create_assembly_step_3(session:Session):
         title="Lötpins des Encoders schleifen auf Polpaarring", 
         description="Falls die Lötpins an der Encoderunterseite nicht entfernt wurden, schleifen sie auf dem Polpaarring. Mit einer Kneifzange können die Pins entfernt werden.",
         cable_must_disconnected = True, 
+        image_filename = "gui/assembly_pictures/loetpins.png",
         **improvement_std_kwargs, 
     )
     
