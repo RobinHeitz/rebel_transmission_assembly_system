@@ -228,18 +228,10 @@ def measurement_error_callback(error):
 @function_prints
 def handle_error_while_measurement(error):
     logger.info(f"Error code: {error} / assembly_step = {current_assembly_step}")
-    session:Session = data_controller.create_session()
-    
-    failures = session.query(Failure).filter_by(assembly_step = current_assembly_step, failure_type = FailureType.not_moving_oc, is_verified=True).all()
-    
-    
-    if len(failures) != 1: raise Exception("DataStruture is corrupt! There should be exactly 1 instance of failure for a given AssemblyStep with FailureType overcurrent_not_moving.")
-    session.close()
-    
-    window[KeyDefs.TEXT_HIGH_CURRENT_FAILURE_DETECTED].update(f"Es wurde ein Fehler erkannt: {failures[0]}", text_color="red", visible=True)
-    window[KeyDefs.COMBO_FAILURE_SELECT].update(values=failures, value=failures[0])
-    # change_combo_failures_visibility(False)
-    show_improvements(failures[0])
+    failure = data_controller.get_failure_not_moving_OC(current_assembly_step)
+    window[KeyDefs.TEXT_HIGH_CURRENT_FAILURE_DETECTED].update(f"Es wurde ein Fehler erkannt: {failure}", text_color="red", visible=True)
+    window[KeyDefs.COMBO_FAILURE_SELECT].update(values=[failure], value=failure)
+    show_improvements(failure)
     set_element_state(ElementVisibilityStates.assembly_state_5_measure_finished_failure_automatically_detected)
 
 
@@ -287,7 +279,6 @@ def predict_failure(measurement: Measurement, passed:bool):
     """Tries to predict < Indicator > (e.g. Overcurrent) based on currently measurement taken. Gets called after graph updating has stopped. """
     
     if passed == False:
-        session:Session = data_controller.create_session()
         failure = data_controller.get_failure_overcurrent(current_assembly_step)
         set_element_state(ElementVisibilityStates.assembly_state_5_measure_finished_failure_automatically_detected)
         window[KeyDefs.TEXT_HIGH_CURRENT_FAILURE_DETECTED].update(f"Es wurde ein Fehler erkannt: {failure}", text_color="red")
@@ -335,10 +326,7 @@ def btn_improvement_selection_clicked(event, values):
     logger.info(f"btn_improvement_selection_clicked: {selected_improvement} | selected_failure = {selected_failure} | measurement = {latest_measure}")
 
     fail_instance, imp_instance = improvement_window.improvement_window(controller, current_transmission, selected_failure, selected_improvement, latest_measure, current_assembly_step)
-    
-    # for some reason; need to create anothger sesseion since this value is wrooong
-    session = data_controller.create_session()
-    imp_instance = session.query(ImprovementInstance).get(imp_instance.id)
+    imp_instance = data_controller.refresh_improvement_instance(imp_instance.id)
 
     if imp_instance.successful == True:
         set_element_state(ElementVisibilityStates.improvement_success)

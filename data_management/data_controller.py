@@ -221,6 +221,12 @@ def get_failure_overcurrent(session:Session, step: AssemblyStep):
     if len(failures) != 1: raise Exception("DataStruture is corrupt! There should be only 1 instance of failure for a given AssemblyStep with FailureType overcurrent.")
     return failures[0]
 
+@catch_exceptions
+def get_failure_not_moving_OC(session:Session, step: AssemblyStep):
+    failures = session.query(Failure).filter_by(assembly_step = step, failure_type = FailureType.not_moving_oc, is_verified=True).all()
+    if len(failures) != 1: raise Exception("DataStruture is corrupt! There should be only 1 instance of failure for a given AssemblyStep with FailureType overcurrent.")
+    return failures[0]
+
 
 
 @catch_exceptions
@@ -310,3 +316,9 @@ def update_improvement_measurement_relation(session:Session, m:Measurement, imp_
     imp_instance = session.query(ImprovementInstance).get(imp_instance.id)
     imp_instance.measurement = m
     session.commit()
+
+
+@catch_exceptions
+def refresh_improvement_instance(session:Session, id):
+    ...
+    return session.query(ImprovementInstance).get(id)

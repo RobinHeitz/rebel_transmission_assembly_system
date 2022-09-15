@@ -327,10 +327,7 @@ def create_assembly_step_3(session:Session):
 
 
 
-
-
-if __name__ == "__main__":
-
+def main():
     with data_controller.session_context() as session:
         model_classes = [Transmission, Assembly, Measurement, DataPoint, Failure, FailureInstance, Improvement, ImprovementInstance]
 
@@ -347,6 +344,11 @@ if __name__ == "__main__":
 
 
         session.commit()
+    ...
+
+
+if __name__ == "__main__":
+    main()
 
 
 

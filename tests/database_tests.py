@@ -36,6 +36,12 @@ class TestClass(unittest.TestCase):
             f = data_controller.get_failure_overcurrent(step=s)
             self.assertIsNotNone(f)
             self.assertEqual(type(f), Failure)
+
+    def test_get_failure_not_moving_OC(self):
+        for s in AssemblyStep:
+            f = data_controller.get_failure_not_moving_OC(step=s)
+            self.assertIsNotNone(f)
+            self.assertEqual(type(f), Failure)
         
         
 
