@@ -85,20 +85,20 @@ class TestClass(unittest.TestCase):
     
 # %%
 
-from ..data_management import data_controller
 
-def test_improvement_sorting():
+    def test_improvement_sorting(self):
 
-    with data_controller.session_context() as session:
+        with data_controller.session_context() as session:
 
-        step = AssemblyStep.step_1_no_flexring
-        failure = session.query(Failure).filter_by(assembly_step = step, failure_type = FailureType.not_measurable).first()
+            step = AssemblyStep.step_1_no_flexring
+            failure = session.query(Failure).filter_by(assembly_step = step, failure_type = FailureType.not_measurable).first()
 
-        imp = failure.improvements[0]
+            imp = failure.improvements[0]
+
+            imp_instance = ImprovementInstance(successful = True, assembly_step = step, improvement = imp, )
 
 
 
-test_improvement_sorting()
 
 
 
