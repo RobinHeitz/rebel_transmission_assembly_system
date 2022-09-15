@@ -25,18 +25,18 @@ class GraphPlotter:
         self.logger.info(f"_plot()| limit: {limit}")
         self.line.set_xdata(data_x)
         self.line.set_ydata(data_y)
-        # self.line.set_label("Label Test")
-        # self.ax.legend()
+        self.line.set_label("Stromverlauf")
 
         if limit != None and self.limit_line == None:
             if self.limit_line == None:
-                self.limit_line = self.ax.axhline(y=limit, color="red", linestyle="dashed")
+                self.limit_line = self.ax.axhline(y=limit, color="red", linestyle="dashed", label="Max. Strom")
                 self.logger.info(f"Numb of lines: {self.ax.lines}")
 
         elif limit == None and self.limit_line != None:
             self.limit_line.remove()
             del self.limit_line
 
+        plt.legend()
         self.ax.set_title("Stromaufnahme eines Bewegungsablaufs")
         self.ax.set_ylabel("Strom [mA]")
         self.ax.set_xlabel("Zeitstempel")

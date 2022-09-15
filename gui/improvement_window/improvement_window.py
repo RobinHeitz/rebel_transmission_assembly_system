@@ -151,8 +151,9 @@ def improvement_process_steps_done(*args):
 @function_prints
 def btn_start_measurement(imp_instance:ImprovementInstance, *args):
     # logger.info(args)
+    limit = get_current_limit_for_assembly_step(assembly_step)
     set_element_state(ElementVisibilityState.doing_measurement)
-    start_measurement(controller, assembly_step, measurement_finished, measurement_aborted_due_to_error, plotter)
+    start_measurement(controller, assembly_step, measurement_finished, measurement_aborted_due_to_error, plotter, limit)
 
 
 @function_prints
