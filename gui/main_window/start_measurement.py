@@ -24,6 +24,10 @@ consolerHandler = logging.StreamHandler()
 consolerHandler.setFormatter(logFormatter)
 logger.addHandler(consolerHandler)
 
+VELOCITY = 15
+DURATION = 5
+
+
 
 def stop_current_thread():
     global thread_graph_updater
@@ -46,8 +50,8 @@ def start_measurement(controller: RebelAxisController, assembly_step:AssemblySte
     thread_graph_updater.start()
 
     controller.start_movement_velocity_mode(
-        velocity=10, 
-        duration=3, 
+        velocity=VELOCITY, 
+        duration=DURATION, 
         invoke_stop_function=lambda: stop_graph_update(stop_func), 
         invoke_error_function=lambda *args: cancel_graph_update(error_func, *args))
 

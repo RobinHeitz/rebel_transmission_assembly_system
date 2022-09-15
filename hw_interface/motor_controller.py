@@ -526,8 +526,8 @@ class RebelAxisController:
         channel: Current PCANChannel
         velo: Velocity transmission-sided in [°/sec]"""
         
-        if abs(velo) > 36:
-            raise TypeError("Parameter velo should not be greater than 36°/sec!")
+        # if abs(velo) > 36:
+        #     raise TypeError("Parameter velo should not be greater than 36°/sec!")
 
         rpm = velo * 50/6 # w = 360°/6 * n[1/min] with [w] = °/sec; RPM_motor =  50* RPM_Gear
         velo_bytes = int_to_bytes(rpm, 2, True)
