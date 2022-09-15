@@ -36,7 +36,7 @@ class GraphPlotter:
             self.limit_line.remove()
             del self.limit_line
 
-        plt.legend()
+        plt.legend(loc="center right")
         self.ax.set_title("Stromaufnahme eines Bewegungsablaufs")
         self.ax.set_ylabel("Strom [mA]")
         self.ax.set_xlabel("Zeitstempel")

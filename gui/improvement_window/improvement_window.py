@@ -76,7 +76,9 @@ def set_element_state(new_state:ElementVisibilityState):
 
 @function_prints
 def btn_close_improvement_window(*args):
-    ...
+    """If error gets automatically detected, BTN for closing window is shown."""
+    close_window()
+    
 
 @function_prints
 def close_window():
@@ -85,7 +87,6 @@ def close_window():
 @function_prints
 def btn_cancel_improvement(*args):
     ...
-    
 
 @function_prints
 def btn_start_improvement(*args):
