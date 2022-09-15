@@ -1,3 +1,4 @@
+from multiprocessing.sharedctypes import Value
 import traceback 
 import PySimpleGUI as sg
 import time, threading
@@ -21,6 +22,7 @@ from gui.plotting import GraphPlotter
 from gui.shaded_overlay import shaded_overlay
 
 from gui.improvement_window import improvement_window
+from gui.improvement_window.improvement_window import STATUS_CANCEL, STATUS_CLOSE_FAIL_NOT_FIXED, STATUS_USER_SELECTED_FAILURE_FIXED, STATUS_USER_SELECTED_FAILURE_IS_NOT_FIXED
 from gui.add_improvement.add_improvement import add_improvement_window
 from gui.add_failure.add_failure import add_failure_window
 
@@ -324,7 +326,40 @@ def btn_improvement_selection_clicked(event, values):
     latest_measure = data_controller.get_current_measurement_instance()
     logger.info(f"btn_improvement_selection_clicked: {selected_improvement} | selected_failure = {selected_failure} | measurement = {latest_measure}")
 
-    fail_instance, imp_instance = improvement_window.improvement_window(controller, current_transmission, selected_failure, selected_improvement, latest_measure, current_assembly_step)
+    return_status, fail_instance, imp_instance = improvement_window.improvement_window(controller, current_transmission, selected_failure, selected_improvement, latest_measure, current_assembly_step)
+    logger.debug(f"Received status from Improvement window: {return_status}")
+    
+    if return_status == "" or return_status is None:
+        raise ValueError("'return_stats' from improvement_window should NEVER be empty string or None.")
+    
+
+
+
+
+
+    # TODO: React to different status from Improvement window
+
+
+    
+    if return_status == STATUS_CANCEL:
+        ...
+    elif return_status == STATUS_CLOSE_FAIL_NOT_FIXED:
+        ...
+    elif return_status == STATUS_USER_SELECTED_FAILURE_FIXED:
+        ...
+    elif return_status == STATUS_USER_SELECTED_FAILURE_IS_NOT_FIXED:
+        ...
+    else:
+        raise ValueError(f"'return_status' should be not different from if/elif's: {return_status}")
+    
+    
+    
+
+
+
+
+
+
     imp_instance = data_controller.refresh_improvement_instance(imp_instance.id)
 
     if imp_instance.successful == True:

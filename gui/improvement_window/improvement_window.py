@@ -29,7 +29,15 @@ sg.theme("DarkTeal10")
 ### DEFINITIONS ###
 ###################
 
+STATUS_CANCEL = "STATUS_CANCEL"
+STATUS_CLOSE_FAIL_NOT_FIXED = "STATUS_CLOSE_FAIL_NOT_FIXED"
+STATUS_USER_SELECTED_FAILURE_FIXED = "STATUS_USER_SELECTED_FAILURE_FIXED"
+STATUS_USER_SELECTED_FAILURE_IS_NOT_FIXED = "STATUS_USER_SELECTED_FAILURE_IS_NOT_FIXED"
+ALL_STATUSES = [
+    STATUS_CANCEL, STATUS_CLOSE_FAIL_NOT_FIXED, STATUS_USER_SELECTED_FAILURE_FIXED, STATUS_USER_SELECTED_FAILURE_IS_NOT_FIXED
+]
 
+return_status = None # Status of improvement; gets returned so start_app.py can handle different scenarios
 
 window = None
 controller = None
@@ -45,6 +53,12 @@ current_image_index = 1
 #################
 ### FUNCTIONS ###
 #################
+
+def set_return_status(status:str):
+    if status not in ALL_STATUSES:
+        raise Exception("ERROR: Status is not part of 'ALL_STATUSES'")
+    global return_status
+    return_status = status
 
 def function_prints(f):
     def wrap(*args, **kwargs):
@@ -77,7 +91,9 @@ def set_element_state(new_state:ElementVisibilityState):
 @function_prints
 def btn_close_improvement_window(*args):
     """If error gets automatically detected, BTN for closing window is shown."""
+    set_return_status(STATUS_CLOSE_FAIL_NOT_FIXED)
     close_window()
+    
     
 
 @function_prints
@@ -86,7 +102,15 @@ def close_window():
 
 @function_prints
 def btn_cancel_improvement(*args):
-    ...
+    """If accidently an improvement was selected from list, it can be canceld here.
+    Removes improvement instance and failure instance therefore."""
+    set_return_status(STATUS_CANCEL)
+    data_controller.cancel_improvement(fail_instance, imp_instance)
+    close_window()
+
+
+
+
 
 @function_prints
 def btn_start_improvement(*args):
@@ -205,13 +229,13 @@ def is_measurement_ok(m:Measurement):
 
 
 
-@function_prints
-def cancel_improvement_button_clicked(imp_instance):
-    logger.debug(f"cancel_improvement_button_clicked()")
-    data_controller.delete_improvement_instance(imp_instance)
-    data_controller.data_controller.delete_failure_instance(fail_instance)
-    # window.write_event_value("Exit", None)
-    close_window()
+# @function_prints
+# def cancel_improvement_button_clicked(imp_instance):
+#     logger.debug(f"cancel_improvement_button_clicked()")
+#     data_controller.delete_improvement_instance(imp_instance)
+#     data_controller.data_controller.delete_failure_instance(fail_instance)
+#     # window.write_event_value("Exit", None)
+#     close_window()
 
 
 
@@ -220,6 +244,7 @@ def cancel_improvement_button_clicked(imp_instance):
 def user_selected_failure_is_fixed():
     """Btn click: For not-measureable failures, user decides whether failure is fixed or not."""
     logger.debug(f"user_selected_failure_is_fixed")
+    set_return_status(STATUS_USER_SELECTED_FAILURE_FIXED)
     data_controller.set_success_status(imp_instance, True)
     close_window()
 
@@ -228,6 +253,7 @@ def user_selected_failure_is_fixed():
 def user_selected_failure_still_exists():
     """Btn click: For not-measureable failures, user decides whether failure is fixed or not."""
     logger.debug(f"user_selected_failure_still_exists")
+    set_return_status(STATUS_USER_SELECTED_FAILURE_IS_NOT_FIXED)
     data_controller.set_success_status(imp_instance, False)
     close_window()
 
@@ -277,7 +303,7 @@ def improvement_window(c:RebelAxisController, t:Transmission, selected_failure:F
         
     window.close()
 
-    return fail_instance, imp_instance
+    return return_status ,fail_instance, imp_instance
 
 
 key_function_map = {

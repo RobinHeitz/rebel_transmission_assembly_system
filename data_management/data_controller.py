@@ -259,6 +259,8 @@ def create_improvement_instance(session:Session, imp:Improvement):
     return i
 
 
+
+
 # @catch_exceptions
 # def get_improvements_for_failure(session:Session, fail:Failure, assembly_step, *args, **kwargs) -> List[Improvement]:
     
@@ -337,8 +339,16 @@ def setup_improvement_start(session:Session, t:Transmission, failure:Failure, im
     session.commit()
     logger.warning("IS FAILURE_INSTANCE.MEASUREMENT == NULL???")
     logger.warning(failure_instance.measurement)
-
     return failure_instance, improvement_instance
+
+
+@catch_exceptions
+def cancel_improvement(session:Session, fail_instance: FailureInstance, imp_instance:ImprovementInstance):
+    """If improvement gets canceld, remove failure instance and improvement instance created prior with setup_improvement_start()."""
+    session.delete(fail_instance)
+    session.delete(imp_instance)
+    session.commit()
+
 
 @catch_exceptions
 def set_success_status(session:Session, imp_instance:ImprovementInstance, status:bool):
