@@ -68,6 +68,7 @@ def create_assembly_step_1(session:Session):
         title="Encoder tauschen", 
         description="Den alten Encoder von Welle abziehen und mit neuem Encoder ersetzen. Anschließend müssen die Kabel verbunden werden.",
         cable_must_disconnected = True, 
+        image_filename = "gui/assembly_pictures/encoder_change.png",
         **improvement_std_kwargs, 
     )
 
@@ -83,6 +84,7 @@ def create_assembly_step_1(session:Session):
         title="Encoder Kabel überprüfen", 
         description="Überprüfe, ob die Kabel des Encoders beschädigt sind, dann müssen dieses ausgewechselt werden.",
         cable_must_disconnected = True, 
+        image_filename = "gui/assembly_pictures/encoder_cable_damaged.png",
         **improvement_std_kwargs, 
     )
 
@@ -90,6 +92,7 @@ def create_assembly_step_1(session:Session):
         title="Abstand Encoder mit Polpaarring überprüfen", 
         description="Eventuell ist der Abstand von Encoder zum Polpaarring zu groß. Überprüfe, ob der Encoder bis zum Anschlag auf die Welle geschoben ist.",
         cable_must_disconnected = False, 
+        image_filename = "gui/assembly_pictures/encoder_distance.png",
         **improvement_std_kwargs, 
     )
     
@@ -97,6 +100,7 @@ def create_assembly_step_1(session:Session):
         title="Prüfe Schraubverbindung des Motors", 
         description="Eventuell ist der Motor nicht fest angeschraubt oder sitzt schief, überprüfe die Einbaulage des Motors. ",
         cable_must_disconnected = False, 
+        image_filename = "gui/assembly_pictures/motor_tigthen_screws.png",
         **improvement_std_kwargs, 
     )
     
@@ -148,6 +152,7 @@ def create_assembly_step_2(session:Session):
         title="Nadelrollenlager tauschen", 
         description="Nadelrollenlager prüfen und austauschen, wenn Nadelrollen klemmen. Zum herausnehmen am besten bei der Trennung anfangen.",
         cable_must_disconnected = False,
+        image_filename = "gui/assembly_pictures/wechsel_nadelrollen_flexring.png",
         **improvement_std_kwargs, 
     )
    
@@ -169,6 +174,7 @@ def create_assembly_step_2(session:Session):
         title="Encoder tauschen", 
         description="Den alten Encoder von Welle abziehen und mit neuem Encoder ersetzen. Anschließend müssen die Kabel verbunden werden.",
         cable_must_disconnected = True, 
+        image_filename = "gui/assembly_pictures/encoder_change.png",
         **improvement_std_kwargs, 
     )
 
@@ -184,6 +190,7 @@ def create_assembly_step_2(session:Session):
         title="Abstand Encoder mit Polpaarring überprüfen", 
         description="Eventuell ist der Abstand von Encoder zum Polpaarring zu groß. Überprüfe, ob der Encoder bis zum Anschlag auf die Welle geschoben ist.",
         cable_must_disconnected = False, 
+        image_filename = "gui/assembly_pictures/encoder_distance.png",
         **improvement_std_kwargs, 
     )
     
@@ -191,6 +198,7 @@ def create_assembly_step_2(session:Session):
         title="Prüfe Schraubverbindung des Motors", 
         description="Eventuell ist der Motor nicht fest angeschraubt oder sitzt schief, überprüfe die Einbaulage des Motors. ",
         cable_must_disconnected = False, 
+        image_filename = "gui/assembly_pictures/motor_tigthen_screws.png",
         **improvement_std_kwargs, 
     )
     
@@ -241,6 +249,7 @@ def create_assembly_step_3(session:Session):
         title="Flexring tauschen", 
         description="Flexring per Hand oder mit einer Zange vorsichtig herausziehen.",
         cable_must_disconnected = False,
+        image_filename = "gui/assembly_pictures/wechsel_nadelrollen_flexring.png",
         **improvement_std_kwargs, 
     )
     
@@ -270,6 +279,7 @@ def create_assembly_step_3(session:Session):
         title="Encoder tauschen", 
         description="Den alten Encoder von Welle abziehen und mit neuem Encoder ersetzen. Anschließend müssen die Kabel verbunden werden.",
         cable_must_disconnected = True, 
+        image_filename = "gui/assembly_pictures/encoder_change.png",
         **improvement_std_kwargs, 
     )
 
@@ -285,6 +295,7 @@ def create_assembly_step_3(session:Session):
         title="Abstand Encoder mit Polpaarring überprüfen", 
         description="Eventuell ist der Abstand von Encoder zum Polpaarring zu groß. Überprüfe, ob der Encoder bis zum Anschlag auf die Welle geschoben ist.",
         cable_must_disconnected = False, 
+        image_filename = "gui/assembly_pictures/encoder_distance.png",
         **improvement_std_kwargs, 
     )
     
@@ -292,6 +303,7 @@ def create_assembly_step_3(session:Session):
         title="Prüfe Verklebung Encoder und Halter", 
         description="Eventuell ist der Encoder nicht bündig mit dem Halter verklebt. Wenn es einen Spalt gibt (bereits 1 mm reicht), muss die Verklebung erneuert werden.",
         cable_must_disconnected = True, 
+        image_filename = "gui/assembly_pictures/encoder_klebung_falsch.png",
         **improvement_std_kwargs, 
     )
   
