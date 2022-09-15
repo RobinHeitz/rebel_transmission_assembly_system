@@ -29,7 +29,7 @@ def get_data():
         )
     sorted_ = sorted(data)
     return [i.tics for i in sorted_],[i.current for i in sorted_]
-
+ 
 
 def update_graph_thread(window:sg.Window):
     while True:

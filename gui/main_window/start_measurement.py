@@ -30,7 +30,7 @@ def stop_current_thread():
     thread_graph_updater.do_plot = False
 
 
-def start_measurement(controller: RebelAxisController, assembly_step:AssemblyStep, stop_func, error_func,  plotter:GraphPlotter):
+def start_measurement(controller: RebelAxisController, assembly_step:AssemblyStep, stop_func, error_func,  plotter:GraphPlotter, limit=None):
     """Starting routine for moving axis, threads handle communication.
     
     Params:
@@ -42,7 +42,7 @@ def start_measurement(controller: RebelAxisController, assembly_step:AssemblySte
     data_controller.create_measurement(assembly)
 
     global thread_graph_updater
-    thread_graph_updater = threading.Thread(target=graph_update_cycle, args=(controller, plotter), daemon=True)
+    thread_graph_updater = threading.Thread(target=graph_update_cycle, args=(controller, plotter, limit), daemon=True)
     thread_graph_updater.start()
 
     controller.start_movement_velocity_mode(
@@ -55,7 +55,7 @@ def start_measurement(controller: RebelAxisController, assembly_step:AssemblySte
 
 
 
-def graph_update_cycle(controller:RebelAxisController, plotter:GraphPlotter):
+def graph_update_cycle(controller:RebelAxisController, plotter:GraphPlotter, limit):
     """Runs in a thread, ever few seconds it's raising an event for the graphical main queue to trigger graph updating."""
 
     cur_thread = threading.current_thread()
@@ -74,13 +74,13 @@ def graph_update_cycle(controller:RebelAxisController, plotter:GraphPlotter):
             data_controller.create_data_point_to_current_measurement(mean_current, millis)
             data_controller.update_current_measurement_fields()
 
-            update_graph(plotter)
+            update_graph(plotter, limit)
 
-def update_graph(plotter:GraphPlotter):
+def update_graph(plotter:GraphPlotter, limit):
     ...
     data = data_controller.get_plot_data_for_current_measurement()
     x_data, y_data = zip(*data)
-    plotter.plot_data(x_data, y_data)
+    plotter.plot_data(x_data, y_data, limit)
 
 
 

@@ -205,8 +205,9 @@ def check_moveability(event, values):
 @function_prints
 def start_velocity_mode(event, values, *args):
     """Invoked by Btn click: Start Measurement"""
+    limit = get_current_limit_for_assembly_step(current_assembly_step)
     set_element_state(ElementVisibilityStates.assembly_state_2_is_doing_measure)
-    start_measurement.start_measurement(controller, current_assembly_step, measurement_finished_callback,measurement_error_callback ,plotter)
+    start_measurement.start_measurement(controller, current_assembly_step, measurement_finished_callback,measurement_error_callback ,plotter, limit)
 
 
 @function_prints
