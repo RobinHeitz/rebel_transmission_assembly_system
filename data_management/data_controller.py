@@ -85,7 +85,6 @@ def catch_exceptions(f):
 
 @catch_exceptions
 def create_transmission(session:Session, config:TransmissionConfiguration) -> Transmission:
-    # session = get_session()
     if config == None:
         raise ValueError("Config shouldn't be None if Transmission gets created.")
 

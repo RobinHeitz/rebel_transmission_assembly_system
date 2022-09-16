@@ -47,7 +47,9 @@ def create_assembly_step_1(session:Session):
 
     f_noise = Failure(description = "Geräusche wie knacken/ schleifen", **failure_std_kwargs)
 
-    add_to_session(session, f_too_much_current, f_not_moving_oc, f_noise)
+    f_vibrations = Failure(description = "Vibrationen beim Bewegen", **failure_std_kwargs)
+
+    add_to_session(session, f_too_much_current, f_not_moving_oc, f_noise, f_vibrations)
 
     i_change_motor = Improvement(
         title="Motor tauschen", 
@@ -105,10 +107,18 @@ def create_assembly_step_1(session:Session):
     )
     
     i_locking_ring = Improvement(
-        title="Prüfe Sicherungsringe", 
-        description="Eventuell sitzen die Sicherungsringe des Motors nicht richtig, überprüfe diese.",
-        cable_must_disconnected = False, 
+        title="Prüfe Sitz der Sicherungsringe", 
+        # description="Eventuell sitzen die Sicherungsringe des Stators nicht richtig, überprüfe diese.",
+        description="Eventuell sitzt der Stator nicht richtig auf der Welle. Prüfe, ob der Sicherungsring richtig in der Nut sitzt.",
+        cable_must_disconnected = True, 
         image_filename = "gui/assembly_pictures/sicherungsring.png",
+        **improvement_std_kwargs, 
+    )
+    
+    i_magnete_locker = Improvement(
+        title="Magnete im Stator lose", 
+        description="Prüfe ob die Klebeverbindung der Magnete im Stator noch intakt ist.",
+        cable_must_disconnected = True, 
         **improvement_std_kwargs, 
     )
 
@@ -117,6 +127,7 @@ def create_assembly_step_1(session:Session):
     f_too_much_current.improvements = [i_change_motor, i_check_encoder_distance, i_change_lager_rotor]
     f_not_moving_oc.improvements = [i_change_motor, i_change_encoder, i_connect_encoder, i_check_encoder_distance, i_cable_encoder]
     f_noise.improvements = [i_change_motor, i_tigthen_screw, i_locking_ring, i_change_lager_rotor]
+    f_vibrations.improvements = [i_locking_ring, i_magnete_locker]
 
    
 def create_assembly_step_2(session:Session):

@@ -68,8 +68,8 @@ layout_assembly_step_1 = [
             ],
             [sg.HSep(pad=10), ],
 
-            [sg.Button("Messung starten", enable_events=True,
-                       k=KeyDefs.BTN_START_VELO_MODE, size=(20, 2))],
+            [sg.pin(sg.Button("Messung starten", enable_events=True,
+                       k=KeyDefs.BTN_START_VELO_MODE, size=(20, 2)), shrink=True)],
             [sg.Canvas(key=KeyDefs.CANVAS_GRAPH_PLOTTING, size=(250, 250))],
             [sg.Text("", font=Fonts.font_headline,
                      key=KeyDefs.TEXT_MIN_MAX_CURRENT_VALUES, visible=False)],
@@ -83,12 +83,13 @@ layout_assembly_step_1 = [
                     sg.Frame("Fehler beheben:", visible=False, k=KeyDefs.FRAME_FAILURE_DETECTION, font=Fonts.font_headline, layout=[
                         [sg.T("Es wurde ein Fehler erkannt: ", k=KeyDefs.TEXT_HIGH_CURRENT_FAILURE_DETECTED,
                                 font=Fonts.font_normal, visible=False)],
-                        [sg.Col(layout=[
+                        [sg.pin(
+                            sg.Col(layout=[
                             [sg.T("Fehler: ", font=Fonts.font_normal)],
                             [sg.Combo(["A", "B", "C"], default_value="B", s=(50, 25), enable_events=True,
                                         readonly=True, k=KeyDefs.COMBO_FAILURE_SELECT, font=Fonts.font_normal), ],
 
-                        ], k=KeyDefs.COL_FAILURE_SELECTION_CONTAINER)],
+                        ], k=KeyDefs.COL_FAILURE_SELECTION_CONTAINER), shrink=True)],
                         [sg.T("Mögliche Maßnahmen:", font=Fonts.font_normal), ],
                         [sg.Listbox([], size=(50, 8), enable_events=False,
                                     k=KeyDefs.LISTBOX_POSSIBLE_IMPROVEMENTS, font=Fonts.font_normal), ],

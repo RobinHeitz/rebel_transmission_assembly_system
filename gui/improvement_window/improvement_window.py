@@ -228,18 +228,6 @@ def is_measurement_ok(m:Measurement):
 ##############################
 
 
-
-# @function_prints
-# def cancel_improvement_button_clicked(imp_instance):
-#     logger.debug(f"cancel_improvement_button_clicked()")
-#     data_controller.delete_improvement_instance(imp_instance)
-#     data_controller.data_controller.delete_failure_instance(fail_instance)
-#     # window.write_event_value("Exit", None)
-#     close_window()
-
-
-
-
 @function_prints
 def user_selected_failure_is_fixed():
     """Btn click: For not-measureable failures, user decides whether failure is fixed or not."""
@@ -309,7 +297,6 @@ def improvement_window(c:RebelAxisController, t:Transmission, selected_failure:F
 key_function_map = {
     Key.BTN_START_IMPROVEMENT_METHOD: lambda *args: btn_start_improvement(),
     Key.BTN_NEXT_IMPROVEMENT_STEP: btn_show_next_image,
-    # Key.BTN_FINISHED_IMPROVEMENT_STEPS: lambda *args: set_element_state(ElementVisibilityState.improvement_steps_done),
     Key.BTN_FINISHED_IMPROVEMENT_STEPS: improvement_process_steps_done,
 
 

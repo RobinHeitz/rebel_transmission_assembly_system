@@ -21,7 +21,17 @@ class GraphPlotter:
         self.ax = self.figure.add_subplot(111)
         self.ax.set_autoscaley_on(True)
 
-    def __plot(self, data_x, data_y, limit):
+    def __plot(self, data_x, data_y, limit)->int:
+        def __calculate_max_y_limit(__data_y, __limit):
+            if len(data_y) > 0:
+                max_y_data = int(1.2*max(__data_y))
+                max_limit = 0
+                if __limit > 0:
+                    max_limit = int(1.2*__limit)
+                
+                return max(max_y_data, max_limit)
+            return 200
+
         self.logger.info(f"_plot()| limit: {limit}")
         self.line.set_xdata(data_x)
         self.line.set_ydata(data_y)
@@ -40,7 +50,8 @@ class GraphPlotter:
         self.ax.set_title("Stromaufnahme eines Bewegungsablaufs")
         self.ax.set_ylabel("Strom [mA]")
         self.ax.set_xlabel("Zeitstempel")
-        
+        self.ax.set_ylim(bottom = 0, top=__calculate_max_y_limit(data_y, limit))
+
         self.ax.relim()
         self.ax.autoscale_view()
         self.figure.canvas.draw()
