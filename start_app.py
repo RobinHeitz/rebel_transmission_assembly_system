@@ -4,6 +4,7 @@ import PySimpleGUI as sg
 import time, threading
 
 import traceback
+from gui.gui_helpers import Fonts
 
 import image_resize
 
@@ -174,7 +175,7 @@ def is_estop_error(*args):
     logger.debug(f"current Error codes: {error_codes}")
 
     if "ESTOP" in error_codes:
-        sg.popup("24V Versorgung fehlt","Dem Controller fehlt die 24V-Versorgung. Bitte das Kabel überprüfen.",)
+        sg.popup("24V Versorgung fehlt","Dem Controller fehlt die 24V-Versorgung. Bitte das Kabel überprüfen.",font=Fonts.font_normal)
         return True
     return False
 
@@ -285,7 +286,7 @@ def predict_failure(measurement: Measurement, passed:bool):
         update_listbox_improvement_values(failure)
 
     else:
-        answer  = sg.popup_yes_no("Kein Fehler erkannt", "Die Messung ist in Ordnung, es wurde kein Fehler erkannt. Ist dir sonst noch ein Fehler aufgefallen?")
+        answer  = sg.popup_yes_no("Kein Fehler erkannt", "Die Messung ist in Ordnung, es wurde kein Fehler erkannt. Ist dir sonst noch ein Fehler aufgefallen?",font=Fonts.font_normal)
         if answer == "Yes":
             set_element_state(ElementVisibilityStates.assembly_state_4_measure_finished_user_detects_additional_error)
             
@@ -363,7 +364,7 @@ def update_listbox_improvement_values(f:Failure, *args, **kwargs):
     else:
         set_element_state(ElementVisibilityStates.no_more_improvements_reject_transmission)
         window[KeyDefs.FRAME_FAILURE_DETECTION].update(visible=False)
-        sg.popup("Keine weitere Behebungsmaßnahme","Es ist keine weitere Fehlerbehebungsmaßnahme hinterlegt. Wenn du eine weiter findest, füge sie bitte hinzu. Solltest du den Fehler nicht finden können, ist das Getriebe Ausschuss.")
+        sg.popup("Keine weitere Behebungsmaßnahme","Es ist keine weitere Fehlerbehebungsmaßnahme hinterlegt. Wenn du eine weiter findest, füge sie bitte hinzu. Solltest du den Fehler nicht finden können, ist das Getriebe Ausschuss.",font=Fonts.font_normal)
 
 
 
