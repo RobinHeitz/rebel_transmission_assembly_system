@@ -235,7 +235,8 @@ def handle_error_while_measurement(error):
     logger.info(f"Error code: {error} / assembly_step = {current_assembly_step}")
     failure = data_controller.get_failure_not_moving_OC(current_assembly_step)
     window[KeyDefs.TEXT_HIGH_CURRENT_FAILURE_DETECTED].update(f"Es wurde ein Fehler erkannt: {failure}", text_color="red", visible=True)
-    window[KeyDefs.COMBO_FAILURE_SELECT].update(values=[failure], value=failure)
+    # window[KeyDefs.COMBO_FAILURE_SELECT].update(values=[failure], value=failure)
+    update_combo_failure_values([failure])
     show_improvements(failure)
     set_element_state(ElementVisibilityStates.assembly_state_5_measure_finished_failure_automatically_detected)
 
@@ -243,9 +244,8 @@ def handle_error_while_measurement(error):
 
 
 @function_prints
-def update_combo_failure_values():
-    ...
-    # TODO:
+def update_combo_failure_values(failures, index=0):
+    window[KeyDefs.COMBO_FAILURE_SELECT].update(values=failures, value=failures[index])
 
 
 @function_prints
@@ -270,9 +270,9 @@ def measurement_finished(m:Measurement):
     
     def _update_text(passed:bool):
         if passed:
-            window[KeyDefs.TEXT_MIN_MAX_CURRENT_VALUES].update(f"Messung erfolgreich! Max. current: {m.max_current}", text_color=sg.GREENS[3], visible=True)
+            window[KeyDefs.TEXT_MIN_MAX_CURRENT_VALUES].update(f"Messung erfolgreich! Max. Strom: {m.max_current}", text_color=sg.GREENS[3], visible=True)
         else:
-            window[KeyDefs.TEXT_MIN_MAX_CURRENT_VALUES].update(f"Messung nicht erfolgreich: Max. current is {m.max_current}", text_color="red", visible=True)
+            window[KeyDefs.TEXT_MIN_MAX_CURRENT_VALUES].update(f"Messung nicht erfolgreich! Max. Strom: {m.max_current}", text_color="red", visible=True)
     
     passed = is_measurement_ok(m)
     _update_text(passed)
@@ -287,7 +287,8 @@ def predict_failure(measurement: Measurement, passed:bool):
         failure = data_controller.get_failure_overcurrent(current_assembly_step)
         set_element_state(ElementVisibilityStates.assembly_state_5_measure_finished_failure_automatically_detected)
         window[KeyDefs.TEXT_HIGH_CURRENT_FAILURE_DETECTED].update(f"Es wurde ein Fehler erkannt: {failure}", text_color="red")
-        window[KeyDefs.COMBO_FAILURE_SELECT].update(values=[failure], value=failure)
+        update_combo_failure_values([failure])
+        # window[KeyDefs.COMBO_FAILURE_SELECT].update(values=[failure], value=failure)
         show_improvements(failure)
 
     else:
@@ -296,7 +297,8 @@ def predict_failure(measurement: Measurement, passed:bool):
             set_element_state(ElementVisibilityStates.assembly_state_4_measure_finished_user_detects_additional_error)
             
             failures = data_controller.sorted_failures_by_incidents(current_assembly_step)
-            window[KeyDefs.COMBO_FAILURE_SELECT].update(values=failures, value=failures[0])
+            update_combo_failure_values(failures)
+            # window[KeyDefs.COMBO_FAILURE_SELECT].update(values=failures, value=failures[0])
             show_improvements(failures[0])
         elif answer == "No" or answer == None:
             set_element_state(ElementVisibilityStates.assembly_state_3_measure_finished_no_failure_detected)
@@ -319,9 +321,9 @@ def show_improvements(f:Failure, *args, **kwargs):
         window[KeyDefs.LISTBOX_POSSIBLE_IMPROVEMENTS].update(improvements, set_to_index=[0,])
 
     else:
-        window[KeyDefs.FRAME_FAILURE_DETECTION].update(visible=False)
-        sg.popup("Keine weitere Behebungsmaßnahme","Es ist keine weitere Fehlerbehebungsmaßnahme hinterlegt. Wenn du eine weiter findest, füge sie bitte hinzu. Solltest du den Fehler nicht finden können, ist das Getriebe Ausschuss.")
         set_element_state(ElementVisibilityStates.no_more_improvements_reject_transmission)
+        # window[KeyDefs.FRAME_FAILURE_DETECTION].update(visible=False)
+        sg.popup("Keine weitere Behebungsmaßnahme","Es ist keine weitere Fehlerbehebungsmaßnahme hinterlegt. Wenn du eine weiter findest, füge sie bitte hinzu. Solltest du den Fehler nicht finden können, ist das Getriebe Ausschuss.")
 
 @function_prints
 def btn_improvement_selection_clicked(event, values):
@@ -335,17 +337,9 @@ def btn_improvement_selection_clicked(event, values):
     
     if return_status == "" or return_status is None:
         raise ValueError("'return_stats' from improvement_window should NEVER be empty string or None.")
-    
-
-
-
-
-
-    # TODO: React to different status from Improvement window
-
-
-    
     if return_status == STATUS_CANCEL:
+        # fail_instance and imp_instance got deleted
+        return
         ...
     elif return_status == STATUS_CLOSE_FAIL_NOT_FIXED:
         ...
@@ -356,13 +350,6 @@ def btn_improvement_selection_clicked(event, values):
     else:
         raise ValueError(f"'return_status' should be not different from if/elif's: {return_status}")
     
-    
-    
-
-
-
-
-
 
     imp_instance = data_controller.refresh_improvement_instance(imp_instance.id)
 
@@ -481,11 +468,8 @@ def condition_leave_assembly_step_3():
 
 if __name__ == "__main__":
     sg.theme("DarkTeal10")
-
     
-    splash_window = sg.Window("igus", [[get_image("gui/assembly_pictures/igus_logo_transparent.png",size=(640,360))]], transparent_color=sg.theme_background_color(), no_titlebar=True, keep_on_top=True, ).read(timeout=3500, close=True)
-   
-   
+    splash_window = sg.Window("igus", [[get_image("gui/assembly_pictures/igus_logo_transparent.png",size=(640,360))]], transparent_color=sg.theme_background_color(), no_titlebar=True, keep_on_top=True, ).read(timeout=2000, close=True)
    
     window = sg.Window("ReBeL Getriebe Montage & Kalibrierung", main_layout, size=(1200,1000), finalize=True, location=(0,0),resizable=True)
 

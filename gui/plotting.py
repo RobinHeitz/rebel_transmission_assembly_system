@@ -50,7 +50,8 @@ class GraphPlotter:
         self.logger.info(f"plot_data; limit = {limit}")
 
         if not self.line:
-            self.line, = self.ax.plot(data_x, data_y, "r-", color="blue")
+            self.line, = self.ax.plot(data_x, data_y, color="blue")
+            # self.line, = self.ax.plot(data_x, data_y, "r-", color="blue")
             self.__plot(data_x, data_y, limit)
             self.__draw_figure_in_canvas()
         else:

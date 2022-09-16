@@ -185,9 +185,9 @@ def btn_start_measurement(imp_instance:ImprovementInstance, *args):
 def measurement_finished(m:Measurement):
     def _update_text(passed:bool):
         if passed:
-            window[Key.TEXT_MEASUREMENT_RESULT].update(f"Messung erfolgreich! Max. current: {m.max_current}", text_color=sg.GREENS[3])
+            window[Key.TEXT_MEASUREMENT_RESULT].update(f"Messung erfolgreich! Max. Strom: {m.max_current}", text_color=sg.GREENS[3])
         else:
-            window[Key.TEXT_MEASUREMENT_RESULT].update(f"Messung nicht erfolgreich: Max. current is {m.max_current}", text_color="red")
+            window[Key.TEXT_MEASUREMENT_RESULT].update(f"Messung nicht erfolgreich! Max. Strom: {m.max_current}", text_color="red")
     
     data_controller.update_improvement_measurement_relation(m, imp_instance)    
     passed = is_measurement_ok(m)
