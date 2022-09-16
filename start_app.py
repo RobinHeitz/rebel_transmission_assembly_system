@@ -204,9 +204,15 @@ def perform_software_update_thread(window, controller):
 def check_moveability(event, values):
     controller.reach_moveability()
 
-###############
-# VELOCITY MODE
-###############
+
+
+
+
+
+
+########################################
+### VELOCITY MODE: START MEASUREMENT ###
+########################################
 
 @function_prints
 def start_velocity_mode(event, values, *args):
@@ -239,28 +245,6 @@ def handle_error_while_measurement(error):
     update_combo_failure_values([failure])
     update_listbox_improvement_values(failure)
     set_element_state(ElementVisibilityStates.assembly_state_5_measure_finished_failure_automatically_detected)
-
-
-
-
-@function_prints
-def update_combo_failure_values(failures, index=0):
-    window[KeyDefs.COMBO_FAILURE_SELECT].update(values=failures, value=failures[index])
-
-@function_prints
-def update_listbox_improvement_values(f:Failure, *args, **kwargs):
-    """Shows Frame + Listbox with possible Improvements."""
-    improvements = data_controller.get_improvements_for_failure(current_assembly_step, f, *args, **kwargs)
-    
-    if len(improvements) > 0:
-        window[KeyDefs.FRAME_FAILURE_DETECTION].update(visible=True)
-        window[KeyDefs.LISTBOX_POSSIBLE_IMPROVEMENTS].update(improvements, set_to_index=[0,])
-
-    else:
-        set_element_state(ElementVisibilityStates.no_more_improvements_reject_transmission)
-        window[KeyDefs.FRAME_FAILURE_DETECTION].update(visible=False)
-        sg.popup("Keine weitere Behebungsmaßnahme","Es ist keine weitere Fehlerbehebungsmaßnahme hinterlegt. Wenn du eine weiter findest, füge sie bitte hinzu. Solltest du den Fehler nicht finden können, ist das Getriebe Ausschuss.")
-
 
 
 @function_prints
@@ -314,11 +298,6 @@ def predict_failure(measurement: Measurement, passed:bool):
         else:
             raise NotImplementedError("This Button Label is not checked against (yet)!")
 
-@function_prints
-def combo_value_changes(event, values):
-    """If combo's selected value changes, Possible Improvement Window should hide."""
-    update_listbox_improvement_values(values[event])
-
 
 @function_prints
 def btn_improvement_selection_clicked(event, values):
@@ -355,6 +334,41 @@ def btn_improvement_selection_clicked(event, values):
         update_listbox_improvement_values(selected_failure)
 
     
+
+
+
+######################################################################
+##### UPDATING GUI ELEMENTS: Failure-Combo and Improvement-Listbox ###
+######################################################################
+
+@function_prints
+def combo_value_changes(event, values):
+    """If combo's selected value changes, Possible Improvement Window should hide."""
+    update_listbox_improvement_values(values[event])
+
+
+@function_prints
+def update_combo_failure_values(failures, index=0):
+    window[KeyDefs.COMBO_FAILURE_SELECT].update(values=failures, value=failures[index])
+
+@function_prints
+def update_listbox_improvement_values(f:Failure, *args, **kwargs):
+    """Shows Frame + Listbox with possible Improvements."""
+    improvements = data_controller.get_improvements_for_failure(current_assembly_step, f, *args, **kwargs)
+    
+    if len(improvements) > 0:
+        window[KeyDefs.FRAME_FAILURE_DETECTION].update(visible=True)
+        window[KeyDefs.LISTBOX_POSSIBLE_IMPROVEMENTS].update(improvements, set_to_index=[0,])
+
+    else:
+        set_element_state(ElementVisibilityStates.no_more_improvements_reject_transmission)
+        window[KeyDefs.FRAME_FAILURE_DETECTION].update(visible=False)
+        sg.popup("Keine weitere Behebungsmaßnahme","Es ist keine weitere Fehlerbehebungsmaßnahme hinterlegt. Wenn du eine weiter findest, füge sie bitte hinzu. Solltest du den Fehler nicht finden können, ist das Getriebe Ausschuss.")
+
+
+
+
+
 ######################################################
 # FUNCTIONS FOR ENABLING / DISABLING NAVIGATION BUTTONS
 ######################################################
