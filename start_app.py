@@ -179,7 +179,7 @@ def is_estop_error(*args):
     if "ESTOP" in error_codes:
         title = "24V fehlt"
         msg = "Dem Controller fehlt die 24V-Versorgung. Bitte das Kabel überprüfen."
-        shaded_overlay(lambda: custom_popup.popup_ok(title, msg, warning=True))
+        shaded_overlay(lambda: custom_popup.popup(title, msg, [("OK", "ok", "warning")],  warning=True))
         return True
     return False
 
@@ -290,9 +290,9 @@ def predict_failure(measurement: Measurement, passed:bool):
         update_listbox_improvement_values(failure)
 
     else:
-        title = "Keinen Fehler erkannt"
+        title = "Weitere Fehler?"
         description = "Die Messung ist in Ordnung, es wurde kein Fehler erkannt. Ist dir sonst noch ein Fehler aufgefallen?"
-        answer = shaded_overlay(lambda: custom_popup.popup_yes_no(title, description))
+        answer = shaded_overlay(lambda: custom_popup.popup(title, description, [("Ja", "yes", "error"), ("Nein", "no", "green")]))
         
         
         if answer == "yes":
@@ -372,8 +372,8 @@ def update_listbox_improvement_values(f:Failure, *args, **kwargs):
         set_element_state(ElementVisibilityStates.no_more_improvements_reject_transmission)
         window[KeyDefs.FRAME_FAILURE_DETECTION].update(visible=False)
         title = "Keine Behebungsmaßnahmen"
-        message = "Es gibt aktuell keine weiteren Behebungsmaßnahmen. Wenn du den Fehler beheben kannst, füge die Maßnahme bitte hinzu."
-        shaded_overlay(lambda: custom_popup.popup_ok(title, message, error=True))
+        message = "Es gibt keine weiteren Behebungsmaßnahmen, Getriebe ist Ausschuss. Wenn du den Fehler beheben kannst, füge die Maßnahme bitte hinzu."
+        shaded_overlay(lambda: custom_popup.popup(title, message, [("OK", "ok", "error")], error=True))
 
 
 
@@ -486,7 +486,6 @@ def condition_leave_assembly_step_3():
 
 if __name__ == "__main__":
     sg.theme("DarkTeal10")
-    sg.Debug()
     splash_window = sg.Window("igus", [[get_image("gui/assembly_pictures/igus_logo.png",size=(772,400))]], transparent_color=sg.theme_background_color(), no_titlebar=True, keep_on_top=True, ).read(timeout=2000, close=True)
    
     window = sg.Window("ReBeL Getriebe Montage & Kalibrierung", main_layout, size=(1200,1000), finalize=True, location=(0,0),resizable=True)

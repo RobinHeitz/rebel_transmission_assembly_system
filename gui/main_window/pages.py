@@ -71,7 +71,7 @@ layout_assembly_step_1 = [
     [
         sg.Col(element_justification="center", vertical_alignment="top", layout=[
             [
-                sg.Col(vertical_alignment="top", expand_y=False, background_color="red" ,layout=[
+                sg.Col(vertical_alignment="top", expand_y=False, layout=[
                     [sg.Multiline("Mein Text", enter_submits=False, auto_size_text=True, enable_events=False, expand_x=True,
                                   write_only=True, size=(None, 6), font=Fonts.font_normal, no_scrollbar=True, expand_y=True, k=KeyDefs.MULTILINE_ASSEMBLY_INSTRUCTION)],
                 ]),
@@ -81,19 +81,16 @@ layout_assembly_step_1 = [
             ],
             [sg.HSep(pad=10), ],
 
-            [sg.pin(sg.Button("Messung starten", enable_events=True, k=KeyDefs.BTN_START_VELO_MODE, size=(20, 2)), shrink=True)],
+            [create_btn("Messung starten", key=KeyDefs.BTN_START_VELO_MODE, )],
             [sg.pin(sg.Canvas(key=KeyDefs.CANVAS_GRAPH_PLOTTING, ),shrink=True)],
             [sg.pin(sg.Text("", font=Fonts.font_headline,key=KeyDefs.TEXT_MIN_MAX_CURRENT_VALUES, visible=False), shrink=True)],
 
         ]),
         sg.VSeparator(pad=(5, 5, 5, 5,), ),
-        sg.Column(vertical_alignment="top", expand_y=False, expand_x = True,background_color="purple", layout = [
-            
-            [create_btn("Testbtn", key=lambda *args: print("BUTTTTTON"), visible=True, disabled=False, button_color=sg.GREENS[2])],
+        sg.Column(vertical_alignment="top", expand_y=False, expand_x = True, layout = [
             [
                 sg.pin(
                     sg.Frame("Fehler beheben:", visible=False, k=KeyDefs.FRAME_FAILURE_DETECTION, font=Fonts.font_headline, layout=[
-                        
                         
                         [sg.T("Es wurde ein Fehler erkannt: ", k=KeyDefs.TEXT_HIGH_CURRENT_FAILURE_DETECTED,
                                 font=Fonts.font_normal, visible=False)],
@@ -105,7 +102,7 @@ layout_assembly_step_1 = [
                         ], k=KeyDefs.COL_FAILURE_SELECTION_CONTAINER), shrink=True)],
                         [sg.T("Mögliche Maßnahmen:", font=Fonts.font_normal), ],
                         [sg.Listbox([], size=(50, 8), enable_events=False,k=KeyDefs.LISTBOX_POSSIBLE_IMPROVEMENTS, font=Fonts.font_normal), ],
-                        [sg.B("Maßnahme anwenden", enable_events=True,k=KeyDefs.BTN_SELECT_IMPROVEMENT, font=Fonts.font_normal)],
+                        [sg.P(), create_btn("Maßnahme anwenden", key=KeyDefs.BTN_SELECT_IMPROVEMENT, disabled=False,button_color=("black", sg.YELLOWS[0])), sg.P()],
                     ]),
                 ),
             ],
