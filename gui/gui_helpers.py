@@ -13,7 +13,7 @@ class Colors:
     green = sg.GREENS[3]
 
 class BtnColors:
-    yellow = ("#FFFFFF", Colors.yellow)
+    yellow = ("#000000", Colors.yellow)
     red = ("#FFFFFF", Colors.red)
     green = ("#FFFFFF", Colors.green)
     

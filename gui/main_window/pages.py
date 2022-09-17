@@ -9,7 +9,7 @@ from typing import Tuple
 
 sg.theme("DarkTeal10")
 
-from gui.gui_helpers import create_btn, get_image
+from gui.gui_helpers import create_btn, get_image, Colors, BtnColors
 
 
 #####################################################
@@ -86,7 +86,7 @@ layout_assembly_step_1 = [
                         ], k=KeyDefs.COL_FAILURE_SELECTION_CONTAINER), shrink=True)],
                         [sg.T("Mögliche Maßnahmen:", font=Fonts.font_normal), ],
                         [sg.Listbox([], size=(50, 8), enable_events=False,k=KeyDefs.LISTBOX_POSSIBLE_IMPROVEMENTS, font=Fonts.font_normal), ],
-                        [sg.P(), create_btn("Maßnahme anwenden", key=KeyDefs.BTN_SELECT_IMPROVEMENT, disabled=False,button_color=("black", sg.YELLOWS[0])), sg.P()],
+                        [sg.P(), create_btn("Maßnahme anwenden", key=KeyDefs.BTN_SELECT_IMPROVEMENT, disabled=False,button_color=BtnColors.yellow), sg.P()],
                     ]),
                 ),
             ],
@@ -154,6 +154,7 @@ def get_assembly_step_data(layout: LayoutTypes, assembly_step: AssemblyStep):
 
 main_layout = [
     [sg.P(), sg.T("Getriebe konfigurieren:",key="-headline-", font=Fonts.font_headline), sg.P(),],
+    
     [sg.HorizontalSeparator(pad=(5, 5, 5, 5,))],
 
     [sg.pin(sg.Column(layout_config_page, key=KeyDefs.LAYOUT_CONFIG), shrink=True)],
@@ -164,11 +165,11 @@ main_layout = [
     
     [
         create_btn("Zurück", key=KeyDefs.BTN_NAV_PREVIOUS_PAGE, visible=False),
-        create_btn("Fehler hinzufügen",key=KeyDefs.BTN_ADD_FAILURE, button_color=("black", sg.YELLOWS[0])),
-        create_btn("Maßnahme hinzufügen",key=KeyDefs.BTN_ADD_IMPROVEMENT, button_color=("black", sg.YELLOWS[0])),
+        create_btn("Fehler hinzufügen",key=KeyDefs.BTN_ADD_FAILURE, button_color=BtnColors.yellow),
+        create_btn("Maßnahme hinzufügen",key=KeyDefs.BTN_ADD_IMPROVEMENT, button_color=BtnColors.yellow),
         sg.P(),
         create_btn("Weiter", key=KeyDefs.BTN_NAV_NEXT_PAGE,),
-        create_btn("Getriebe ist Ausschuss", key=KeyDefs.BTN_REJECT_TRANSMISSION_NO_IMPROVEMENT, visible=False, button_color="#e01212"),
+        create_btn("Getriebe ist Ausschuss", key=KeyDefs.BTN_REJECT_TRANSMISSION_NO_IMPROVEMENT, visible=False, button_color=BtnColors.red),
     ],
 ]
 

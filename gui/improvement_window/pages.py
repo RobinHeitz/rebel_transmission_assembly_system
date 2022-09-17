@@ -36,6 +36,7 @@ def generate_improvement_window_layout(title, description):
     bottom_button_bar = sg.Col([
         [
             sg.B("Messung starten", size=(20,2), k=Key.BTN_START_MEASUREMENT), 
+            
             sg.B("Abbrechen", k=Key.BTN_CANCEL_IMPROVEMENT, size=(20,2)),
             sg.B("Fehler behoben", size=(20,2), button_color=sg.GREENS[3], k=Key.BTN_FAILURE_FIXED, visible=False),
             sg.B("Fehler besteht weiterhin", size=(20,2), button_color="red", k=Key.BTN_FAILURE_STILL_EXISTS, visible=False),
