@@ -104,7 +104,7 @@ def invoked_callback_in_main_thread(event, values):
 @function_prints
 def radio_size_is_clicked(size:TransmissionSize):
     if controller.connected:
-        set_element_state(ElementVisibilityStates.config_state_2_can_go_next)
+        set_element_state(ElementVisibilityStates.state_configured)
     
     transmission_config.set_size(size)
     if size == TransmissionSize.size_80:
@@ -142,11 +142,11 @@ def btn_connect_can(*args):
     
     if controller.can_id != -1:
         logger.debug(f"CAN ID has been found: {hex(controller.can_id)}")
-        window[KeyDefs.TEXT_CAN_CONNECTED_STATUS].update(f"Connected. CAN-ID: {hex(controller.can_id)}")
-        window[KeyDefs.BTN_CONNECT_CAN].update(disabled=True)
+        window[KeyDefs.TEXT_CAN_CONNECTED_STATUS].update(f"Verbunden. CAN-ID: {hex(controller.can_id)}")
+        set_element_state(ElementVisibilityStates.state_connected)
     else:
         logger.debug("No can id available.")
-        window[KeyDefs.TEXT_CAN_CONNECTED_STATUS].update(f"Searching for CAN-ID...")
+        window[KeyDefs.TEXT_CAN_CONNECTED_STATUS].update(f"Suche nach CAN-ID...")
         threading.Thread(target=search_for_can_id_thread, args=(window, controller), daemon=True).start()
 
 @function_prints
@@ -186,8 +186,6 @@ def is_estop_error(*args):
 
 
 
-
-
 ########################
 # Software update dummy
 ########################
@@ -200,17 +198,15 @@ def perform_software_update(event, values):
 @function_prints
 def perform_software_update_thread(window, controller):
     for i in range(1,101):
-        time.sleep(.1)
+        time.sleep(.01)
         window.write_event_value(KeyDefs.SOFTWARE_UPDATE_FEEDBACK, i/10)
-    window.write_event_value(KeyDefs.SOFTWARE_UPDATE_DONE, None)
+    
+    set_element_state(ElementVisibilityStates.config_state_can_go_next)
     
 
 @function_prints
 def check_moveability(event, values):
     controller.reach_moveability()
-
-
-
 
 
 
@@ -486,14 +482,14 @@ def condition_leave_assembly_step_3():
 
 if __name__ == "__main__":
     sg.theme("DarkTeal10")
-    splash_window = sg.Window("igus", [[get_image("gui/assembly_pictures/igus_logo_transparent.png",size=(228,133))]], transparent_color=sg.theme_background_color(), no_titlebar=True, keep_on_top=True, ).read(timeout=2000, close=True)
+    # splash_window = sg.Window("igus", [[get_image("gui/assembly_pictures/igus_logo_transparent.png",size=(228,133))]], transparent_color=sg.theme_background_color(), no_titlebar=True, keep_on_top=True, ).read(timeout=2000, close=True)
    
     window = sg.Window("ReBeL Getriebe Montage & Kalibrierung", main_layout, size=(1200,1000), finalize=True, location=(0,0),resizable=True)
 
     active_layout = LayoutTypes.config
     current_assembly_step = AssemblyStep.step_1_no_flexring
     is_last_assembly_step = False
-    set_element_state(ElementVisibilityStates.config_state_1_cannot_go_next)
+    set_element_state(ElementVisibilityStates.state_not_connected)
 
     controller, thread_velocity, thread_graph_updater, current_transmission = (None, )*4
 
@@ -548,7 +544,7 @@ if __name__ == "__main__":
 
         KeyDefs.BTN_SOFTWARE_UPDATE: perform_software_update,
         KeyDefs.SOFTWARE_UPDATE_FEEDBACK: lambda event, values: window[KeyDefs.PROGRESSBAR_SOFTWARE_UPDATE].update_bar(values.get(event)),
-        KeyDefs.SOFTWARE_UPDATE_DONE : lambda *args: window[KeyDefs.TEXT_SOFTWARE_UPDATE_STATUS_TEXT].update("Software upgedated"),
+        # KeyDefs.SOFTWARE_UPDATE_DONE : lambda *args: print("HII"),
 
         KeyDefs.CHECKBOX_HAS_ENCODER: lambda event, values: transmission_config.set_encoder_flag(values[event]),
         KeyDefs.CHECKBOX_HAS_BRAKE: lambda event, values: transmission_config.set_brake_flag(values[event]),

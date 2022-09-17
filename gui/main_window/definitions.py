@@ -2,6 +2,8 @@ from data_management.model import TransmissionConfiguration
 import enum
 import PySimpleGUI as sg
 
+from gui.gui_helpers import Colors
+
 ##################
 # Style definitions
 ###################
@@ -20,17 +22,17 @@ class KeyDefs(enum.Enum):
     BTN_NAV_PREVIOUS_PAGE = "-BTN_NAV_PREVIOUS_PAGE-"
     BTN_NAV_NEXT_PAGE = "-BTN_NAV_NEXT_PAGE-"
 
+    COL_TRANSMISSION_CONFIG = "-COL_TRANSMISSION_CONFIG-"
     RADIO_BUTTON_80_CLICKED = "-RADIO_BUTTON_80_CLICKED-"
     RADIO_BUTTON_105_CLICKED = "-RADIO_BUTTON_105_CLICKED-"
     BTN_CONNECT_CAN = "-BTN_CONNECT_CAN-"
 
     BTN_READ_ERROR_CODES = "-BTN_READ_ERROR_CODES-"
 
+    COL_SOFTWAR_UPDATE = "-COL_SOFTWAR_UPDATE-"
     BTN_SOFTWARE_UPDATE = "-BTN_SOFTWARE_UPDATE-"
     SOFTWARE_UPDATE_FEEDBACK = "-SOFTWARE_UPDATE_FEEDBACK-"
-    SOFTWARE_UPDATE_DONE = "-SOFTWARE_UPDATE_DONE-"
     PROGRESSBAR_SOFTWARE_UPDATE = "-PROGRESSBAR_SOFTWARE_UPDATE-"
-    TEXT_SOFTWARE_UPDATE_STATUS_TEXT = "-TEXT_SOFTWARE_UPDATE_STATUS_TEXT-"
 
     TEXT_CAN_CONNECTED_STATUS = "-TEXT_CAN_CONNECTED_STATUS-"
 
@@ -66,8 +68,14 @@ class KeyDefs(enum.Enum):
 
 
 class ElementVisibilityStates(enum.Enum):
-    config_state_1_cannot_go_next = 1
-    config_state_2_can_go_next = 2
+
+    state_not_connected = -10
+    state_connected = -9
+    state_configured = -8
+    
+
+    # config_state_1_cannot_go_next = -1
+    config_state_can_go_next = 2
 
     assembly_state_1_can_start_measure = 3
     assembly_state_2_is_doing_measure =  4
@@ -115,14 +123,34 @@ _failure_frames_invisible = {
 
 
 ELEMENT_VISIBILITY_MAP = {
-    ElementVisibilityStates.config_state_1_cannot_go_next : {
+    ElementVisibilityStates.state_not_connected : {
+        KeyDefs.COL_TRANSMISSION_CONFIG: {"visible": False},
+        KeyDefs.COL_SOFTWAR_UPDATE: {"visible": False},
         **_nav_disabled,
         **_btn_add_failure_improvement_visible,
     },
+    
+    ElementVisibilityStates.state_connected : {
+        KeyDefs.COL_TRANSMISSION_CONFIG: {"visible": True},
+        KeyDefs.TEXT_CAN_CONNECTED_STATUS: {"text_color": Colors.green},
+        KeyDefs.BTN_CONNECT_CAN: {"disabled": True},
+        KeyDefs.COL_SOFTWAR_UPDATE: {"visible": False},
+        **_nav_disabled,
+        **_btn_add_failure_improvement_visible,
+    },
+    
+    ElementVisibilityStates.state_configured : {
+        KeyDefs.COL_SOFTWAR_UPDATE: {"visible": True},
+        **_nav_disabled,
+        **_btn_add_failure_improvement_visible,
+    },
+    
 
-    ElementVisibilityStates.config_state_2_can_go_next: {
+    ElementVisibilityStates.config_state_can_go_next: {
+        KeyDefs.PROGRESSBAR_SOFTWARE_UPDATE: {"bar_color": (Colors.green, None)},
         **_nav_enabled,
         **_btn_add_failure_improvement_visible,
+
     },
     
     ElementVisibilityStates.assembly_state_1_can_start_measure: {
