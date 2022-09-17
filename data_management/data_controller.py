@@ -259,28 +259,6 @@ def create_improvement_instance(session:Session, imp:Improvement):
 
 
 
-
-# @catch_exceptions
-# def get_improvements_for_failure(session:Session, fail:Failure, assembly_step, *args, **kwargs) -> List[Improvement]:
-    
-#     fail = session.query(Failure).get(fail.id)
-#     improvements:List[Improvement] = fail.improvements
-    
-#     t = get_current_transmission()
-
-#     def __item_not_in_list(item, list_):
-#         for i in list_:
-#             if i == item: return False
-#         return True
-
-#     imp_instances: List[ImprovementInstance] = session.query(ImprovementInstance).filter_by(assembly_step = assembly_step, transmission = t).all()
-#     done_improvements = [i.improvement for i in imp_instances]
-#     filtered = filter(lambda item: __item_not_in_list(item, done_improvements) ,improvements)
-#     improvements = list(filtered)
-
-#     return improvements
-
-
     
 @catch_exceptions  
 def get_improvements_for_failure(session:Session, step:AssemblyStep, fail:Failure) -> List[Improvement]:

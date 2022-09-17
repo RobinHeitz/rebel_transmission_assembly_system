@@ -103,7 +103,7 @@ layout_assembly_step_1 = [
 
             [
 
-                sg.B("Fehler hinzufügen", size=(20, 2), font=Fonts.font_normal, button_color=(
+                sg.B("Fehler hinzufügen", size=(18, 1), font=Fonts.font_normal, button_color=(
                     "black", sg.YELLOWS[0]), k=KeyDefs.BTN_ADD_FAILURE),
                 
                 sg.Push(),

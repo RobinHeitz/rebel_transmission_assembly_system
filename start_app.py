@@ -22,6 +22,8 @@ from gui.main_window.pages import get_assembly_instruction, get_headline, main_l
 from gui.plotting import GraphPlotter
 from gui.shaded_overlay import shaded_overlay
 
+from gui import custom_popup
+
 from gui.improvement_window import improvement_window
 from gui.improvement_window.improvement_window import STATUS_CANCEL, STATUS_CLOSE_FAIL_NOT_FIXED, STATUS_USER_SELECTED_FAILURE_FIXED, STATUS_USER_SELECTED_FAILURE_IS_NOT_FIXED
 from gui.add_improvement.add_improvement import add_improvement_window
@@ -175,7 +177,9 @@ def is_estop_error(*args):
     logger.debug(f"current Error codes: {error_codes}")
 
     if "ESTOP" in error_codes:
-        sg.popup("24V Versorgung fehlt","Dem Controller fehlt die 24V-Versorgung. Bitte das Kabel überprüfen.",font=Fonts.font_normal)
+        title = "24V fehlt"
+        msg = "Dem Controller fehlt die 24V-Versorgung. Bitte das Kabel überprüfen."
+        shaded_overlay(lambda: custom_popup.popup_ok(title, msg, warning=True))
         return True
     return False
 
@@ -286,15 +290,18 @@ def predict_failure(measurement: Measurement, passed:bool):
         update_listbox_improvement_values(failure)
 
     else:
-        answer  = sg.popup_yes_no("Kein Fehler erkannt", "Die Messung ist in Ordnung, es wurde kein Fehler erkannt. Ist dir sonst noch ein Fehler aufgefallen?",font=Fonts.font_normal)
-        if answer == "Yes":
+        title = "Keinen Fehler erkannt"
+        description = "Die Messung ist in Ordnung, es wurde kein Fehler erkannt. Ist dir sonst noch ein Fehler aufgefallen?"
+        answer = shaded_overlay(lambda: custom_popup.popup_yes_no(title, description))
+        
+        
+        if answer == "yes":
             set_element_state(ElementVisibilityStates.assembly_state_4_measure_finished_user_detects_additional_error)
             
             failures = data_controller.sorted_failures_by_incidents(current_assembly_step)
             update_combo_failure_values(failures)
-            # window[KeyDefs.COMBO_FAILURE_SELECT].update(values=failures, value=failures[0])
             update_listbox_improvement_values(failures[0])
-        elif answer == "No" or answer == None:
+        elif answer == "no" or answer == None:
             set_element_state(ElementVisibilityStates.assembly_state_3_measure_finished_no_failure_detected)
         else:
             raise NotImplementedError("This Button Label is not checked against (yet)!")
@@ -364,8 +371,9 @@ def update_listbox_improvement_values(f:Failure, *args, **kwargs):
     else:
         set_element_state(ElementVisibilityStates.no_more_improvements_reject_transmission)
         window[KeyDefs.FRAME_FAILURE_DETECTION].update(visible=False)
-        sg.popup("Keine weitere Behebungsmaßnahme","Es ist keine weitere Fehlerbehebungsmaßnahme hinterlegt. Wenn du eine weiter findest, füge sie bitte hinzu. Solltest du den Fehler nicht finden können, ist das Getriebe Ausschuss.",font=Fonts.font_normal)
-
+        title = "Keine Behebungsmaßnahmen"
+        message = "Es gibt aktuell keine weiteren Behebungsmaßnahmen. Wenn du den Fehler beheben kannst, füge die Maßnahme bitte hinzu."
+        shaded_overlay(lambda: custom_popup.popup_ok(title, message, error=True))
 
 
 

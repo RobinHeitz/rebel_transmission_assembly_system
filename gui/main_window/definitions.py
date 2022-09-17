@@ -95,12 +95,12 @@ _btn_add_failure_improvement_invisible = {
 
 
 _nav_disabled =  {
-    KeyDefs.BTN_NAV_NEXT_PAGE:{"disabled": True},
+    KeyDefs.BTN_NAV_NEXT_PAGE:{"disabled": True, "button_color":sg.theme_button_color()},
     KeyDefs.BTN_NAV_PREVIOUS_PAGE:{"disabled": True, "visible":False}, 
 }
 
 _nav_enabled =  {
-    KeyDefs.BTN_NAV_NEXT_PAGE:{"disabled": False},
+    KeyDefs.BTN_NAV_NEXT_PAGE:{"disabled": False, "button_color":("black", sg.YELLOWS[0])},
     KeyDefs.BTN_NAV_PREVIOUS_PAGE:{"disabled": True, "visible":False}, 
 }
 
