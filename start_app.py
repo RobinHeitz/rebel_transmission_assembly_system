@@ -486,7 +486,7 @@ def condition_leave_assembly_step_3():
 
 if __name__ == "__main__":
     sg.theme("DarkTeal10")
-    splash_window = sg.Window("igus", [[get_image("gui/assembly_pictures/igus_logo.png",size=(772,400))]], transparent_color=sg.theme_background_color(), no_titlebar=True, keep_on_top=True, ).read(timeout=2000, close=True)
+    splash_window = sg.Window("igus", [[get_image("gui/assembly_pictures/igus_logo_transparent.png",size=(228,133))]], transparent_color=sg.theme_background_color(), no_titlebar=True, keep_on_top=True, ).read(timeout=2000, close=True)
    
     window = sg.Window("ReBeL Getriebe Montage & Kalibrierung", main_layout, size=(1200,1000), finalize=True, location=(0,0),resizable=True)
 

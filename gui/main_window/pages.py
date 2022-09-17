@@ -16,11 +16,65 @@ from gui.gui_helpers import create_btn, get_image, Colors, BtnColors
 # LAYOUTS of different 'pages' within the application
 #####################################################
 
+config_page = sg.pin(shrink = True, elem=sg.Col(background_color=Colors.green, k=KeyDefs.LAYOUT_CONFIG, size=(800, None),justification="center", expand_y=True, layout=[
+    [
+        create_btn("Verbindung herstellen", key=KeyDefs.BTN_CONNECT_CAN, disabled=False), 
+        sg.P(),
+        sg.T("Nicht verbunden", key=KeyDefs.TEXT_CAN_CONNECTED_STATUS, font=Fonts.font_normal),
+    ],
+    
+    [sg.Frame("", layout=[
+        [
+            sg.Text("Getriebegröße", font=Fonts.font_normal),
+            sg.Radio("80", default=False, group_id="-radio_transmission_size-",
+                     font=Fonts.font_normal, enable_events=True, key=KeyDefs.RADIO_BUTTON_80_CLICKED),
+            sg.Radio("105", default=False, group_id="-radio_transmission_size-",
+                     font=Fonts.font_normal, enable_events=True, key=KeyDefs.RADIO_BUTTON_105_CLICKED)
+        ],
+        [
+            sg.Checkbox("Absolutwertgeber vorhanden:", default=False, auto_size_text=False,
+                        font=Fonts.font_normal, enable_events=True, key=KeyDefs.CHECKBOX_HAS_ENCODER)
+        ],
+        [
+            sg.Checkbox("Bremse vorhanden:", default=False, auto_size_text=False, font=Fonts.font_normal,
+                        enable_events=True, disabled=True, key=KeyDefs.CHECKBOX_HAS_BRAKE)
+        ],
+        
+        [
+            create_btn("Software updaten", key=KeyDefs.BTN_SOFTWARE_UPDATE, disabled=False),
+            sg.ProgressBar(max_value=10, size=(20, 20),
+                       k=KeyDefs.PROGRESSBAR_SOFTWARE_UPDATE),
+            sg.Text("", k=KeyDefs.TEXT_SOFTWARE_UPDATE_STATUS_TEXT,
+                font=Fonts.font_normal),
+    ],
+    ])],
+
+
+
+
+],)
+),
+
 
 layout_config_page = [
 
-    [sg.Button("Verbindung herstellen", key=KeyDefs.BTN_CONNECT_CAN, enable_events=True, font=Fonts.font_normal, size=(
-        25, 1)), sg.Text("Nicht verbunden", key=KeyDefs.TEXT_CAN_CONNECTED_STATUS, font=Fonts.font_normal)],
+    [
+        sg.P(),
+        
+        sg.Col(background_color=Colors.yellow, size=(600, None), expand_y=True,layout = [
+            [
+                create_btn("Verbindung herstellen", key=KeyDefs.BTN_CONNECT_CAN, disabled=False), 
+                sg.T("Nicht verbunden", key=KeyDefs.TEXT_CAN_CONNECTED_STATUS, font=Fonts.font_normal)
+            ],
+        ]),
+
+        sg.P(),
+    ],
+
+
+
+    # [sg.Button("Verbindung herstellen", key=KeyDefs.BTN_CONNECT_CAN, enable_events=True, font=Fonts.font_normal, size=(
+    #     25, 1)), sg.T("Nicht verbunden", key=KeyDefs.TEXT_CAN_CONNECTED_STATUS, font=Fonts.font_normal)],
 
     [sg.Frame("", layout=[
         [
@@ -157,9 +211,15 @@ main_layout = [
     
     [sg.HorizontalSeparator(pad=(5, 5, 5, 5,))],
 
-    [sg.pin(sg.Column(layout_config_page, key=KeyDefs.LAYOUT_CONFIG), shrink=True)],
-    [sg.pin(sg.Column(layout_assembly_step_1, visible=False, key=KeyDefs.LAYOUT_ASSEMBLY), shrink=True)],
+    [sg.P(), sg.Col(background_color=Colors.yellow, layout=[config_page]),sg.P(),],
+    
 
+    # layout_config_page,
+    # sg.pin(layout_assembly_step_1, shrink=True),
+
+
+    # [sg.pin(sg.Column(layout_config_page, key=KeyDefs.LAYOUT_CONFIG, expand_x=True, background_color = "red"), shrink=True)],
+    [sg.pin(sg.Column(layout_assembly_step_1, visible=False, key=KeyDefs.LAYOUT_ASSEMBLY), shrink=True)],
     # Navigation Btns 
     [sg.VP()],
     
