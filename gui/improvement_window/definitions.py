@@ -68,6 +68,10 @@ ELEMENT_VISIBILITY_MAP = {
     ElementVisibilityState.starting_default_screen : {
         ImprovementWindowKeys.COL_CANVAS: {"visible":False},
         ImprovementWindowKeys.BTN_START_MEASUREMENT: {"visible":False},
+        ImprovementWindowKeys.BTN_FAILURE_FIXED: {"visible":False},
+        ImprovementWindowKeys.BTN_FAILURE_STILL_EXISTS: {"visible":False},
+        ImprovementWindowKeys.BTN_CLOSE_IMPROVEMENT_WINDOW: {"visible":False},
+        ImprovementWindowKeys.BTN_START_IMPROVEMENT_METHOD: {"visible":True, "disabled":False},
     },
 
    
@@ -78,6 +82,7 @@ ELEMENT_VISIBILITY_MAP = {
         ImprovementWindowKeys.COL_IMAGE_DESCRIPTION: {"visible":True},
         ImprovementWindowKeys.BTN_NEXT_IMPROVEMENT_STEP: {"visible": True},
         ImprovementWindowKeys.BTN_FINISHED_IMPROVEMENT_STEPS: {"visible": False},
+        ImprovementWindowKeys.BTN_CANCEL_IMPROVEMENT: {"visible": False},
     },
    
     ElementVisibilityState.doing_last_improvement_step : {
@@ -86,16 +91,18 @@ ELEMENT_VISIBILITY_MAP = {
         ImprovementWindowKeys.BTN_START_IMPROVEMENT_METHOD: {"visible":False},
         ImprovementWindowKeys.COL_IMAGE_DESCRIPTION: {"visible":True},
         ImprovementWindowKeys.BTN_NEXT_IMPROVEMENT_STEP: {"visible": False},
-        ImprovementWindowKeys.BTN_FINISHED_IMPROVEMENT_STEPS: {"visible": True},
+        ImprovementWindowKeys.BTN_FINISHED_IMPROVEMENT_STEPS: {"visible": True, "disabled":False},
+        ImprovementWindowKeys.BTN_CANCEL_IMPROVEMENT: {"visible": False},
     },
 
     ElementVisibilityState.improvement_steps_done : {
-        ImprovementWindowKeys.BTN_START_MEASUREMENT: {"visible":True},
+        ImprovementWindowKeys.BTN_START_MEASUREMENT: {"visible":True, "disabled":False},
         ImprovementWindowKeys.COL_CANVAS: {"visible":True},
         ImprovementWindowKeys.COL_IMAGE_DESCRIPTION: {"visible":False},
         ImprovementWindowKeys.TEXT_MEASUREMENT_RESULT: {"visible": False},
         ImprovementWindowKeys.BTN_NEXT_IMPROVEMENT_STEP: {"visible": False},
         ImprovementWindowKeys.BTN_FINISHED_IMPROVEMENT_STEPS: {"visible": True},
+        ImprovementWindowKeys.BTN_CANCEL_IMPROVEMENT: {"visible": False},
     },
     
     ElementVisibilityState.doing_measurement : {
@@ -106,15 +113,15 @@ ELEMENT_VISIBILITY_MAP = {
     ElementVisibilityState.finished_measurement : {
         ImprovementWindowKeys.BTN_CANCEL_IMPROVEMENT: {"visible": False},
         ImprovementWindowKeys.TEXT_MEASUREMENT_RESULT: {"visible": True},
-        ImprovementWindowKeys.BTN_CLOSE_IMPROVEMENT_WINDOW: {"visible": True},
+        ImprovementWindowKeys.BTN_CLOSE_IMPROVEMENT_WINDOW: {"visible": True, "disabled": False},
     },
     
     ElementVisibilityState.measurement_user_detects_additional_errors : {
         ImprovementWindowKeys.BTN_CANCEL_IMPROVEMENT: {"visible": False},
         ImprovementWindowKeys.TEXT_MEASUREMENT_RESULT: {"visible": True},
         ImprovementWindowKeys.BTN_CLOSE_IMPROVEMENT_WINDOW: {"visible": False},
-        ImprovementWindowKeys.BTN_FAILURE_FIXED: {"visible": True},
-        ImprovementWindowKeys.BTN_FAILURE_STILL_EXISTS: {"visible": True},
+        ImprovementWindowKeys.BTN_FAILURE_FIXED: {"visible": True, "disabled": False},
+        ImprovementWindowKeys.BTN_FAILURE_STILL_EXISTS: {"visible": True, "disabled": False},
 
     },
     

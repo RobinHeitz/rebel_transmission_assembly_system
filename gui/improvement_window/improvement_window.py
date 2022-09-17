@@ -115,7 +115,6 @@ def btn_cancel_improvement(*args):
 @function_prints
 def btn_start_improvement(*args):
     """Invoked by button click, calls motor_controller's disconnect-method."""
-    
     cable_disconnect = improvement.cable_must_disconnected
     if cable_disconnect:
         global current_image_index
@@ -270,9 +269,8 @@ def improvement_window(c:RebelAxisController, t:Transmission, selected_failure:F
     plotter.plot_data([],[])
 
     set_element_state(ElementVisibilityState.starting_default_screen)
-
     window.maximize()
-    
+
     while True:
         event, values = window.read()
         if event == "Exit" or event == sg.WIN_CLOSED:
