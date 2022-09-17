@@ -9,23 +9,7 @@ from typing import Tuple
 
 sg.theme("DarkTeal10")
 
-def create_btn(title, key, visible=True, disabled=True,**kwargs):
-    btn =  sg.B(
-        title, 
-        k=key, 
-        font=Fonts.
-        font_normal, 
-        enable_events=True, 
-        visible=visible, 
-        disabled=disabled, 
-        size=(20,2),
-        # pad=(20,20),
-        **kwargs)
-    return sg.pin(btn, shrink=True)
-
-def get_image(path, size, **kwargs):
-    data = image_resize.resize_bin_output(path, size)
-    return sg.Image(data, size=size, **kwargs)
+from gui.gui_helpers import create_btn, get_image
 
 
 #####################################################
