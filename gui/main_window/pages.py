@@ -9,6 +9,19 @@ from typing import Tuple
 
 sg.theme("DarkTeal10")
 
+def create_btn(title, key, visible=True, disabled=True,**kwargs):
+    btn =  sg.B(
+        title, 
+        k=key, 
+        font=Fonts.
+        font_normal, 
+        enable_events=True, 
+        visible=visible, 
+        disabled=disabled, 
+        size=(20,2),
+        # pad=(20,20),
+        **kwargs)
+    return sg.pin(btn, shrink=True)
 
 def get_image(path, size, **kwargs):
     data = image_resize.resize_bin_output(path, size)
@@ -58,59 +71,47 @@ layout_assembly_step_1 = [
     [
         sg.Col(element_justification="center", vertical_alignment="top", layout=[
             [
-                sg.Col([
+                sg.Col(vertical_alignment="top", expand_y=False, background_color="red" ,layout=[
                     [sg.Multiline("Mein Text", enter_submits=False, auto_size_text=True, enable_events=False, expand_x=True,
                                   write_only=True, size=(None, 6), font=Fonts.font_normal, no_scrollbar=True, expand_y=True, k=KeyDefs.MULTILINE_ASSEMBLY_INSTRUCTION)],
-                ], vertical_alignment="top", expand_y=True),
+                ]),
 
                 get_image("gui/assembly_pictures/step1.png",
                           size=(300, 300), k=KeyDefs.IMAGE_ASSEMBLY),
             ],
             [sg.HSep(pad=10), ],
 
-            [sg.pin(sg.Button("Messung starten", enable_events=True,
-                       k=KeyDefs.BTN_START_VELO_MODE, size=(20, 2)), shrink=True)],
-            [sg.Canvas(key=KeyDefs.CANVAS_GRAPH_PLOTTING, size=(250, 250))],
-            [sg.Text("", font=Fonts.font_headline,
-                     key=KeyDefs.TEXT_MIN_MAX_CURRENT_VALUES, visible=False)],
+            [sg.pin(sg.Button("Messung starten", enable_events=True, k=KeyDefs.BTN_START_VELO_MODE, size=(20, 2)), shrink=True)],
+            [sg.pin(sg.Canvas(key=KeyDefs.CANVAS_GRAPH_PLOTTING, ),shrink=True)],
+            [sg.pin(sg.Text("", font=Fonts.font_headline,key=KeyDefs.TEXT_MIN_MAX_CURRENT_VALUES, visible=False), shrink=True)],
 
         ]),
         sg.VSeparator(pad=(5, 5, 5, 5,), ),
-        sg.Column(vertical_alignment="top", expand_y=True, expand_x = True, layout = [
+        sg.Column(vertical_alignment="top", expand_y=False, expand_x = True,background_color="purple", layout = [
             
+            [create_btn("Testbtn", key=lambda *args: print("BUTTTTTON"), visible=True, disabled=False, button_color=sg.GREENS[2])],
             [
                 sg.pin(
                     sg.Frame("Fehler beheben:", visible=False, k=KeyDefs.FRAME_FAILURE_DETECTION, font=Fonts.font_headline, layout=[
+                        
+                        
                         [sg.T("Es wurde ein Fehler erkannt: ", k=KeyDefs.TEXT_HIGH_CURRENT_FAILURE_DETECTED,
                                 font=Fonts.font_normal, visible=False)],
                         [sg.pin(
                             sg.Col(layout=[
                             [sg.T("Fehler: ", font=Fonts.font_normal)],
-                            [sg.Combo(["A", "B", "C"], default_value="B", s=(50, 25), enable_events=True,
-                                        readonly=True, k=KeyDefs.COMBO_FAILURE_SELECT, font=Fonts.font_normal), ],
+                            [sg.Combo(["A", "B", "C"], default_value="B", s=(50, 25), enable_events=True,readonly=True, k=KeyDefs.COMBO_FAILURE_SELECT, font=Fonts.font_normal), ],
 
                         ], k=KeyDefs.COL_FAILURE_SELECTION_CONTAINER), shrink=True)],
                         [sg.T("Mögliche Maßnahmen:", font=Fonts.font_normal), ],
-                        [sg.Listbox([], size=(50, 8), enable_events=False,
-                                    k=KeyDefs.LISTBOX_POSSIBLE_IMPROVEMENTS, font=Fonts.font_normal), ],
-                        [sg.B("Maßnahme anwenden", enable_events=True,
-                                k=KeyDefs.BTN_SELECT_IMPROVEMENT, font=Fonts.font_normal)],
+                        [sg.Listbox([], size=(50, 8), enable_events=False,k=KeyDefs.LISTBOX_POSSIBLE_IMPROVEMENTS, font=Fonts.font_normal), ],
+                        [sg.B("Maßnahme anwenden", enable_events=True,k=KeyDefs.BTN_SELECT_IMPROVEMENT, font=Fonts.font_normal)],
                     ]),
                 ),
             ],
 
-            [sg.VPush()],
+            # [sg.VPush()],
 
-            [
-
-                sg.B("Fehler hinzufügen", size=(18, 1), font=Fonts.font_normal, button_color=(
-                    "black", sg.YELLOWS[0]), k=KeyDefs.BTN_ADD_FAILURE),
-                
-                sg.Push(),
-                
-                sg.B("Maßnahme hinzufügen", size=(20, 2), font=Fonts.font_normal, button_color=(
-                    "black", sg.YELLOWS[0]), k=KeyDefs.BTN_ADD_IMPROVEMENT)
-            ],
         ]),
     ],
 ]
@@ -171,29 +172,23 @@ def get_assembly_step_data(layout: LayoutTypes, assembly_step: AssemblyStep):
 
 
 main_layout = [
-
-    [
-        sg.Column(expand_x=True, element_justification="center", layout=[
-            [
-                sg.Button("Zurück", k=KeyDefs.BTN_NAV_PREVIOUS_PAGE, enable_events=True,
-                          font=Fonts.font_normal, disabled=True, visible=False),
-                sg.Push(),
-                sg.Text("Getriebe konfigurieren:",
-                        key="-headline-", font=Fonts.font_headline),
-                sg.Push(),
-                sg.B("Getriebe ist ausschuss", key=KeyDefs.BTN_REJECT_TRANSMISSION_NO_IMPROVEMENT,
-                     visible=False, font=Fonts.font_normal, size=(20, 2), button_color="red"),
-                sg.Button("Weiter", key=KeyDefs.BTN_NAV_NEXT_PAGE,
-                          enable_events=True,  font=Fonts.font_normal, disabled=True),
-            ],
-        ]),
-    ],
+    [sg.P(), sg.T("Getriebe konfigurieren:",key="-headline-", font=Fonts.font_headline), sg.P(),],
     [sg.HorizontalSeparator(pad=(5, 5, 5, 5,))],
 
+    [sg.pin(sg.Column(layout_config_page, key=KeyDefs.LAYOUT_CONFIG), shrink=True)],
+    [sg.pin(sg.Column(layout_assembly_step_1, visible=False, key=KeyDefs.LAYOUT_ASSEMBLY), shrink=True)],
 
-    [sg.pin(sg.Column(layout_config_page, key=KeyDefs.LAYOUT_CONFIG))],
-    [sg.pin(sg.Column(layout_assembly_step_1, visible=False, key=KeyDefs.LAYOUT_ASSEMBLY))],
-
+    # Navigation Btns 
+    [sg.VP()],
+    
+    [
+        create_btn("Zurück", key=KeyDefs.BTN_NAV_PREVIOUS_PAGE, visible=False),
+        create_btn("Fehler hinzufügen",key=KeyDefs.BTN_ADD_FAILURE, button_color=("black", sg.YELLOWS[0])),
+        create_btn("Maßnahme hinzufügen",key=KeyDefs.BTN_ADD_IMPROVEMENT, button_color=("black", sg.YELLOWS[0])),
+        sg.P(),
+        create_btn("Weiter", key=KeyDefs.BTN_NAV_NEXT_PAGE,),
+        create_btn("Getriebe ist Ausschuss", key=KeyDefs.BTN_REJECT_TRANSMISSION_NO_IMPROVEMENT, visible=False, button_color="#e01212"),
+    ],
 ]
 
 

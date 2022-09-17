@@ -258,8 +258,6 @@ def create_improvement_instance(session:Session, imp:Improvement):
     return i
 
 
-
-    
 @catch_exceptions  
 def get_improvements_for_failure(session:Session, step:AssemblyStep, fail:Failure) -> List[Improvement]:
     """Based on parameter fail, query not yet tried improvements for this current transmission.

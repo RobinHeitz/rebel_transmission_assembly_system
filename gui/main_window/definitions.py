@@ -117,12 +117,12 @@ _failure_frames_invisible = {
 ELEMENT_VISIBILITY_MAP = {
     ElementVisibilityStates.config_state_1_cannot_go_next : {
         **_nav_disabled,
-        **_btn_add_failure_improvement_invisible,
+        **_btn_add_failure_improvement_visible,
     },
 
     ElementVisibilityStates.config_state_2_can_go_next: {
         **_nav_enabled,
-        **_btn_add_failure_improvement_invisible,
+        **_btn_add_failure_improvement_visible,
     },
     
     ElementVisibilityStates.assembly_state_1_can_start_measure: {
@@ -141,7 +141,8 @@ ELEMENT_VISIBILITY_MAP = {
         KeyDefs.CANVAS_GRAPH_PLOTTING: {"visible": True},
         **_failure_frames_invisible,
         KeyDefs.TEXT_MIN_MAX_CURRENT_VALUES: {"visible":False},
-        **_btn_add_failure_improvement_visible,
+        **_btn_add_failure_improvement_invisible,
+
     },
    
    
@@ -205,7 +206,7 @@ ELEMENT_VISIBILITY_MAP = {
         KeyDefs.BTN_NAV_PREVIOUS_PAGE: {"visible": False},
 
         KeyDefs.FRAME_FAILURE_DETECTION: {"visible": False},
-        KeyDefs.BTN_REJECT_TRANSMISSION_NO_IMPROVEMENT: {"visible": True},
+        KeyDefs.BTN_REJECT_TRANSMISSION_NO_IMPROVEMENT: {"visible": True, "disabled":False},
         **_btn_add_failure_improvement_visible,
     },
 }
