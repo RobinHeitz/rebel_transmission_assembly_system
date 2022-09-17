@@ -5,9 +5,10 @@ from .definitions import font_headline, font_normal, font_small, get_color_arg
 from .definitions import ImprovementWindowKeys as Key, get_image, font_headline, font_small, font_normal
 
 
+from gui.gui_helpers import create_btn, get_image
+
+
 def generate_improvement_window_layout(title, description):
-
-
 
     c_desc = sg.Col([
             [sg.T(title, font=font_headline)], 
@@ -25,7 +26,8 @@ def generate_improvement_window_layout(title, description):
         [
             get_image("gui/assembly_pictures/cable_not_connected.png", size=(350,350), k=Key.IMG_IMPROVEMENT),
         ],
-        [sg.B("Weiter", k=Key.BTN_NEXT_IMPROVEMENT_STEP, size=(20,2),font=font_normal), sg.B("Behebungsmaßnahme durchgeführt", k=Key.BTN_FINISHED_IMPROVEMENT_STEPS, size=(20,2), font=font_normal, visible=False)],
+        [create_btn("Weiter", key=Key.BTN_NEXT_IMPROVEMENT_STEP, disabled=False), create_btn("Fertig",key=Key.BTN_FINISHED_IMPROVEMENT_STEPS, visible=False)]
+        # [sg.B("Weiter", k=Key.BTN_NEXT_IMPROVEMENT_STEP, size=(20,2),font=font_normal), sg.B("Behebungsmaßnahme durchgeführt", k=Key.BTN_FINISHED_IMPROVEMENT_STEPS, size=(20,2), font=font_normal, visible=False)],
 
     ], visible=False, k=Key.COL_IMAGE_DESCRIPTION, justification="center", element_justification="center", )
 

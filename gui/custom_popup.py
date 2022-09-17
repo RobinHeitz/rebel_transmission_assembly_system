@@ -1,10 +1,7 @@
 import PySimpleGUI as sg
 from typing import List, Tuple, Optional
 
-font_headline = "Helvetiva 25"
-font_headline_2 = "Helvetiva 17"
-font_normal = "Helvetica 15"
-font_small = "Helvetica 13"
+from gui.gui_helpers import Colors, BtnColors, Fonts
 
 sg.theme("DarkTeal10")
 
@@ -37,11 +34,11 @@ def popup(title:str, message: str, buttons:List[Tuple[str, str, Optional[str]]],
             params = {**btn_params}
             
             if "warning" in args:
-                params["button_color"] = ("#FFFFFF", sg.YELLOWS[0])
+                params["button_color"] = BtnColors.yellow
             elif "error" in args:
-                params["button_color"] = ("#FFFFFF", "#e01212")
+                params["button_color"] = BtnColors.red
             elif "green" in args:
-                params["button_color"] = ("#FFFFFF", sg.GREENS[3])
+                params["button_color"] = BtnColors.green
             
             btn_layout.append(
                 sg.B(b_text, k=b_key, **params)
@@ -51,15 +48,15 @@ def popup(title:str, message: str, buttons:List[Tuple[str, str, Optional[str]]],
     
     btn_params = dict(
         size = (10,1),
-        font=font_normal
+        font=Fonts.font_normal
     )
     
     title_params = dict(
-        font=font_headline_2,
+        font=Fonts.font_headline_2,
     )
 
     multi_line_params = dict(
-        font=font_normal, 
+        font=Fonts.font_normal, 
         expand_x = True, 
         expand_y = True, 
         write_only = True, 
@@ -70,10 +67,10 @@ def popup(title:str, message: str, buttons:List[Tuple[str, str, Optional[str]]],
         disabled = True,
     )
     if kwargs.get("warning", False):
-        title_params["text_color"] = sg.YELLOWS[0]
+        title_params["text_color"] = Colors.yellow
     
     elif kwargs.get("error", False):
-        title_params["text_color"] = "#e01212"
+        title_params["text_color"] = Colors.red
 
     layout = [
         [sg.Text(title, **title_params)],

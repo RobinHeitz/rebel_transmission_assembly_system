@@ -3,8 +3,21 @@ import image_resize
 
 class Fonts:
     font_headline = "Helvetiva 25"
+    font_headline_2 = "Helvetiva 17"
     font_normal = "Helvetica 15"
     font_small = "Helvetica 13"
+
+class Colors:
+    yellow = sg.YELLOWS[0]
+    red = "#e01212"
+    green = sg.GREENS[3]
+
+class BtnColors:
+    yellow = ("#FFFFFF", Colors.yellow)
+    red = ("#FFFFFF", Colors.red)
+    green = ("#FFFFFF", Colors.green)
+    
+
 
 
 class ToggleButtonImageData:
