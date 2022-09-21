@@ -126,9 +126,11 @@ ELEMENT_VISIBILITY_MAP = {
     ElementVisibilityStates.state_not_connected : {
         KeyDefs.COL_TRANSMISSION_CONFIG: {"visible": False},
         KeyDefs.COL_SOFTWAR_UPDATE: {"visible": False},
+        # KeyDefs.TEXT_CAN_CONNECTED_STATUS: {"text": "Der PEAK CAN-Adapter ist nicht angeschlossen.", "text_color" : Colors.red},
         **_nav_disabled,
         **_btn_add_failure_improvement_visible,
     },
+
     
     ElementVisibilityStates.state_connected : {
         KeyDefs.COL_TRANSMISSION_CONFIG: {"visible": True},

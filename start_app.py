@@ -138,7 +138,9 @@ def btn_connect_can(*args):
     except ExceptionPcanIllHardware as e:
         logger.error(e)
         logger.error(traceback.format_exc())
+        
         window[KeyDefs.TEXT_CAN_CONNECTED_STATUS].update("Der PEAK CAN-Adapter ist nicht angeschlossen.")
+        set_element_state(ElementVisibilityStates.state_not_connected)
 
     
     except ExceptionPcanNoCanIdFound as e:
@@ -152,24 +154,17 @@ def btn_connect_can(*args):
         logger.debug(f"CAN ID has been found: {hex(controller.can_id)}")
         window[KeyDefs.TEXT_CAN_CONNECTED_STATUS].update(f"Verbunden. CAN-ID: {hex(controller.can_id)}", text_color=Colors.green)
         window[KeyDefs.BTN_CONNECT_CAN].update(disabled=True)
+        set_element_state(ElementVisibilityStates.state_connected)
 
     
-    # if controller.can_id != -1:
-    #     logger.debug(f"CAN ID has been found: {hex(controller.can_id)}")
-    #     window[KeyDefs.TEXT_CAN_CONNECTED_STATUS].update(f"Verbunden. CAN-ID: {hex(controller.can_id)}")
-    #     set_element_state(ElementVisibilityStates.state_connected)
-    # else:
-    #     logger.debug("No can id available.")
-    #     window[KeyDefs.TEXT_CAN_CONNECTED_STATUS].update(f"Suche nach CAN-ID...")
-    #     threading.Thread(target=search_for_can_id_thread, args=(window, controller), daemon=True).start()
-
 @function_prints
 def search_for_can_id_thread(window:sg.Window, controller:RebelAxisController):
+    window[KeyDefs.BTN_CONNECT_CAN].update(disabled = True)
     try:
         board_id = controller.find_can_id(timeout=2)
     except ExceptionPcanNoCanIdFound:
-        # window[KeyDefs.TEXT_CAN_CONNECTED_STATUS].update("Seems like no device is connected or Module Control is open?")
-        window[KeyDefs.TEXT_CAN_CONNECTED_STATUS].update("Entweder ist kein Adapter angeschlossen oder ModuleControl ist geöffnet.")
+        window[KeyDefs.TEXT_CAN_CONNECTED_STATUS].update("Keine CAN-ID gefunden. Ist ModuleControl geöffnet ?")
+        window[KeyDefs.BTN_CONNECT_CAN].update(disabled = False)
     else:
         window[KeyDefs.TEXT_CAN_CONNECTED_STATUS].update(f"Verbunden. CAN-ID: {hex(board_id)}")
         window[KeyDefs.BTN_CONNECT_CAN].update(disabled=True)

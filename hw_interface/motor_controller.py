@@ -2,7 +2,7 @@ from datetime import date, datetime
 import threading
 from can.interfaces.pcan.basic import PCAN_USBBUS1
 from can.interfaces.pcan.basic import PCANBasic, PCAN_DICT_STATUS, PCAN_BAUD_500K
-from can.interfaces.pcan.basic import PCAN_ERROR_OK,PCAN_ERROR_BUSHEAVY, PCAN_ERROR_QRCVEMPTY, PCAN_ERROR_ILLHW
+from can.interfaces.pcan.basic import PCAN_ERROR_INITIALIZE, PCAN_ERROR_OK,PCAN_ERROR_BUSHEAVY, PCAN_ERROR_QRCVEMPTY, PCAN_ERROR_ILLHW
 
 # from gui.main_window.definitions import KeyDefs
 
@@ -90,11 +90,19 @@ class RebelAxisController:
             
             # if self.__start_movement_queue == True:
             #     self.start_movement_thread()
+            logger.info("Connection was succesfull.")
         
-        if status == PCAN_ERROR_ILLHW:
+        elif status == PCAN_ERROR_ILLHW:
+            logger.info("Connection was not succesfull. Propably no hardware adapter connected.")
             self.disconnect()
             raise ExceptionPcanIllHardware()
-        logger.info("Connection was succesfull.")
+
+        elif status == PCAN_ERROR_INITIALIZE:
+            logger.info("Connection was not succesfull. PEAK Adapter connected, but maybe no rebel axis is connected to adapter.")
+            self.disconnect()
+            raise ExceptionPcanNoCanIdFound()
+            ...
+
 
     
     @function_prints
