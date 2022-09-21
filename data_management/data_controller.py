@@ -279,7 +279,9 @@ def get_improvements_for_failure(session:Session, step:AssemblyStep, fail:Failur
     
     fail = session.query(Failure).get(fail.id)
     t = session.query(Transmission).order_by(Transmission.id.desc()).first()
-    possible_improvements = set(fail.improvements)
+    # possible_improvements = set(fail.improvements)
+    possible_improvements = {imp for imp in fail.improvements if imp.is_verified == True}
+
 
     done_imp_instances:List[ImprovementInstance] = session.query(ImprovementInstance).filter_by(transmission = t, assembly_step = step).all()
     done_improvements = {instance.improvement for instance in done_imp_instances}
