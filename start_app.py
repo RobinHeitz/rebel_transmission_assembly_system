@@ -154,9 +154,10 @@ def search_for_can_id_thread(window:sg.Window, controller:RebelAxisController):
     try:
         board_id = controller.find_can_id(timeout=2)
     except ExceptionPcanNoCanIdFound:
-        window[KeyDefs.TEXT_CAN_CONNECTED_STATUS].update("Seems like no device is connected or Module Control is open?")
+        # window[KeyDefs.TEXT_CAN_CONNECTED_STATUS].update("Seems like no device is connected or Module Control is open?")
+        window[KeyDefs.TEXT_CAN_CONNECTED_STATUS].update("Entweder ist kein Adapter angeschlossen oder ModuleControl ist geöffnet.")
     else:
-        window[KeyDefs.TEXT_CAN_CONNECTED_STATUS].update(f"Connected. CAN-ID: {hex(board_id)}")
+        window[KeyDefs.TEXT_CAN_CONNECTED_STATUS].update(f"Verbunden. CAN-ID: {hex(board_id)}")
         window[KeyDefs.BTN_CONNECT_CAN].update(disabled=True)
 
 
@@ -501,7 +502,6 @@ if __name__ == "__main__":
 
     try:
         controller = RebelAxisController(verbose=False)
-        controller.connect()
 
     except ExceptionPcanIllHardware as e:
         logger.warning(e)
