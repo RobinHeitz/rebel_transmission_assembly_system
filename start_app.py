@@ -29,6 +29,8 @@ from gui.improvement_window.improvement_window import STATUS_CANCEL, STATUS_CLOS
 from gui.add_improvement.add_improvement import add_improvement_window
 from gui.add_failure.add_failure import add_failure_window
 
+from gui.gui_helpers import Colors
+
 from gui.main_window import start_measurement
 
 from logs.setup_logger import setup_logger
@@ -136,18 +138,30 @@ def btn_connect_can(*args):
     except ExceptionPcanIllHardware as e:
         logger.error(e)
         logger.error(traceback.format_exc())
+        window[KeyDefs.TEXT_CAN_CONNECTED_STATUS].update("Der PEAK CAN-Adapter ist nicht angeschlossen.")
+
+    
     except ExceptionPcanNoCanIdFound as e:
         logger.error(e)
         logger.error(traceback.format_exc())
-    
-    if controller.can_id != -1:
-        logger.debug(f"CAN ID has been found: {hex(controller.can_id)}")
-        window[KeyDefs.TEXT_CAN_CONNECTED_STATUS].update(f"Verbunden. CAN-ID: {hex(controller.can_id)}")
-        set_element_state(ElementVisibilityStates.state_connected)
-    else:
-        logger.debug("No can id available.")
         window[KeyDefs.TEXT_CAN_CONNECTED_STATUS].update(f"Suche nach CAN-ID...")
         threading.Thread(target=search_for_can_id_thread, args=(window, controller), daemon=True).start()
+
+    else:
+        ...
+        logger.debug(f"CAN ID has been found: {hex(controller.can_id)}")
+        window[KeyDefs.TEXT_CAN_CONNECTED_STATUS].update(f"Verbunden. CAN-ID: {hex(controller.can_id)}", text_color=Colors.green)
+        window[KeyDefs.BTN_CONNECT_CAN].update(disabled=True)
+
+    
+    # if controller.can_id != -1:
+    #     logger.debug(f"CAN ID has been found: {hex(controller.can_id)}")
+    #     window[KeyDefs.TEXT_CAN_CONNECTED_STATUS].update(f"Verbunden. CAN-ID: {hex(controller.can_id)}")
+    #     set_element_state(ElementVisibilityStates.state_connected)
+    # else:
+    #     logger.debug("No can id available.")
+    #     window[KeyDefs.TEXT_CAN_CONNECTED_STATUS].update(f"Suche nach CAN-ID...")
+    #     threading.Thread(target=search_for_can_id_thread, args=(window, controller), daemon=True).start()
 
 @function_prints
 def search_for_can_id_thread(window:sg.Window, controller:RebelAxisController):
@@ -500,17 +514,17 @@ if __name__ == "__main__":
     )
 
 
-    try:
-        controller = RebelAxisController(verbose=False)
+    controller = RebelAxisController(verbose=False)
+    # try:
 
-    except ExceptionPcanIllHardware as e:
-        logger.warning(e)
-        window[KeyDefs.TEXT_CAN_CONNECTED_STATUS].update(str(e))
-        window[KeyDefs.BTN_CONNECT_CAN].update("Verbindung herstellen")
+    # except ExceptionPcanIllHardware as e:
+    #     logger.warning(e)
+    #     window[KeyDefs.TEXT_CAN_CONNECTED_STATUS].update(str(e))
+    #     window[KeyDefs.BTN_CONNECT_CAN].update("Verbindung herstellen")
     
-    except ExceptionPcanNoCanIdFound as e:
-        window[KeyDefs.TEXT_CAN_CONNECTED_STATUS].update(str(e))
-        window[KeyDefs.BTN_CONNECT_CAN].update("Try Device again")
+    # except ExceptionPcanNoCanIdFound as e:
+    #     window[KeyDefs.TEXT_CAN_CONNECTED_STATUS].update(str(e))
+    #     window[KeyDefs.BTN_CONNECT_CAN].update("Try Device again")
 
     
     transmission_config = TransmissionConfigHelper()
