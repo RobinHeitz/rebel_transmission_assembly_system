@@ -8,7 +8,7 @@ from gui.gui_helpers import Fonts
 
 import image_resize
 
-from data_management.model import AssemblyStep, Failure, FailureType, ImprovementInstance, Measurement
+from data_management.model import AssemblyStep, Failure, FailureType, ImprovementInstance, Measurement, Transmission
 from data_management import data_controller, data_transformation
 
 from hw_interface.motor_controller import RebelAxisController
@@ -520,6 +520,41 @@ if __name__ == "__main__":
     # except ExceptionPcanNoCanIdFound as e:
     #     window[KeyDefs.TEXT_CAN_CONNECTED_STATUS].update(str(e))
     #     window[KeyDefs.BTN_CONNECT_CAN].update("Try Device again")
+
+
+
+
+
+    # #####################################
+    # # Beispiel der Abfrage von Objekten #
+    # #####################################
+
+    # import sqlalchemy
+    # from sqlalchemy.orm import Query
+
+
+
+    
+    
+    # # Verbindung zur Datenbank wird in 'session' gespeichert    
+    # session = data_controller.create_session()
+
+    # # (1) Abfrage nach allen Fehlern, anschließende Filterung nach Verifizierten 
+    # query:Query = session.query(Failure)
+    # # (2) Anschließende Filterung nach verifizierten Fehlern die im 1. Montageschritt auftreten können
+    # filter:Query = query.filter(is_verified = True, assembly_step = AssemblyStep.step_1_no_flexring)
+    # # (3) Liste zurückgeben
+    # fehler = filter.all()
+
+    # # Alternative Schreibweise:
+    # fehler = session.query(Failure).filter(is_verified = True, assembly_step = AssemblyStep.step_1_no_flexring).all()
+
+
+    # # Schreibweise bei Verwendung von SQL mittels Strings:
+    # connection = data_controller.create_session()
+    # get_failure_query = f"SELECT * FROM Failure WHERE is_verified = 1 and assembly_step = {AssemblyStep.step_1_no_flexring};"
+
+
 
     
     transmission_config = TransmissionConfigHelper()
